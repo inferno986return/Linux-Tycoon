@@ -10,9 +10,20 @@ config_version=5
 
 [application]
 
-config/name="Linux Tycoon Redot"
+config/name="Linux Tycoon"
+run/main_scene="res://main.tscn"
 config/features=PackedStringArray("26.3", "GL Compatibility", "Redot")
-config/icon="res://icon.svg"
+config/icon="uid://b7rytepmou2hn"
+
+[autoload]
+
+GameManager="*res://gamemanager.gd"
+
+[display]
+
+window/size/viewport_width=620
+window/size/viewport_height=410
+window/stretch/mode="canvas_items"
 
 [rendering]
 

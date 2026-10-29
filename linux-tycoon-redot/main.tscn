@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8mainlinuxtyc"]
+
+[ext_resource type="Script" path="res://mainwindow.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://c7ygc4hv6dtlk" path="res://theme.tres" id="2_theme"]
+
+[node name="MainWindow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
