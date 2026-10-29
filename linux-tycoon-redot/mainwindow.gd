@@ -89,15 +89,16 @@ func _ready() -> void:
 	GameManager.message_added.connect(_on_message_added)
 	GameManager.scenario_loaded.connect(func(s_name: String): lbl_scenario.text = "Scenario: " + s_name)
 
+	resized.connect(_setup_initial_positions)
 	_setup_initial_positions()
 	_hide_all_containers()
 	con_main_menu.visible = true
 
 func _apply_xojo_theme() -> void:
 	var t := Theme.new()
-	t.default_font_size = 12
+	t.default_font_size = 11
 
-	# Xojo canBtn colors
+	# Xojo canBtn colors with zero extra margin so 120px buttons never overflow
 	var sb_normal := _make_btn_style(Color8(89, 131, 192), Color8(60, 107, 173))
 	var sb_hover := _make_btn_style(Color8(47, 92, 159), Color8(60, 107, 173))
 	var sb_pressed := _make_btn_style(Color8(35, 75, 140), Color8(60, 107, 173))
@@ -113,10 +114,10 @@ func _apply_xojo_theme() -> void:
 	t.set_color("font_hover_color", "Button", Color.WHITE)
 	t.set_color("font_pressed_color", "Button", Color.WHITE)
 	t.set_color("font_disabled_color", "Button", Color8(200, 200, 200))
-	t.set_font_size("font_size", "Button", 12)
+	t.set_font_size("font_size", "Button", 11)
 
 	t.set_color("font_color", "Label", Color.WHITE)
-	t.set_font_size("font_size", "Label", 12)
+	t.set_font_size("font_size", "Label", 11)
 
 	var sb_edit := _make_btn_style(Color.WHITE, Color8(60, 107, 173))
 	sb_edit.content_margin_left = 4
@@ -132,6 +133,10 @@ func _make_btn_style(bg: Color, border: Color) -> StyleBoxFlat:
 	sb.bg_color = bg
 	sb.border_color = border
 	sb.set_border_width_all(1)
+	sb.content_margin_left = 2
+	sb.content_margin_right = 2
+	sb.content_margin_top = 0
+	sb.content_margin_bottom = 0
 	return sb
 
 func _build_base_layout() -> void:
@@ -141,31 +146,39 @@ func _build_base_layout() -> void:
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
-	# Top Bar (Height 22)
+	# Top Bar (Height 22, stretches across top)
 	var top_bar := Control.new()
-	top_bar.position = Vector2.ZERO
-	top_bar.size = Vector2(620, 22)
+	top_bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	top_bar.offset_bottom = 22
 	add_child(top_bar)
 
 	lbl_date = Label.new()
-	lbl_date.position = Vector2(358, 1)
-	lbl_date.size = Vector2(228, 20)
+	lbl_date.anchor_left = 1.0
+	lbl_date.anchor_right = 1.0
+	lbl_date.offset_left = -262
+	lbl_date.offset_right = -30
+	lbl_date.offset_top = 1
+	lbl_date.offset_bottom = 21
 	lbl_date.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	lbl_date.add_theme_color_override("font_color", Color.BLACK)
 	top_bar.add_child(lbl_date)
 
 	btn_pause = Button.new()
-	btn_pause.position = Vector2(598, 0)
-	btn_pause.size = Vector2(22, 22)
+	btn_pause.anchor_left = 1.0
+	btn_pause.anchor_right = 1.0
+	btn_pause.offset_left = -22
+	btn_pause.offset_right = 0
+	btn_pause.offset_top = 0
+	btn_pause.offset_bottom = 22
 	btn_pause.text = "||"
 	btn_pause.visible = false
 	btn_pause.pressed.connect(_on_btn_pause_pressed)
 	top_bar.add_child(btn_pause)
 
-	# Main Playfield Canvas (620x388 at Top=22)
+	# Main Playfield Canvas (fills everything below Top=22)
 	can_main = Control.new()
-	can_main.position = Vector2(0, 22)
-	can_main.size = Vector2(620, 388)
+	can_main.set_anchors_preset(Control.PRESET_FULL_RECT)
+	can_main.offset_top = 22
 	add_child(can_main)
 
 	day_timer = Timer.new()
@@ -184,10 +197,10 @@ func _build_con_main_menu() -> void:
 	icon.size = Vector2(32, 32)
 	con_main_menu.add_child(icon)
 
-	_add_label(con_main_menu, "Linux Tycoon", Vector2(61, 20), Vector2(177, 32), 20)
-	_add_label(con_main_menu, "1.1.2", Vector2(61, 59), Vector2(177, 22), 12)
-	lbl_scenario = _add_label(con_main_menu, "Scenario: Standard", Vector2(61, 93), Vector2(177, 22), 12)
-	_add_label(con_main_menu, "www.Lunduke.com", Vector2(61, 127), Vector2(177, 22), 12)
+	_add_label(con_main_menu, "Linux Tycoon", Vector2(61, 20), Vector2(177, 32), 18)
+	_add_label(con_main_menu, "1.1.2", Vector2(61, 59), Vector2(177, 22), 11)
+	lbl_scenario = _add_label(con_main_menu, "Scenario: Standard", Vector2(61, 93), Vector2(177, 22), 11)
+	_add_label(con_main_menu, "www.Lunduke.com", Vector2(61, 127), Vector2(177, 22), 11)
 
 	var btn_new := _add_button(con_main_menu, "New Game", Vector2(250, 25), Vector2(120, 22))
 	btn_new.pressed.connect(func():
@@ -216,16 +229,17 @@ func _build_con_intro() -> void:
 	bryan.size = Vector2(46, 99)
 	con_intro.add_child(bryan)
 
-	intro_lbl = _add_label(con_intro, "", Vector2(71, 17), Vector2(307, 195), 11)
+	intro_lbl = _add_label(con_intro, "", Vector2(71, 17), Vector2(304, 195), 11)
 	intro_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intro_lbl.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
 	intro_txt_name = LineEdit.new()
 	intro_txt_name.position = Vector2(76, 232)
-	intro_txt_name.size = Vector2(150, 24)
+	intro_txt_name.size = Vector2(150, 22)
 	intro_txt_name.text = "MyLinuxDistro"
 	con_intro.add_child(intro_txt_name)
 
-	intro_btn_next = _add_button(con_intro, "Set Distro Name", Vector2(238, 232), Vector2(130, 24))
+	intro_btn_next = _add_button(con_intro, "Set Distro Name", Vector2(238, 232), Vector2(120, 22))
 	intro_btn_next.pressed.connect(_on_intro_next_pressed)
 
 func _start_intro() -> void:
@@ -271,28 +285,29 @@ func _build_con_distro_stats() -> void:
 	var lbl_dev := _add_label(con_distro_stats, "In Development", Vector2(18, 44), Vector2(127, 20), 10, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl_dev.add_theme_color_override("font_color", Color8(229, 229, 229))
 
-	stats_lbl_name = _add_label(con_distro_stats, "", Vector2(18, 63), Vector2(127, 20), 13, HORIZONTAL_ALIGNMENT_CENTER)
+	stats_lbl_name = _add_label(con_distro_stats, "", Vector2(18, 63), Vector2(127, 20), 12, HORIZONTAL_ALIGNMENT_CENTER)
 	stats_lbl_ver = _add_label(con_distro_stats, "Version 1.0", Vector2(18, 82), Vector2(127, 20), 11, HORIZONTAL_ALIGNMENT_CENTER)
 
-	_add_label(con_distro_stats, "Hype :", Vector2(18, 106), Vector2(100, 20), 12)
-	stats_lbl_hype = _add_label(con_distro_stats, "0", Vector2(67, 106), Vector2(78, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Hype :", Vector2(18, 106), Vector2(100, 20), 11)
+	stats_lbl_hype = _add_label(con_distro_stats, "0", Vector2(67, 106), Vector2(78, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_distro_stats, "Bugs :", Vector2(18, 131), Vector2(100, 20), 12)
-	stats_lbl_bugs = _add_label(con_distro_stats, "0", Vector2(67, 131), Vector2(78, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Bugs :", Vector2(18, 131), Vector2(100, 20), 11)
+	stats_lbl_bugs = _add_label(con_distro_stats, "0", Vector2(67, 131), Vector2(78, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_distro_stats, "Size (MB) :", Vector2(18, 156), Vector2(100, 20), 12)
-	stats_lbl_size = _add_label(con_distro_stats, "0", Vector2(102, 156), Vector2(43, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Size (MB) :", Vector2(18, 156), Vector2(100, 20), 11)
+	stats_lbl_size = _add_label(con_distro_stats, "0", Vector2(102, 156), Vector2(43, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_distro_stats, "Volunteers :", Vector2(18, 182), Vector2(100, 20), 12)
-	stats_lbl_vol = _add_label(con_distro_stats, "0 / 0", Vector2(92, 182), Vector2(53, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Volunteers :", Vector2(18, 182), Vector2(100, 20), 11)
+	stats_lbl_vol = _add_label(con_distro_stats, "0 / 0", Vector2(92, 182), Vector2(53, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_distro_stats, "Paid Workers :", Vector2(18, 207), Vector2(100, 20), 12)
-	stats_lbl_paid = _add_label(con_distro_stats, "0 / 0", Vector2(102, 207), Vector2(43, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Paid Workers :", Vector2(18, 207), Vector2(100, 20), 11)
+	stats_lbl_paid = _add_label(con_distro_stats, "0 / 0", Vector2(102, 207), Vector2(43, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
 	stats_btn_packages = _add_button(con_distro_stats, "Edit Packages", Vector2(18, 233), Vector2(127, 22))
 	stats_btn_packages.pressed.connect(func():
 		pause_game()
 		_hide_all_containers()
+		center_container(con_package_selection)
 		_refresh_package_selection()
 		con_package_selection.visible = true
 	)
@@ -302,6 +317,7 @@ func _build_con_distro_stats() -> void:
 		pause_game()
 		_hide_all_containers()
 		work_selected_idx = 0
+		center_container(con_worker_assignment)
 		_refresh_worker_assignment()
 		con_worker_assignment.visible = true
 	)
@@ -334,9 +350,9 @@ func _build_con_overview() -> void:
 	con_overview.size = Vector2(427, 50)
 	can_main.add_child(con_overview)
 
-	overview_lbl_name = _add_label(con_overview, "", Vector2(20, 15), Vector2(145, 20), 12)
-	overview_lbl_users = _add_label(con_overview, "Users: 0", Vector2(174, 15), Vector2(110, 20), 12)
-	overview_lbl_age = _add_label(con_overview, "Age: 0 days", Vector2(292, 15), Vector2(120, 20), 12)
+	overview_lbl_name = _add_label(con_overview, "", Vector2(20, 15), Vector2(145, 20), 11)
+	overview_lbl_users = _add_label(con_overview, "Users: 0", Vector2(174, 15), Vector2(110, 20), 11)
+	overview_lbl_age = _add_label(con_overview, "Age: 0 days", Vector2(292, 15), Vector2(120, 20), 11)
 
 func _refresh_overview() -> void:
 	var d := GameManager.my_distro
@@ -351,7 +367,7 @@ func _build_con_distro_rank() -> void:
 	con_distro_rank.size = Vector2(173, 314)
 	can_main.add_child(con_distro_rank)
 
-	_add_label(con_distro_rank, "DistroRank", Vector2(12, 11), Vector2(149, 20), 12, HORIZONTAL_ALIGNMENT_CENTER)
+	_add_label(con_distro_rank, "DistroRank", Vector2(12, 11), Vector2(149, 20), 11, HORIZONTAL_ALIGNMENT_CENTER)
 
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
@@ -387,7 +403,7 @@ func _refresh_distro_rank() -> void:
 		row.custom_minimum_size = Vector2(140, 28)
 		row.color = Color8(230, 240, 255) if d == GameManager.my_distro else (Color.WHITE if i % 2 == 0 else Color8(245, 245, 245))
 
-		var l_num := _add_label(row, str(i + 1), Vector2(3, 4), Vector2(24, 20), 14)
+		var l_num := _add_label(row, str(i + 1), Vector2(3, 4), Vector2(24, 20), 13)
 		l_num.add_theme_color_override("font_color", Color.BLACK)
 
 		var l_name := _add_label(row, d.name, Vector2(26, 1), Vector2(112, 16), 11)
@@ -428,7 +444,7 @@ func _build_con_package_selection() -> void:
 	con_package_selection.size = Vector2(500, 334)
 	can_main.add_child(con_package_selection)
 
-	_add_label(con_package_selection, "Package Selection", Vector2(12, 11), Vector2(149, 20), 12)
+	_add_label(con_package_selection, "Package Selection", Vector2(12, 11), Vector2(149, 20), 11)
 
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
@@ -511,7 +527,7 @@ func _build_con_worker_assignment() -> void:
 	con_worker_assignment.size = Vector2(464, 294)
 	can_main.add_child(con_worker_assignment)
 
-	_add_label(con_worker_assignment, "Worker Assignment", Vector2(12, 11), Vector2(149, 20), 12)
+	_add_label(con_worker_assignment, "Worker Assignment", Vector2(12, 11), Vector2(149, 20), 11)
 
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
@@ -530,16 +546,16 @@ func _build_con_worker_assignment() -> void:
 	work_list_vbox.add_theme_constant_override("separation", 0)
 	scroll.add_child(work_list_vbox)
 
-	_add_label(con_worker_assignment, "Available Paid Workers :", Vector2(208, 33), Vector2(168, 20), 12)
-	work_lbl_avail_paid = _add_label(con_worker_assignment, "0 / 0", Vector2(377, 33), Vector2(67, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_worker_assignment, "Available Paid Workers :", Vector2(208, 33), Vector2(168, 20), 11)
+	work_lbl_avail_paid = _add_label(con_worker_assignment, "0 / 0", Vector2(377, 33), Vector2(67, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_worker_assignment, "Available Volunteers :", Vector2(208, 65), Vector2(168, 20), 12)
-	work_lbl_avail_vol = _add_label(con_worker_assignment, "0 / 0", Vector2(377, 65), Vector2(67, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_worker_assignment, "Available Volunteers :", Vector2(208, 65), Vector2(168, 20), 11)
+	work_lbl_avail_vol = _add_label(con_worker_assignment, "0 / 0", Vector2(377, 65), Vector2(67, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	work_lbl_pkg_name = _add_label(con_worker_assignment, "", Vector2(208, 120), Vector2(240, 20), 13)
+	work_lbl_pkg_name = _add_label(con_worker_assignment, "", Vector2(208, 120), Vector2(240, 20), 12)
 
-	_add_label(con_worker_assignment, "Paid Workers", Vector2(220, 156), Vector2(115, 20), 12)
-	work_lbl_assign_paid = _add_label(con_worker_assignment, "0", Vector2(335, 156), Vector2(50, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_worker_assignment, "Paid Workers", Vector2(220, 156), Vector2(115, 20), 11)
+	work_lbl_assign_paid = _add_label(con_worker_assignment, "0", Vector2(335, 156), Vector2(50, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 	var btn_p_minus := _add_button(con_worker_assignment, "-", Vector2(395, 154), Vector2(24, 22))
 	var btn_p_plus := _add_button(con_worker_assignment, "+", Vector2(423, 154), Vector2(24, 22))
 
@@ -556,8 +572,8 @@ func _build_con_worker_assignment() -> void:
 			_refresh_worker_assignment()
 	)
 
-	_add_label(con_worker_assignment, "Volunteers", Vector2(220, 188), Vector2(115, 20), 12)
-	work_lbl_assign_vol = _add_label(con_worker_assignment, "0", Vector2(335, 188), Vector2(50, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_worker_assignment, "Volunteers", Vector2(220, 188), Vector2(115, 20), 11)
+	work_lbl_assign_vol = _add_label(con_worker_assignment, "0", Vector2(335, 188), Vector2(50, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 	var btn_v_minus := _add_button(con_worker_assignment, "-", Vector2(395, 186), Vector2(24, 22))
 	var btn_v_plus := _add_button(con_worker_assignment, "+", Vector2(423, 186), Vector2(24, 22))
 
@@ -577,6 +593,7 @@ func _build_con_worker_assignment() -> void:
 	var btn_sac := _add_button(con_worker_assignment, "Sacrifice Worker", Vector2(252, 252), Vector2(120, 22))
 	btn_sac.pressed.connect(func():
 		con_worker_assignment.visible = false
+		center_container(con_sacrifice_worker)
 		_refresh_sacrifice_worker()
 		con_sacrifice_worker.visible = true
 	)
@@ -606,7 +623,7 @@ func _refresh_worker_assignment() -> void:
 		row.custom_minimum_size = Vector2(174, 36)
 		row.color = Color8(205, 225, 255) if i == work_selected_idx else (Color.WHITE if i % 2 == 0 else Color8(242, 242, 242))
 
-		var l_title := _add_label(row, "%s %d.0" % [p.name, p.version], Vector2(4, 2), Vector2(166, 16), 12)
+		var l_title := _add_label(row, "%s %d.0" % [p.name, p.version], Vector2(4, 2), Vector2(166, 16), 11)
 		l_title.add_theme_color_override("font_color", Color.BLACK)
 
 		var sub := "Bugs: %d  Vol: %d  Paid: %d" % [p.bugs, d.workers_volunteers_assigned[i], d.workers_paid_assigned[i]]
@@ -637,11 +654,11 @@ func _build_con_sacrifice_worker() -> void:
 	con_sacrifice_worker.size = Vector2(332, 211)
 	can_main.add_child(con_sacrifice_worker)
 
-	var desc := _add_label(con_sacrifice_worker, "You may sacrifice volunteers for immediate, but highly mysterious, boosts.", Vector2(20, 14), Vector2(292, 45), 12)
+	var desc := _add_label(con_sacrifice_worker, "You may sacrifice volunteers for immediate, but highly mysterious, boosts.", Vector2(20, 14), Vector2(292, 45), 11)
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	_add_label(con_sacrifice_worker, "Available Volunteers :", Vector2(20, 71), Vector2(168, 20), 12)
-	sac_lbl_avail = _add_label(con_sacrifice_worker, "0 / 0", Vector2(189, 71), Vector2(67, 20), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_sacrifice_worker, "Available Volunteers :", Vector2(20, 71), Vector2(168, 20), 11)
+	sac_lbl_avail = _add_label(con_sacrifice_worker, "0 / 0", Vector2(189, 71), Vector2(67, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
 	var btn_boost := _add_button(con_sacrifice_worker, "Sacrifice Worker", Vector2(106, 103), Vector2(120, 22))
 	btn_boost.pressed.connect(func():
@@ -660,7 +677,7 @@ func _build_con_sacrifice_worker() -> void:
 			GameManager.stats_updated.emit()
 	)
 
-	sac_lbl_results = _add_label(con_sacrifice_worker, "", Vector2(20, 137), Vector2(292, 20), 12, HORIZONTAL_ALIGNMENT_CENTER)
+	sac_lbl_results = _add_label(con_sacrifice_worker, "", Vector2(20, 137), Vector2(292, 20), 11, HORIZONTAL_ALIGNMENT_CENTER)
 
 	var btn_ok := _add_button(con_sacrifice_worker, "No more!", Vector2(85, 169), Vector2(162, 22))
 	btn_ok.pressed.connect(func():
@@ -744,7 +761,7 @@ func _build_dialogs() -> void:
 
 # --- UI HELPERS ---
 
-func _add_label(parent: Control, text: String, pos: Vector2, sz: Vector2, font_sz: int = 12, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
+func _add_label(parent: Control, text: String, pos: Vector2, sz: Vector2, font_sz: int = 11, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.position = pos
@@ -764,16 +781,19 @@ func _add_button(parent: Control, text: String, pos: Vector2, sz: Vector2) -> Bu
 	return b
 
 func _setup_initial_positions() -> void:
+	var w := size.x if size.x > 0 else 620.0
 	con_distro_stats.position = Vector2(5, 5)
-	con_overview.position = Vector2(620 - con_overview.size.x - 5, 5)
-	con_distro_rank.position = Vector2(620 - con_distro_rank.size.x - 5, 68)
+	con_overview.position = Vector2(w - con_overview.size.x - 5, 5)
+	con_distro_rank.position = Vector2(w - con_distro_rank.size.x - 5, 68)
 	con_notifications.position = Vector2(con_overview.position.x, 68)
 
 	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release]:
 		center_container(centered)
 
 func center_container(ctrl: Control) -> void:
-	ctrl.position = Vector2((620.0 - ctrl.size.x) / 2.0, (388.0 - ctrl.size.y) / 2.0)
+	var w := size.x if size.x > 0 else 620.0
+	var h := (size.y - 22.0) if size.y > 22.0 else 388.0
+	ctrl.position = Vector2(roundf((w - ctrl.size.x) / 2.0), roundf((h - ctrl.size.y) / 2.0))
 
 func _hide_all_containers() -> void:
 	for child in can_main.get_children():
