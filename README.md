@@ -1,10 +1,26 @@
 # Linux Tycoon (Redot Engine)
 
-A port of Linux Tycoon Classic v1.1.2 made with the help of Google Gemini Argon using the Redot Engine v26.3 with the Compatibility renderer which can support Desktop, mobile and even the web - since Linux Tycoon is a 2D game, it may as well run anywhere.
+A port of Linux Tycoon Classic v1.1.2 from around 14 years ago made with the help of Google Gemini Argon using the Redot Engine v26.3 with the Compatibility renderer which can support Desktop, mobile and even the web - since Linux Tycoon is a 2D game, it may as well run anywhere.
 
 This isn't a 1:1 port as all the windows are draggable and it should support full-screen.
 
-How did the Online mode work? Do we have any documentation on that?
+# Current status
+The game actually launches in Redot! But has a number of bugs which I have identified so far:
+
+## Critical
+* No saving - the "Save" button is greyed out and unusable
+* No assign workers - the "Assign Workers" button is also greyed out and unusable
+
+## Minor
+* The buttons are of varying widths and some touch the window border such as "Import scenario".
+* The "Package Selection" dialogue has an ugly box drawn around the checkboxes used to select packages.
+* The text is ugly and seems to have hinting problems. I don't mind using Open Sans instead of Roboto, but it has to look good!
+
+# Planned features
+* How do Scenarios work?
+* How did the Online mode work? Do we have any documentation on that? - I can see on Google there was a "Linux Tycoon Server" back in the day.
+* Music would be cool! Some cool free .oggs with a tycoon vibe.
+* Options menu with support for audio, localisation, etc.
 
 ## Buy a copy of Linux Tycoon from itch.io
 
