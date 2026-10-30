@@ -4,6 +4,13 @@ A port of Linux Tycoon Classic v1.1.2 from around 14 years ago made with the hel
 
 This isn't a 1:1 port as all the windows are draggable and it should support full-screen.
 
+# Outstanding issues from source repo:
+
+* **Worker/Volunteer Deja Vu** which Ala-lala opened on Apr 9, 2014 (https://github.com/BryanLunduke/Linux-Tycoon/issues/5): Get say 30 volunteers and 10 paid workers, save your game and quit, then start up and resume your game. When you get your 31st volunteer or your 11th paid worker, you get a message saying that you have gotten your first volunteer or paid worker. (From Windows download).
+* **Game should pause while dialogs are open** which mechanical-snail opened on Jun 3, 2013
+(https://github.com/BryanLunduke/Linux-Tycoon/issues/2): If you press the "Release Version" or "Save" buttons while the game is running, it keeps running while the dialog is open. It is therefore not clear what version is being released and what state is being saved. The game should pause whenever dialogs are open. (Version 1.1.1 on Linux)
+
+
 # Current status
 The game actually launches in Redot! But has a number of bugs which I have identified so far:
 
