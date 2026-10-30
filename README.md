@@ -17,14 +17,14 @@ The game actually launches in Redot! But has a number of bugs which I have ident
 * The text is ugly and seems to have hinting problems. I don't mind using Open Sans instead of Roboto, but it has to look good!
 
 # Planned features
-* How do Scenarios work?
+* How do Scenarios work? - I see they are XML files...
 * How did the Online mode work? Do we have any documentation on that? - I can see on Google there was a "Linux Tycoon Server" back in the day.
 * Music would be cool! Some cool free .oggs with a tycoon vibe.
 * Options menu with support for audio, localisation, etc.
 
 ## Buy a copy of Linux Tycoon from itch.io
 
-Support Bryan Lunduke directly by purchasing a copy of Linux Tycoon from itch.io:
+Support Bryan Lunduke directly by purchasing a copy of Linux Tycoon v1.3 from itch.io:
 
 * https://lunduke.itch.io/linux-tycoon-mega-collection - all the games for just $12, which includes the additional Android and Gameboy ports!
 * https://lunduke.itch.io/linux-tycoon-3 - $5
@@ -52,3 +52,5 @@ It even has some games included, such as *Micropolis*. But I don't see *Linux Ty
 # Licence
 
 The original *Linux Tycoon* project was licenced under the GNU GPLv2 and since this is a derivative project, the licence also applies here.
+
+Bryan Lunduke himself is very welcome to incorporate the latest features in a proprietary build of this game, and in fact, I would be flattered if he did!
