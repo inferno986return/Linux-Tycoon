@@ -27,10 +27,15 @@ The game actually launches in Redot! But has a number of bugs which I have ident
 # Planned features
 * How do Scenarios work? - I see they are XML files...
 * How did the Online mode work? Do we have any documentation on that? - I can see on Google there was a "Linux Tycoon Server" back in the day.
-* Music would be cool! Some cool free .oggs with a tycoon vibe.
+* Music would be cool! Some cool free .oggs with a tycoon vibe. Perhaps an MP3 player-style music control window with play, pause, track changers and displays what the song is?
+    * https://pixabay.com/music/search/acid%20jazz%20cafe%20lounge%20groove/ - https://pixabay.com/service/license-summary/
+    * alex-morgan *Acid Jazz Cafe Lounge Groove*
+    * Amplify_Music *Jazz Cafe Music - Electric Velvet Groove*
+    * Turning_Pages *Kindling the Flame*
+
 * Options menu with support for audio, localisation, etc.
 
-## Buy a copy of Linux Tycoon from itch.io
+# Buy a copy of Linux Tycoon from itch.io
 
 Support Bryan Lunduke directly by purchasing a copy of Linux Tycoon v1.3 from itch.io:
 
