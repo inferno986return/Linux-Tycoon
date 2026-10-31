@@ -96,9 +96,9 @@ func _ready() -> void:
 
 func _apply_xojo_theme() -> void:
 	var t := Theme.new()
-	t.default_font_size = 11
+	t.default_font_size = 13 # Slightly larger, smooth default text
 
-	# Xojo canBtn colors with zero extra margin so 120px buttons never overflow
+	# Generous button padding
 	var sb_normal := _make_btn_style(Color8(89, 131, 192), Color8(60, 107, 173))
 	var sb_hover := _make_btn_style(Color8(47, 92, 159), Color8(60, 107, 173))
 	var sb_pressed := _make_btn_style(Color8(35, 75, 140), Color8(60, 107, 173))
@@ -114,13 +114,8 @@ func _apply_xojo_theme() -> void:
 	t.set_color("font_hover_color", "Button", Color.WHITE)
 	t.set_color("font_pressed_color", "Button", Color.WHITE)
 	t.set_color("font_disabled_color", "Button", Color8(200, 200, 200))
-	t.set_font_size("font_size", "Button", 11)
-
-	t.set_color("font_color", "Label", Color.WHITE)
-	t.set_font_size("font_size", "Label", 11)
 
 	var sb_edit := _make_btn_style(Color.WHITE, Color8(60, 107, 173))
-	sb_edit.content_margin_left = 4
 	t.set_stylebox("normal", "LineEdit", sb_edit)
 	t.set_stylebox("focus", "LineEdit", sb_edit)
 	t.set_color("font_color", "LineEdit", Color.BLACK)
@@ -133,20 +128,19 @@ func _make_btn_style(bg: Color, border: Color) -> StyleBoxFlat:
 	sb.bg_color = bg
 	sb.border_color = border
 	sb.set_border_width_all(1)
-	sb.content_margin_left = 2
-	sb.content_margin_right = 2
-	sb.content_margin_top = 0
-	sb.content_margin_bottom = 0
+	# Generous padding applied natively to the stylebox
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
 	return sb
 
 func _build_base_layout() -> void:
-	# Main Window Background (#B4C6E4 from Xojo 11847396)
 	var bg := ColorRect.new()
 	bg.color = Color8(180, 198, 228)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
-	# Top Bar (Height 22, stretches across top)
 	var top_bar := Control.new()
 	top_bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	top_bar.offset_bottom = 22
@@ -175,7 +169,6 @@ func _build_base_layout() -> void:
 	btn_pause.pressed.connect(_on_btn_pause_pressed)
 	top_bar.add_child(btn_pause)
 
-	# Main Playfield Canvas (fills everything below Top=22)
 	can_main = Control.new()
 	can_main.set_anchors_preset(Control.PRESET_FULL_RECT)
 	can_main.offset_top = 22
@@ -188,35 +181,84 @@ func _build_base_layout() -> void:
 
 func _build_con_main_menu() -> void:
 	con_main_menu = DraggableWindow.new()
-	con_main_menu.size = Vector2(390, 241)
+	# Increased window height to 430 to fit the extra Buttons comfortably
+	con_main_menu.size = Vector2(460, 430) 
 	can_main.add_child(con_main_menu)
 
 	var icon := TextureRect.new()
 	icon.texture = tex_tux
-	icon.position = Vector2(20, 20)
+	icon.position = Vector2(30, 30)
 	icon.size = Vector2(32, 32)
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST # Keeps Tux crisp
 	con_main_menu.add_child(icon)
 
-	_add_label(con_main_menu, "Linux Tycoon", Vector2(61, 20), Vector2(177, 32), 18)
-	_add_label(con_main_menu, "1.1.2", Vector2(61, 59), Vector2(177, 22), 11)
-	lbl_scenario = _add_label(con_main_menu, "Scenario: Standard", Vector2(61, 93), Vector2(177, 22), 11)
-	_add_label(con_main_menu, "www.Lunduke.com", Vector2(61, 127), Vector2(177, 22), 11)
+	_add_label(con_main_menu, "Linux Tycoon", Vector2(75, 30), Vector2(177, 32), 22)
+	_add_label(con_main_menu, "1.1.2", Vector2(75, 75), Vector2(177, 22), 13)
+	lbl_scenario = _add_label(con_main_menu, "Scenario: Standard", Vector2(75, 110), Vector2(177, 22), 13)
+	
+	var link_lunduke := LinkButton.new()
+	link_lunduke.text = "www.Lunduke.com"
+	link_lunduke.position = Vector2(75, 145)
+	link_lunduke.add_theme_font_size_override("font_size", 13)
+	link_lunduke.add_theme_color_override("font_color", Color.WHITE)
+	link_lunduke.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_lunduke.uri = "https://www.lunduke.com/"
+	con_main_menu.add_child(link_lunduke)
 
-	var btn_new := _add_button(con_main_menu, "New Game", Vector2(250, 25), Vector2(120, 22))
+	var vbox := VBoxContainer.new()
+	vbox.position = Vector2(270, 30)
+	vbox.size = Vector2(150, 370) # Increased height from 330 to 370
+	vbox.add_theme_constant_override("separation", 10)
+	con_main_menu.add_child(vbox)
+
+	var btn_new := Button.new()
+	btn_new.text = "New Game"
 	btn_new.pressed.connect(func():
 		GameManager.reset_new_game_state()
 		con_main_menu.visible = false
 		_start_intro()
 	)
+	vbox.add_child(btn_new)
 
-	var btn_load := _add_button(con_main_menu, "Resume Game", Vector2(250, 59), Vector2(120, 22))
+	var btn_load := Button.new()
+	btn_load.text = "Resume Game"
 	btn_load.pressed.connect(func(): file_dlg_load.popup_centered())
+	vbox.add_child(btn_load)
 
-	var btn_import := _add_button(con_main_menu, "Import Scenario", Vector2(250, 93), Vector2(120, 22))
+	var btn_import := Button.new()
+	btn_import.text = "Import Scenario"
 	btn_import.pressed.connect(func(): file_dlg_scenario.popup_centered())
+	vbox.add_child(btn_import)
+	
+	var btn_online := Button.new()
+	btn_online.text = "Online Game"
+	btn_online.disabled = true
+	vbox.add_child(btn_online)
+	
+	var btn_server := Button.new()
+	btn_server.text = "Run Server"
+	btn_server.disabled = true
+	vbox.add_child(btn_server)
+	
+	var btn_settings := Button.new()
+	btn_settings.text = "Settings"
+	btn_settings.disabled = true
+	vbox.add_child(btn_settings)
+	
+	# Pushes the bottom buttons perfectly to the bottom of the column
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(spacer)
 
-	var btn_quit := _add_button(con_main_menu, "Quit", Vector2(250, 195), Vector2(120, 22))
+	var btn_credits := Button.new()
+	btn_credits.text = "Credits"
+	btn_credits.disabled = true
+	vbox.add_child(btn_credits)
+
+	var btn_quit := Button.new()
+	btn_quit.text = "Quit"
 	btn_quit.pressed.connect(func(): get_tree().quit())
+	vbox.add_child(btn_quit)
 
 func _build_con_intro() -> void:
 	con_intro = DraggableWindow.new()
@@ -227,6 +269,7 @@ func _build_con_intro() -> void:
 	bryan.texture = tex_bryan
 	bryan.position = Vector2(14, 17)
 	bryan.size = Vector2(46, 99)
+	bryan.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_intro.add_child(bryan)
 
 	intro_lbl = _add_label(con_intro, "", Vector2(71, 17), Vector2(304, 195), 11)
@@ -235,7 +278,7 @@ func _build_con_intro() -> void:
 
 	intro_txt_name = LineEdit.new()
 	intro_txt_name.position = Vector2(76, 232)
-	intro_txt_name.size = Vector2(150, 22)
+	intro_txt_name.size = Vector2(150, 31)
 	intro_txt_name.text = "MyLinuxDistro"
 	con_intro.add_child(intro_txt_name)
 
@@ -273,13 +316,14 @@ func _on_intro_next_pressed() -> void:
 
 func _build_con_distro_stats() -> void:
 	con_distro_stats = DraggableWindow.new()
-	con_distro_stats.size = Vector2(165, 377)
+	con_distro_stats.size = Vector2(165, 410)
 	can_main.add_child(con_distro_stats)
 
 	stats_logo = TextureRect.new()
 	stats_logo.texture = tex_tux
 	stats_logo.position = Vector2(65, 13)
 	stats_logo.size = Vector2(32, 32)
+	stats_logo.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_distro_stats.add_child(stats_logo)
 
 	var lbl_dev := _add_label(con_distro_stats, "In Development", Vector2(18, 44), Vector2(127, 20), 10, HORIZONTAL_ALIGNMENT_CENTER)
@@ -303,7 +347,7 @@ func _build_con_distro_stats() -> void:
 	_add_label(con_distro_stats, "Paid Workers :", Vector2(18, 207), Vector2(100, 20), 11)
 	stats_lbl_paid = _add_label(con_distro_stats, "0 / 0", Vector2(102, 207), Vector2(43, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	stats_btn_packages = _add_button(con_distro_stats, "Edit Packages", Vector2(18, 233), Vector2(127, 22))
+	stats_btn_packages = _add_button(con_distro_stats, "Edit Packages", Vector2(18, 238), Vector2(127, 22))
 	stats_btn_packages.pressed.connect(func():
 		pause_game()
 		_hide_all_containers()
@@ -312,7 +356,7 @@ func _build_con_distro_stats() -> void:
 		con_package_selection.visible = true
 	)
 
-	stats_btn_workers = _add_button(con_distro_stats, "Assign Workers", Vector2(18, 267), Vector2(127, 22))
+	stats_btn_workers = _add_button(con_distro_stats, "Assign Workers", Vector2(18, 276), Vector2(127, 22))
 	stats_btn_workers.pressed.connect(func():
 		pause_game()
 		_hide_all_containers()
@@ -322,10 +366,10 @@ func _build_con_distro_stats() -> void:
 		con_worker_assignment.visible = true
 	)
 
-	stats_btn_release = _add_button(con_distro_stats, "Release Version", Vector2(18, 301), Vector2(127, 22))
+	stats_btn_release = _add_button(con_distro_stats, "Release Version", Vector2(18, 314), Vector2(127, 22))
 	stats_btn_release.pressed.connect(func(): confirm_release_dlg.popup_centered())
 
-	stats_btn_save = _add_button(con_distro_stats, "Save", Vector2(18, 335), Vector2(127, 22))
+	stats_btn_save = _add_button(con_distro_stats, "Save", Vector2(18, 352), Vector2(127, 22))
 	stats_btn_save.disabled = true
 	stats_btn_save.pressed.connect(func(): file_dlg_save.popup_centered())
 
@@ -423,6 +467,7 @@ func _build_con_notifications() -> void:
 	bryan.texture = tex_bryan
 	bryan.position = Vector2(14, 17)
 	bryan.size = Vector2(46, 99)
+	bryan.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_notifications.add_child(bryan)
 
 	notif_lbl = RichTextLabel.new()
@@ -699,6 +744,7 @@ func _build_con_new_release() -> void:
 	bryan.texture = tex_bryan
 	bryan.position = Vector2(14, 17)
 	bryan.size = Vector2(46, 99)
+	bryan.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_new_release.add_child(bryan)
 
 	release_lbl_text = _add_label(con_new_release, "", Vector2(72, 17), Vector2(304, 99), 11)

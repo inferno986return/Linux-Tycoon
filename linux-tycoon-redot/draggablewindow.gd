@@ -19,6 +19,9 @@ func _init() -> void:
 	var empty := StyleBoxEmpty.new()
 	add_theme_stylebox_override("panel", empty)
 	clip_contents = false
+	
+	# Force ONLY the window borders to remain pixel-perfect
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 static func _load_border_textures() -> void:
 	if _textures_checked:
