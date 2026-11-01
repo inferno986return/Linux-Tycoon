@@ -1,19 +1,26 @@
 # Linux Tycoon (Redot Engine)
 
-A port of Linux Tycoon Classic v1.1.2 from around 14 years ago made with the help of Google Gemini Argon using the Redot Engine v26.3 with the Compatibility renderer which can support Desktop, mobile and even the web - since Linux Tycoon is a 2D game, it may as well run anywhere.
+A port of Linux Tycoon Classic v1.1.2 from around 14 years ago made with the help of the Google Gemini Pro and Argon LLMs using the Redot Engine v26.3 with the Compatibility renderer which can support desktop, mobile and even the web - since Linux Tycoon is a 2D game, it may as well run anywhere.
+
+We might beat Bryan Lunduke to the Android port, but desktop functionality is crucial at this stage.
 
 This isn't a 1:1 port as all the windows are draggable and it should support full-screen.
 
-# Outstanding issues and PRs from source repo:
+At this time, I don't know the full extent of what Bryan Lunduke added to v1.2 and v1.3.
+
+# Fixed issues and PRs from source repo:
+
+These issues and PR from the source repo should be fixed now!
 
 * **Tea23:patch-1** which Tea23 opened on Sep 5, 2013 (https://github.com/BryanLunduke/Linux-Tycoon/pull/3): They call it the Grocer's Apostrophe.
 * **Worker/Volunteer Deja Vu** which Ala-lala opened on Apr 9, 2014 (https://github.com/BryanLunduke/Linux-Tycoon/issues/5): Get say 30 volunteers and 10 paid workers, save your game and quit, then start up and resume your game. When you get your 31st volunteer or your 11th paid worker, you get a message saying that you have gotten your first volunteer or paid worker. (From Windows download).
 * **Game should pause while dialogs are open** which mechanical-snail opened on Jun 3, 2013
 (https://github.com/BryanLunduke/Linux-Tycoon/issues/2): If you press the "Release Version" or "Save" buttons while the game is running, it keeps running while the dialog is open. It is therefore not clear what version is being released and what state is being saved. The game should pause whenever dialogs are open. (Version 1.1.1 on Linux)
 
-
 # Current status
-The game actually launches in Redot! But has a number of bugs which I have identified so far:
+The game actually launches in Redot! 
+
+My playtesting has been limited, but has a number of bugs which I have identified so far:
 
 ## Critical
 * No saving - the "Save" button is greyed out and unusable

@@ -96,9 +96,8 @@ func _ready() -> void:
 
 func _apply_xojo_theme() -> void:
 	var t := Theme.new()
-	t.default_font_size = 13 # Slightly larger, smooth default text
+	t.default_font_size = 13 
 
-	# Generous button padding
 	var sb_normal := _make_btn_style(Color8(89, 131, 192), Color8(60, 107, 173))
 	var sb_hover := _make_btn_style(Color8(47, 92, 159), Color8(60, 107, 173))
 	var sb_pressed := _make_btn_style(Color8(35, 75, 140), Color8(60, 107, 173))
@@ -115,11 +114,36 @@ func _apply_xojo_theme() -> void:
 	t.set_color("font_pressed_color", "Button", Color.WHITE)
 	t.set_color("font_disabled_color", "Button", Color8(200, 200, 200))
 
+	var sb_empty := StyleBoxEmpty.new()
+	t.set_stylebox("normal", "CheckBox", sb_empty)
+	t.set_stylebox("hover", "CheckBox", sb_empty)
+	t.set_stylebox("pressed", "CheckBox", sb_empty)
+	t.set_stylebox("hover_pressed", "CheckBox", sb_empty)
+	t.set_stylebox("focus", "CheckBox", sb_empty)
+
 	var sb_edit := _make_btn_style(Color.WHITE, Color8(60, 107, 173))
 	t.set_stylebox("normal", "LineEdit", sb_edit)
 	t.set_stylebox("focus", "LineEdit", sb_edit)
 	t.set_color("font_color", "LineEdit", Color.BLACK)
 	t.set_color("caret_color", "LineEdit", Color.BLACK)
+	
+	# Popup Window Styling
+	var sb_window := StyleBoxFlat.new()
+	sb_window.bg_color = Color8(180, 198, 228) 
+	sb_window.border_color = Color8(60, 107, 173) 
+	sb_window.set_border_width_all(4)
+	t.set_stylebox("panel", "Window", sb_window)
+	
+	var sb_inner := StyleBoxFlat.new()
+	sb_inner.bg_color = Color8(89, 131, 192) 
+	sb_inner.border_color = Color8(60, 107, 173)
+	sb_inner.set_border_width_all(1)
+	t.set_stylebox("panel", "Tree", sb_inner)
+	t.set_stylebox("panel", "ItemList", sb_inner)
+	
+	t.set_color("font_color", "Tree", Color.WHITE)
+	t.set_color("font_color", "ItemList", Color.WHITE)
+	t.set_color("title_color", "Window", Color.BLACK)
 
 	theme = t
 
@@ -128,7 +152,6 @@ func _make_btn_style(bg: Color, border: Color) -> StyleBoxFlat:
 	sb.bg_color = bg
 	sb.border_color = border
 	sb.set_border_width_all(1)
-	# Generous padding applied natively to the stylebox
 	sb.content_margin_left = 16
 	sb.content_margin_right = 16
 	sb.content_margin_top = 8
@@ -140,6 +163,14 @@ func _build_base_layout() -> void:
 	bg.color = Color8(180, 198, 228)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
+
+	if ResourceLoader.exists("res://WinBorder/Background.png"):
+		var bg_tex := TextureRect.new()
+		bg_tex.texture = load("res://WinBorder/Background.png")
+		bg_tex.stretch_mode = TextureRect.STRETCH_TILE
+		bg_tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg_tex.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		add_child(bg_tex)
 
 	var top_bar := Control.new()
 	top_bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
@@ -181,20 +212,19 @@ func _build_base_layout() -> void:
 
 func _build_con_main_menu() -> void:
 	con_main_menu = DraggableWindow.new()
-	# Increased window height to 430 to fit the extra Buttons comfortably
-	con_main_menu.size = Vector2(460, 430) 
+	con_main_menu.size = Vector2(620, 430) 
 	can_main.add_child(con_main_menu)
 
 	var icon := TextureRect.new()
 	icon.texture = tex_tux
 	icon.position = Vector2(30, 30)
 	icon.size = Vector2(32, 32)
-	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST # Keeps Tux crisp
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_main_menu.add_child(icon)
 
-	_add_label(con_main_menu, "Linux Tycoon", Vector2(75, 30), Vector2(177, 32), 22)
-	_add_label(con_main_menu, "1.1.2", Vector2(75, 75), Vector2(177, 22), 13)
-	lbl_scenario = _add_label(con_main_menu, "Scenario: Standard", Vector2(75, 110), Vector2(177, 22), 13)
+	_add_label(con_main_menu, "Linux Tycoon Classic (Redot)", Vector2(75, 30), Vector2(340, 32), 22)
+	_add_label(con_main_menu, "1.1.2", Vector2(75, 75), Vector2(340, 22), 13)
+	lbl_scenario = _add_label(con_main_menu, "Scenario: Standard", Vector2(75, 110), Vector2(340, 22), 13)
 	
 	var link_lunduke := LinkButton.new()
 	link_lunduke.text = "www.Lunduke.com"
@@ -205,10 +235,23 @@ func _build_con_main_menu() -> void:
 	link_lunduke.uri = "https://www.lunduke.com/"
 	con_main_menu.add_child(link_lunduke)
 
+	var support_lbl := _add_label(con_main_menu, "Support Bryan Lunduke by purchasing the Linux Tycoon Mega Collection for $12 on itch.io:", Vector2(75, 185), Vector2(330, 45), 11)
+	support_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	support_lbl.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+
+	var link_itch := LinkButton.new()
+	link_itch.text = "lunduke.itch.io/linux-tycoon-mega-collection"
+	link_itch.position = Vector2(75, 225)
+	link_itch.add_theme_font_size_override("font_size", 11)
+	link_itch.add_theme_color_override("font_color", Color.WHITE)
+	link_itch.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_itch.uri = "https://lunduke.itch.io/linux-tycoon-mega-collection/"
+	con_main_menu.add_child(link_itch)
+
 	var vbox := VBoxContainer.new()
-	vbox.position = Vector2(270, 30)
-	vbox.size = Vector2(150, 370) # Increased height from 330 to 370
-	vbox.add_theme_constant_override("separation", 10)
+	vbox.position = Vector2(430, 30)
+	vbox.size = Vector2(160, 370)
+	vbox.add_theme_constant_override("separation", 12) 
 	con_main_menu.add_child(vbox)
 
 	var btn_new := Button.new()
@@ -244,16 +287,15 @@ func _build_con_main_menu() -> void:
 	btn_settings.text = "Settings"
 	btn_settings.disabled = true
 	vbox.add_child(btn_settings)
-	
-	# Pushes the bottom buttons perfectly to the bottom of the column
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(spacer)
 
 	var btn_credits := Button.new()
 	btn_credits.text = "Credits"
 	btn_credits.disabled = true
 	vbox.add_child(btn_credits)
+
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(spacer)
 
 	var btn_quit := Button.new()
 	btn_quit.text = "Quit"
@@ -262,27 +304,27 @@ func _build_con_main_menu() -> void:
 
 func _build_con_intro() -> void:
 	con_intro = DraggableWindow.new()
-	con_intro.size = Vector2(390, 279)
+	con_intro.size = Vector2(500, 360)
 	can_main.add_child(con_intro)
 
 	var bryan := TextureRect.new()
 	bryan.texture = tex_bryan
-	bryan.position = Vector2(14, 17)
+	bryan.position = Vector2(25, 25)
 	bryan.size = Vector2(46, 99)
 	bryan.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_intro.add_child(bryan)
 
-	intro_lbl = _add_label(con_intro, "", Vector2(71, 17), Vector2(304, 195), 11)
+	intro_lbl = _add_label(con_intro, "", Vector2(90, 25), Vector2(380, 250), 13)
 	intro_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro_lbl.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
 	intro_txt_name = LineEdit.new()
-	intro_txt_name.position = Vector2(76, 232)
-	intro_txt_name.size = Vector2(150, 31)
+	intro_txt_name.position = Vector2(90, 295)
+	intro_txt_name.size = Vector2(180, 34)
 	intro_txt_name.text = "MyLinuxDistro"
 	con_intro.add_child(intro_txt_name)
 
-	intro_btn_next = _add_button(con_intro, "Set Distro Name", Vector2(238, 232), Vector2(120, 22))
+	intro_btn_next = _add_button(con_intro, "Set Distro Name", Vector2(285, 295), Vector2(185, 34))
 	intro_btn_next.pressed.connect(_on_intro_next_pressed)
 
 func _start_intro() -> void:
@@ -367,11 +409,17 @@ func _build_con_distro_stats() -> void:
 	)
 
 	stats_btn_release = _add_button(con_distro_stats, "Release Version", Vector2(18, 314), Vector2(127, 22))
-	stats_btn_release.pressed.connect(func(): confirm_release_dlg.popup_centered())
+	stats_btn_release.pressed.connect(func(): 
+		pause_game()
+		confirm_release_dlg.popup_centered()
+	)
 
 	stats_btn_save = _add_button(con_distro_stats, "Save", Vector2(18, 352), Vector2(127, 22))
 	stats_btn_save.disabled = true
-	stats_btn_save.pressed.connect(func(): file_dlg_save.popup_centered())
+	stats_btn_save.pressed.connect(func(): 
+		pause_game()
+		file_dlg_save.popup_centered()
+	)
 
 func _refresh_distro_stats() -> void:
 	var d := GameManager.my_distro
@@ -486,20 +534,20 @@ func _refresh_notifications() -> void:
 
 func _build_con_package_selection() -> void:
 	con_package_selection = DraggableWindow.new()
-	con_package_selection.size = Vector2(500, 334)
+	con_package_selection.size = Vector2(600, 450)
 	can_main.add_child(con_package_selection)
 
-	_add_label(con_package_selection, "Package Selection", Vector2(12, 11), Vector2(149, 20), 11)
+	_add_label(con_package_selection, "Package Selection", Vector2(15, 12), Vector2(200, 20), 13)
 
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
-	bg.position = Vector2(12, 33)
-	bg.size = Vector2(468, 247)
+	bg.position = Vector2(15, 35)
+	bg.size = Vector2(570, 360) 
 	con_package_selection.add_child(bg)
 
 	var scroll := ScrollContainer.new()
-	scroll.position = Vector2(12, 33)
-	scroll.size = Vector2(468, 247)
+	scroll.position = Vector2(15, 35)
+	scroll.size = Vector2(570, 360) 
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	con_package_selection.add_child(scroll)
 
@@ -508,7 +556,7 @@ func _build_con_package_selection() -> void:
 	pkg_vbox.add_theme_constant_override("separation", 0)
 	scroll.add_child(pkg_vbox)
 
-	var btn_ok := _add_button(con_package_selection, "OK!", Vector2(413, 292), Vector2(67, 22))
+	var btn_ok := _add_button(con_package_selection, "OK!", Vector2(515, 405), Vector2(70, 30))
 	btn_ok.pressed.connect(_on_package_selection_ok)
 
 func _refresh_package_selection() -> void:
@@ -518,11 +566,12 @@ func _refresh_package_selection() -> void:
 	for i in range(GameManager.packages_available.size()):
 		var p := GameManager.packages_available[i]
 		var row := ColorRect.new()
-		row.custom_minimum_size = Vector2(450, 46)
+		row.custom_minimum_size = Vector2(550, 60)
 		row.color = Color.WHITE if i % 2 == 0 else Color8(242, 242, 242)
 
 		var chk := CheckBox.new()
-		chk.position = Vector2(6, 11)
+		chk.position = Vector2(10, 16)
+		chk.size = Vector2(24, 24) 
 		chk.button_pressed = GameManager.my_distro.is_package_in_distro(i)
 		var pkg_idx := i
 		chk.toggled.connect(func(pressed: bool):
@@ -534,17 +583,17 @@ func _refresh_package_selection() -> void:
 		row.add_child(chk)
 
 		var title := "%s %d.0 - %s" % [p.name, p.version, p.get_category_name()]
-		var l_title := _add_label(row, title, Vector2(34, 2), Vector2(410, 16), 12)
+		var l_title := _add_label(row, title, Vector2(50, 6), Vector2(490, 16), 13)
 		l_title.add_theme_color_override("font_color", Color.BLACK)
 
-		var l_desc := _add_label(row, p.description, Vector2(34, 16), Vector2(410, 14), 10)
+		var l_desc := _add_label(row, p.description, Vector2(50, 22), Vector2(490, 16), 11)
 		l_desc.add_theme_color_override("font_color", Color8(50, 50, 50))
 
 		var os_txt := "Yes" if p.is_open_source else "No"
 		var stats_line := "OpenSource: %s    Nerd Cred: %d    Popularity: %d    Size(MB): %d    Bugs: %d" % [
 			os_txt, p.nerd_cred, p.popularity, p.size_in_mb, p.bugs
 		]
-		var l_stats := _add_label(row, stats_line, Vector2(34, 30), Vector2(410, 14), 9)
+		var l_stats := _add_label(row, stats_line, Vector2(50, 38), Vector2(490, 14), 10)
 		l_stats.add_theme_color_override("font_color", Color8(80, 80, 80))
 
 		pkg_vbox.add_child(row)
@@ -760,6 +809,7 @@ func _build_dialogs() -> void:
 	confirm_release_dlg.ok_button_text = "Yes"
 	confirm_release_dlg.cancel_button_text = "No"
 	confirm_release_dlg.confirmed.connect(_on_release_version_confirmed)
+	confirm_release_dlg.canceled.connect(unpause_game)
 	add_child(confirm_release_dlg)
 
 	file_dlg_save = FileDialog.new()
@@ -767,11 +817,13 @@ func _build_dialogs() -> void:
 	file_dlg_save.access = FileDialog.ACCESS_USERDATA
 	file_dlg_save.current_file = "SaveGame.lts"
 	file_dlg_save.add_filter("*.lts ; Linux Tycoon Save Game")
+	file_dlg_save.canceled.connect(unpause_game)
 	file_dlg_save.file_selected.connect(func(path: String):
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		if f:
 			f.store_string(GameManager.generate_save_xml())
 			f.close()
+		unpause_game() 
 	)
 	add_child(file_dlg_save)
 
@@ -779,6 +831,7 @@ func _build_dialogs() -> void:
 	file_dlg_load.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dlg_load.access = FileDialog.ACCESS_USERDATA
 	file_dlg_load.add_filter("*.lts ; Linux Tycoon Save Game")
+	file_dlg_load.canceled.connect(unpause_game)
 	file_dlg_load.file_selected.connect(func(path: String):
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f:
@@ -789,6 +842,8 @@ func _build_dialogs() -> void:
 				unpause_game()
 				show_main_hud()
 				_refresh_notifications()
+		else:
+			unpause_game()
 	)
 	add_child(file_dlg_load)
 
@@ -796,12 +851,14 @@ func _build_dialogs() -> void:
 	file_dlg_scenario.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dlg_scenario.access = FileDialog.ACCESS_FILESYSTEM
 	file_dlg_scenario.add_filter("*.ltx ; Linux Tycoon Scenario")
+	file_dlg_scenario.canceled.connect(unpause_game)
 	file_dlg_scenario.file_selected.connect(func(path: String):
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f:
 			var xml := f.get_as_text()
 			f.close()
 			GameManager.load_xml_string(xml, false)
+		unpause_game()
 	)
 	add_child(file_dlg_scenario)
 

@@ -276,7 +276,7 @@ func random_event() -> void:
 				show_message("%s version %d.0 was reviewed in a popular Linux Magazine...  and they liked it!  Way to go!  Time to get that article framed!" % [target.name, target.released_ver])
 		4:
 			new_linux_users_daily += 20
-			show_message("A new version of Windews is released.  Nobody likes it.  More new users are switching to Linux!  All Linux Distro's rejoice!")
+			show_message("A new version of Windews is released.  Nobody likes it.  More new users are switching to Linux!  All Linux Distros rejoice!")
 		5:
 			new_linux_users_daily -= 20
 			show_message("A new version of Windews is released.  And... and... this one is pretty good.  People aren't switching to Linux quite so much...")
@@ -452,6 +452,14 @@ func load_xml_string(xml_content: String, is_save_file: bool) -> bool:
 					if is_save_file:
 						msg_text.append(parser.get_named_attribute_value_safe("message"))
 						msg_date.append(int(parser.get_named_attribute_value_safe("date").to_float()))
+
+	# --- NEW: Fix the Deja Vu Bug ---
+	if my_distro != null:
+		if my_distro.workers_paid > 0:
+			is_first_worker_paid = false
+		if my_distro.workers_volunteers > 0:
+			is_first_worker_volunteer = false
+	# --------------------------------
 
 	stats_updated.emit()
 	return true
