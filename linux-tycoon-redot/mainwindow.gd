@@ -240,7 +240,7 @@ func _build_con_main_menu() -> void:
 	support_lbl.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
 	var link_itch := LinkButton.new()
-	link_itch.text = "lunduke.itch.io/linux-tycoon-mega-collection"
+	link_itch.text = "https://lunduke.itch.io/linux-tycoon-mega-collection/"
 	link_itch.position = Vector2(75, 225)
 	link_itch.add_theme_font_size_override("font_size", 11)
 	link_itch.add_theme_color_override("font_color", Color.WHITE)
