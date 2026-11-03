@@ -17,6 +17,7 @@ var con_worker_assignment: DraggableWindow
 var con_sacrifice_worker: DraggableWindow
 var con_new_release: DraggableWindow
 var con_settings: DraggableWindow
+var con_confirm_release: DraggableWindow # NEW custom dialog
 
 # UI Element References for dynamic updates
 var lbl_scenario: Label
@@ -58,7 +59,6 @@ var sac_lbl_avail: Label
 var sac_lbl_results: Label
 var release_lbl_text: Label
 
-var confirm_release_dlg: ConfirmationDialog
 var file_dlg_save: FileDialog
 var file_dlg_load: FileDialog
 var file_dlg_scenario: FileDialog
@@ -85,6 +85,7 @@ func _ready() -> void:
 	_build_con_sacrifice_worker()
 	_build_con_new_release()
 	_build_con_settings()
+	_build_con_confirm_release() # Replaced native dialog with custom window
 	_build_dialogs()
 
 	GameManager.stats_updated.connect(_on_stats_updated)
@@ -373,38 +374,40 @@ func _on_intro_next_pressed() -> void:
 
 func _build_con_distro_stats() -> void:
 	con_distro_stats = DraggableWindow.new()
-	con_distro_stats.size = Vector2(165, 410)
+	# Widened window to 185 to perfectly fit the expanded buttons
+	con_distro_stats.size = Vector2(185, 410)
 	can_main.add_child(con_distro_stats)
 
 	stats_logo = TextureRect.new()
 	stats_logo.texture = tex_tux
-	stats_logo.position = Vector2(65, 13)
+	stats_logo.position = Vector2(76, 13) # Re-centered
 	stats_logo.size = Vector2(32, 32)
 	stats_logo.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_distro_stats.add_child(stats_logo)
 
-	var lbl_dev := _add_label(con_distro_stats, "In Development", Vector2(18, 44), Vector2(127, 20), 10, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl_dev := _add_label(con_distro_stats, "In Development", Vector2(20, 44), Vector2(145, 20), 10, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl_dev.add_theme_color_override("font_color", Color8(229, 229, 229))
 
-	stats_lbl_name = _add_label(con_distro_stats, "", Vector2(18, 63), Vector2(127, 20), 12, HORIZONTAL_ALIGNMENT_CENTER)
-	stats_lbl_ver = _add_label(con_distro_stats, "Version 1.0", Vector2(18, 82), Vector2(127, 20), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	stats_lbl_name = _add_label(con_distro_stats, "", Vector2(20, 63), Vector2(145, 20), 12, HORIZONTAL_ALIGNMENT_CENTER)
+	stats_lbl_ver = _add_label(con_distro_stats, "Version 1.0", Vector2(20, 82), Vector2(145, 20), 11, HORIZONTAL_ALIGNMENT_CENTER)
 
-	_add_label(con_distro_stats, "Hype :", Vector2(18, 106), Vector2(100, 20), 11)
-	stats_lbl_hype = _add_label(con_distro_stats, "0", Vector2(67, 106), Vector2(78, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Hype :", Vector2(20, 106), Vector2(100, 20), 11)
+	stats_lbl_hype = _add_label(con_distro_stats, "0", Vector2(80, 106), Vector2(85, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_distro_stats, "Bugs :", Vector2(18, 131), Vector2(100, 20), 11)
-	stats_lbl_bugs = _add_label(con_distro_stats, "0", Vector2(67, 131), Vector2(78, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Bugs :", Vector2(20, 131), Vector2(100, 20), 11)
+	stats_lbl_bugs = _add_label(con_distro_stats, "0", Vector2(80, 131), Vector2(85, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_distro_stats, "Size (MB) :", Vector2(18, 156), Vector2(100, 20), 11)
-	stats_lbl_size = _add_label(con_distro_stats, "0", Vector2(102, 156), Vector2(43, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Size (MB) :", Vector2(20, 156), Vector2(100, 20), 11)
+	stats_lbl_size = _add_label(con_distro_stats, "0", Vector2(120, 156), Vector2(45, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_distro_stats, "Volunteers :", Vector2(18, 182), Vector2(100, 20), 11)
-	stats_lbl_vol = _add_label(con_distro_stats, "0 / 0", Vector2(92, 182), Vector2(53, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Volunteers :", Vector2(20, 182), Vector2(100, 20), 11)
+	stats_lbl_vol = _add_label(con_distro_stats, "0 / 0", Vector2(100, 182), Vector2(65, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	_add_label(con_distro_stats, "Paid Workers :", Vector2(18, 207), Vector2(100, 20), 11)
-	stats_lbl_paid = _add_label(con_distro_stats, "0 / 0", Vector2(102, 207), Vector2(43, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
+	_add_label(con_distro_stats, "Paid Workers :", Vector2(20, 207), Vector2(100, 20), 11)
+	stats_lbl_paid = _add_label(con_distro_stats, "0 / 0", Vector2(100, 207), Vector2(65, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
 
-	stats_btn_packages = _add_button(con_distro_stats, "Edit Packages", Vector2(18, 238), Vector2(127, 22))
+	# Fixed width 145 on all buttons so they align cleanly
+	stats_btn_packages = _add_button(con_distro_stats, "Edit Packages", Vector2(20, 238), Vector2(145, 32))
 	stats_btn_packages.pressed.connect(func():
 		pause_game()
 		_hide_all_containers()
@@ -413,7 +416,7 @@ func _build_con_distro_stats() -> void:
 		con_package_selection.visible = true
 	)
 
-	stats_btn_workers = _add_button(con_distro_stats, "Assign Workers", Vector2(18, 276), Vector2(127, 22))
+	stats_btn_workers = _add_button(con_distro_stats, "Assign Workers", Vector2(20, 276), Vector2(145, 32))
 	stats_btn_workers.pressed.connect(func():
 		pause_game()
 		_hide_all_containers()
@@ -423,13 +426,14 @@ func _build_con_distro_stats() -> void:
 		con_worker_assignment.visible = true
 	)
 
-	stats_btn_release = _add_button(con_distro_stats, "Release Version", Vector2(18, 314), Vector2(127, 22))
+	stats_btn_release = _add_button(con_distro_stats, "Release Version", Vector2(20, 314), Vector2(145, 32))
 	stats_btn_release.pressed.connect(func(): 
 		pause_game()
-		confirm_release_dlg.popup_centered()
+		center_container(con_confirm_release)
+		con_confirm_release.visible = true
 	)
 
-	stats_btn_save = _add_button(con_distro_stats, "Save", Vector2(18, 352), Vector2(127, 22))
+	stats_btn_save = _add_button(con_distro_stats, "Save", Vector2(20, 352), Vector2(145, 32))
 	stats_btn_save.disabled = true
 	stats_btn_save.pressed.connect(func(): 
 		pause_game()
@@ -801,7 +805,8 @@ func _refresh_sacrifice_worker() -> void:
 
 func _build_con_new_release() -> void:
 	con_new_release = DraggableWindow.new()
-	con_new_release.size = Vector2(390, 170)
+	# Increased window size to 410x190 to give the padded button plenty of room
+	con_new_release.size = Vector2(410, 190)
 	can_main.add_child(con_new_release)
 
 	var bryan := TextureRect.new()
@@ -811,10 +816,11 @@ func _build_con_new_release() -> void:
 	bryan.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_new_release.add_child(bryan)
 
-	release_lbl_text = _add_label(con_new_release, "", Vector2(72, 17), Vector2(304, 99), 11)
+	release_lbl_text = _add_label(con_new_release, "", Vector2(72, 17), Vector2(314, 99), 11)
 	release_lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	var btn_ok := _add_button(con_new_release, "OK!", Vector2(303, 128), Vector2(67, 22))
+	# Shifted the button left and down to sit nicely within the expanded window
+	var btn_ok := _add_button(con_new_release, "OK!", Vector2(300, 135), Vector2(80, 32))
 	btn_ok.pressed.connect(_on_new_release_ok_clicked)
 
 func _build_con_settings() -> void:
@@ -847,10 +853,9 @@ func _build_con_settings() -> void:
 	sld_vol.value = 50
 	con_settings.add_child(sld_vol)
 
-	# --- NEW: Mute CheckBox ---
 	var chk_mute := CheckBox.new()
 	chk_mute.text = "Mute Music"
-	chk_mute.position = Vector2(120, 130) # Offset slightly left to align the text with the slider
+	chk_mute.position = Vector2(120, 130) 
 	chk_mute.size = Vector2(150, 24)
 	chk_mute.add_theme_color_override("font_color", Color.WHITE)
 	chk_mute.add_theme_color_override("font_hover_color", Color.WHITE)
@@ -858,7 +863,6 @@ func _build_con_settings() -> void:
 	chk_mute.add_theme_font_size_override("font_size", 13)
 	con_settings.add_child(chk_mute)
 
-	# Raised buttons to Y: 175 for improved bottom window padding
 	var btn_cancel := _add_button(con_settings, "Cancel", Vector2(165, 175), Vector2(75, 30))
 	btn_cancel.pressed.connect(func(): con_settings.visible = false)
 
@@ -868,16 +872,38 @@ func _build_con_settings() -> void:
 		con_settings.visible = false
 	)
 
-func _build_dialogs() -> void:
-	confirm_release_dlg = ConfirmationDialog.new()
-	confirm_release_dlg.title = "Release Version"
-	confirm_release_dlg.dialog_text = "Are you ready to release this version?\nYou won't be able to change any packages or fix any bugs in this version once it is released."
-	confirm_release_dlg.ok_button_text = "Yes"
-	confirm_release_dlg.cancel_button_text = "No"
-	confirm_release_dlg.confirmed.connect(_on_release_version_confirmed)
-	confirm_release_dlg.canceled.connect(unpause_game)
-	add_child(confirm_release_dlg)
+# --- NEW: Custom Draggable Confirmation Dialog ---
+func _build_con_confirm_release() -> void:
+	con_confirm_release = DraggableWindow.new()
+	con_confirm_release.size = Vector2(400, 160)
+	can_main.add_child(con_confirm_release)
 
+	_add_label(con_confirm_release, "Release Version", Vector2(15, 12), Vector2(370, 20), 13)
+
+	var bg := ColorRect.new()
+	bg.color = Color.WHITE
+	bg.position = Vector2(15, 35)
+	bg.size = Vector2(370, 70)
+	con_confirm_release.add_child(bg)
+
+	var lbl_text := _add_label(con_confirm_release, "Are you ready to release this version?\nYou won't be able to change any packages or fix any bugs in this version once it is released.", Vector2(25, 42), Vector2(350, 56), 11)
+	lbl_text.add_theme_color_override("font_color", Color.BLACK)
+	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	var btn_yes := _add_button(con_confirm_release, "Yes", Vector2(110, 115), Vector2(80, 30))
+	btn_yes.pressed.connect(func():
+		con_confirm_release.visible = false
+		_on_release_version_confirmed()
+	)
+
+	var btn_no := _add_button(con_confirm_release, "No", Vector2(210, 115), Vector2(80, 30))
+	btn_no.pressed.connect(func():
+		con_confirm_release.visible = false
+		unpause_game()
+	)
+# ------------------------------------------------
+
+func _build_dialogs() -> void:
 	file_dlg_save = FileDialog.new()
 	file_dlg_save.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 	file_dlg_save.access = FileDialog.ACCESS_USERDATA
@@ -956,7 +982,7 @@ func _setup_initial_positions() -> void:
 	con_distro_rank.position = Vector2(w - con_distro_rank.size.x - 5, 68)
 	con_notifications.position = Vector2(con_overview.position.x, 68)
 
-	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings]:
+	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings, con_confirm_release]:
 		center_container(centered)
 
 func center_container(ctrl: Control) -> void:
