@@ -16,6 +16,7 @@ var con_package_selection: DraggableWindow
 var con_worker_assignment: DraggableWindow
 var con_sacrifice_worker: DraggableWindow
 var con_new_release: DraggableWindow
+var con_settings: DraggableWindow
 
 # UI Element References for dynamic updates
 var lbl_scenario: Label
@@ -83,6 +84,7 @@ func _ready() -> void:
 	_build_con_worker_assignment()
 	_build_con_sacrifice_worker()
 	_build_con_new_release()
+	_build_con_settings()
 	_build_dialogs()
 
 	GameManager.stats_updated.connect(_on_stats_updated)
@@ -127,7 +129,6 @@ func _apply_xojo_theme() -> void:
 	t.set_color("font_color", "LineEdit", Color.BLACK)
 	t.set_color("caret_color", "LineEdit", Color.BLACK)
 	
-	# Popup Window Styling
 	var sb_window := StyleBoxFlat.new()
 	sb_window.bg_color = Color8(180, 198, 228) 
 	sb_window.border_color = Color8(60, 107, 173) 
@@ -223,30 +224,41 @@ func _build_con_main_menu() -> void:
 	con_main_menu.add_child(icon)
 
 	_add_label(con_main_menu, "Linux Tycoon Classic (Redot)", Vector2(75, 30), Vector2(340, 32), 22)
-	_add_label(con_main_menu, "1.1.2", Vector2(75, 75), Vector2(340, 22), 13)
+	_add_label(con_main_menu, "v?, derived from Linux Tycoon v1.1.2", Vector2(75, 75), Vector2(340, 22), 13)
 	lbl_scenario = _add_label(con_main_menu, "Scenario: Standard", Vector2(75, 110), Vector2(340, 22), 13)
 	
 	var link_lunduke := LinkButton.new()
-	link_lunduke.text = "www.Lunduke.com"
+	link_lunduke.text = "https://www.Lunduke.com/"
 	link_lunduke.position = Vector2(75, 145)
 	link_lunduke.add_theme_font_size_override("font_size", 13)
 	link_lunduke.add_theme_color_override("font_color", Color.WHITE)
 	link_lunduke.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
-	link_lunduke.uri = "https://www.lunduke.com/"
+	link_lunduke.uri = "https://lunduke.com/"
 	con_main_menu.add_child(link_lunduke)
 
-	var support_lbl := _add_label(con_main_menu, "Support Bryan Lunduke by purchasing the Linux Tycoon Mega Collection for $12 on itch.io:", Vector2(75, 185), Vector2(330, 45), 11)
+	var support_lbl := _add_label(con_main_menu, "Support Bryan Lunduke by purchasing the\nLinux Tycoon Mega Collection for $12 on itch.io:", Vector2(75, 185), Vector2(330, 45), 13)
 	support_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	support_lbl.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
 	var link_itch := LinkButton.new()
 	link_itch.text = "https://lunduke.itch.io/linux-tycoon-mega-collection/"
-	link_itch.position = Vector2(75, 225)
-	link_itch.add_theme_font_size_override("font_size", 11)
+	link_itch.position = Vector2(75, 230)
+	link_itch.add_theme_font_size_override("font_size", 13)
 	link_itch.add_theme_color_override("font_color", Color.WHITE)
 	link_itch.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
 	link_itch.uri = "https://lunduke.itch.io/linux-tycoon-mega-collection/"
 	con_main_menu.add_child(link_itch)
+
+	var redot_lbl := _add_label(con_main_menu, "Powered by Redot Engine v26.3:", Vector2(75, 350), Vector2(330, 45), 13)
+	
+	var link_redot := LinkButton.new()
+	link_redot.text = "https://www.redotengine.org/"
+	link_redot.position = Vector2(75, 385)
+	link_redot.add_theme_font_size_override("font_size", 13)
+	link_redot.add_theme_color_override("font_color", Color.WHITE)
+	link_redot.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_redot.uri = "https://www.redotengine.org/"
+	con_main_menu.add_child(link_redot)
 
 	var vbox := VBoxContainer.new()
 	vbox.position = Vector2(430, 30)
@@ -285,7 +297,10 @@ func _build_con_main_menu() -> void:
 	
 	var btn_settings := Button.new()
 	btn_settings.text = "Settings"
-	btn_settings.disabled = true
+	btn_settings.pressed.connect(func():
+		center_container(con_settings)
+		con_settings.visible = true
+	)
 	vbox.add_child(btn_settings)
 
 	var btn_credits := Button.new()
@@ -802,6 +817,57 @@ func _build_con_new_release() -> void:
 	var btn_ok := _add_button(con_new_release, "OK!", Vector2(303, 128), Vector2(67, 22))
 	btn_ok.pressed.connect(_on_new_release_ok_clicked)
 
+func _build_con_settings() -> void:
+	con_settings = DraggableWindow.new()
+	con_settings.size = Vector2(340, 230)
+	can_main.add_child(con_settings)
+
+	_add_label(con_settings, "Settings", Vector2(15, 12), Vector2(200, 20), 16)
+
+	var lbl_lang := _add_label(con_settings, "Language:", Vector2(25, 50), Vector2(100, 20), 13)
+	lbl_lang.add_theme_color_override("font_color", Color.WHITE)
+
+	var opt_lang := OptionButton.new()
+	opt_lang.position = Vector2(125, 45)
+	opt_lang.size = Vector2(180, 25)
+	opt_lang.add_item("English")
+	opt_lang.add_theme_color_override("font_color", Color.WHITE)
+	opt_lang.add_theme_color_override("font_hover_color", Color.WHITE)
+	opt_lang.add_theme_color_override("font_pressed_color", Color.WHITE)
+	con_settings.add_child(opt_lang)
+
+	var lbl_vol := _add_label(con_settings, "Music Volume:", Vector2(25, 95), Vector2(100, 20), 13)
+	lbl_vol.add_theme_color_override("font_color", Color.WHITE)
+
+	var sld_vol := HSlider.new()
+	sld_vol.position = Vector2(125, 95)
+	sld_vol.size = Vector2(180, 20)
+	sld_vol.min_value = 0
+	sld_vol.max_value = 100
+	sld_vol.value = 50
+	con_settings.add_child(sld_vol)
+
+	# --- NEW: Mute CheckBox ---
+	var chk_mute := CheckBox.new()
+	chk_mute.text = "Mute Music"
+	chk_mute.position = Vector2(120, 130) # Offset slightly left to align the text with the slider
+	chk_mute.size = Vector2(150, 24)
+	chk_mute.add_theme_color_override("font_color", Color.WHITE)
+	chk_mute.add_theme_color_override("font_hover_color", Color.WHITE)
+	chk_mute.add_theme_color_override("font_pressed_color", Color.WHITE)
+	chk_mute.add_theme_font_size_override("font_size", 13)
+	con_settings.add_child(chk_mute)
+
+	# Raised buttons to Y: 175 for improved bottom window padding
+	var btn_cancel := _add_button(con_settings, "Cancel", Vector2(165, 175), Vector2(75, 30))
+	btn_cancel.pressed.connect(func(): con_settings.visible = false)
+
+	var btn_ok := _add_button(con_settings, "OK!", Vector2(250, 175), Vector2(75, 30))
+	btn_ok.pressed.connect(func(): 
+		# Setting logic will go here
+		con_settings.visible = false
+	)
+
 func _build_dialogs() -> void:
 	confirm_release_dlg = ConfirmationDialog.new()
 	confirm_release_dlg.title = "Release Version"
@@ -890,7 +956,7 @@ func _setup_initial_positions() -> void:
 	con_distro_rank.position = Vector2(w - con_distro_rank.size.x - 5, 68)
 	con_notifications.position = Vector2(con_overview.position.x, 68)
 
-	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release]:
+	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings]:
 		center_container(centered)
 
 func center_container(ctrl: Control) -> void:
