@@ -65,7 +65,7 @@ Bryan Lunduke released his own GNU/Linux distro called the **Lunduke Computer Op
 * No Forced Rust Clones.
 * Modern Tech. With 90s Inspirations.
 
-It even has some games included, such as *Micropolis*. But I don't see *Linux Tycoon*, which is stuck in the proprietary Xojo (formerly RealBASIC) language. Therefore, let's try porting the game to the modern Redot Engine to use GDScript instead with the assistance of Google Gemini!
+It even has some games included, such as a fork of *Micropolis* called "Lunduke City". But I don't see *Linux Tycoon*, which is stuck in the proprietary Xojo (formerly RealBASIC) language. Therefore, let's try porting the game to the modern Redot Engine to use GDScript instead with the assistance of Google Gemini!
 
 **Side note:** I hope Bryan Lunduke open-sources more of his older projects from 10+ years ago.
 
@@ -74,3 +74,5 @@ It even has some games included, such as *Micropolis*. But I don't see *Linux Ty
 The original *Linux Tycoon* project was licenced under the GNU GPLv2 and since this is a derivative project, the licence also applies here.
 
 Bryan Lunduke himself is very welcome to incorporate the latest features in a proprietary build of this game, and in fact, I would be flattered if he did!
+
+I will mention this on the main menu at the bottom, and also include a full copy of the licence with a dedicated "License" button in the Credits.
