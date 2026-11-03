@@ -1,9 +1,14 @@
 extends Control
 
 var day_timer: Timer
+var sys_timer: Timer 
 var lbl_date: Label
+var lbl_sys_time: Label 
 var btn_pause: Button
+var btn_settings_top: Button 
 var can_main: Control
+
+var sys_time_format: int = 0 # 0: None, 1: 12-Hour, 2: 24-Hour
 
 # Sub-containers
 var con_main_menu: DraggableWindow
@@ -18,8 +23,8 @@ var con_sacrifice_worker: DraggableWindow
 var con_new_release: DraggableWindow
 var con_settings: DraggableWindow
 var con_confirm_release: DraggableWindow 
-var con_credits: DraggableWindow # NEW
-var con_license: DraggableWindow # NEW
+var con_credits: DraggableWindow
+var con_license: DraggableWindow
 
 # UI Element References for dynamic updates
 var lbl_scenario: Label
@@ -67,12 +72,28 @@ var file_dlg_scenario: FileDialog
 
 var tex_tux: Texture2D
 var tex_bryan: Texture2D
+var tex_pause: Texture2D
+var tex_play: Texture2D
+var tex_settings: Texture2D
+
+var btn_close_top: Button
+var con_confirm_quit: DraggableWindow
+var tex_close: Texture2D
 
 func _ready() -> void:
 	if ResourceLoader.exists("res://Tux32x32.png"):
 		tex_tux = load("res://Tux32x32.png")
 	if ResourceLoader.exists("res://Bryan.png"):
 		tex_bryan = load("res://Bryan.png")
+		
+	if ResourceLoader.exists("res://pause_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_pause = load("res://pause_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://play_arrow_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_play = load("res://play_arrow_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_settings = load("res://settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_close = load("res://close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 
 	_apply_xojo_theme()
 	_build_base_layout()
@@ -88,8 +109,9 @@ func _ready() -> void:
 	_build_con_new_release()
 	_build_con_settings()
 	_build_con_confirm_release() 
-	_build_con_credits() # NEW
-	_build_con_license() # NEW
+	_build_con_confirm_quit() # NEW
+	_build_con_credits()
+	_build_con_license()
 	_build_dialogs()
 
 	GameManager.stats_updated.connect(_on_stats_updated)
@@ -191,46 +213,112 @@ func _build_base_layout() -> void:
 	top_bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	top_bar.offset_bottom = 26 
 	add_child(top_bar)
+	
+	lbl_sys_time = Label.new()
+	lbl_sys_time.anchor_left = 0.0
+	lbl_sys_time.anchor_right = 0.0
+	lbl_sys_time.offset_left = 15
+	lbl_sys_time.offset_right = 215
+	lbl_sys_time.offset_top = 2
+	lbl_sys_time.offset_bottom = 24
+	lbl_sys_time.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	lbl_sys_time.add_theme_color_override("font_color", Color.BLACK)
+	lbl_sys_time.visible = false
+	top_bar.add_child(lbl_sys_time)
 
 	lbl_date = Label.new()
 	lbl_date.anchor_left = 1.0
 	lbl_date.anchor_right = 1.0
-	lbl_date.offset_left = -262
-	lbl_date.offset_right = -45 
+	lbl_date.offset_left = -332
+	lbl_date.offset_right = -115 
 	lbl_date.offset_top = 2
 	lbl_date.offset_bottom = 24
 	lbl_date.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	lbl_date.add_theme_color_override("font_color", Color.BLACK)
 	top_bar.add_child(lbl_date)
+	
+	var sb_icon_btn := StyleBoxFlat.new()
+	sb_icon_btn.bg_color = Color8(89, 131, 192)
+	sb_icon_btn.border_color = Color8(60, 107, 173)
+	sb_icon_btn.set_border_width_all(1)
+	
+	var sb_icon_hover := sb_icon_btn.duplicate()
+	sb_icon_hover.bg_color = Color8(47, 92, 159)
+	
+	var sb_icon_pressed := sb_icon_btn.duplicate()
+	sb_icon_pressed.bg_color = Color8(35, 75, 140)
 
 	btn_pause = Button.new()
 	btn_pause.anchor_left = 1.0
 	btn_pause.anchor_right = 1.0
-	btn_pause.offset_left = -35 
-	btn_pause.offset_right = -5
+	btn_pause.offset_left = -105
+	btn_pause.offset_right = -75
 	btn_pause.offset_top = 2
 	btn_pause.offset_bottom = 24
-	btn_pause.text = "||"
-	
-	var sb_pause := StyleBoxFlat.new()
-	sb_pause.bg_color = Color8(89, 131, 192)
-	sb_pause.border_color = Color8(60, 107, 173)
-	sb_pause.set_border_width_all(1)
-	btn_pause.add_theme_stylebox_override("normal", sb_pause)
-	
-	var sb_hover := sb_pause.duplicate()
-	sb_hover.bg_color = Color8(47, 92, 159)
-	btn_pause.add_theme_stylebox_override("hover", sb_hover)
-	
-	var sb_pressed := sb_pause.duplicate()
-	sb_pressed.bg_color = Color8(35, 75, 140)
-	btn_pause.add_theme_stylebox_override("pressed", sb_pressed)
-	
+	btn_pause.icon = tex_pause
+	btn_pause.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_pause.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_pause.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_pause.add_theme_stylebox_override("pressed", sb_icon_pressed)
 	btn_pause.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-
 	btn_pause.visible = false
 	btn_pause.pressed.connect(_on_btn_pause_pressed)
 	top_bar.add_child(btn_pause)
+
+	btn_settings_top = Button.new()
+	btn_settings_top.anchor_left = 1.0
+	btn_settings_top.anchor_right = 1.0
+	btn_settings_top.offset_left = -70 
+	btn_settings_top.offset_right = -40
+	btn_settings_top.offset_top = 2
+	btn_settings_top.offset_bottom = 24
+	btn_settings_top.icon = tex_settings
+	btn_settings_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_settings_top.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_settings_top.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_settings_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_settings_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_settings_top.visible = false
+	btn_settings_top.pressed.connect(func():
+		center_container(con_settings)
+		con_settings.visible = true
+	)
+	top_bar.add_child(btn_settings_top)
+
+	# --- MODIFIED: Red styling applied directly to the X button ---
+	btn_close_top = Button.new()
+	btn_close_top.anchor_left = 1.0
+	btn_close_top.anchor_right = 1.0
+	btn_close_top.offset_left = -35 
+	btn_close_top.offset_right = -5
+	btn_close_top.offset_top = 2
+	btn_close_top.offset_bottom = 24
+	btn_close_top.icon = tex_close
+	btn_close_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	
+	var sb_close_btn := StyleBoxFlat.new()
+	sb_close_btn.bg_color = Color("#be1616")
+	sb_close_btn.border_color = Color("#8a1010")
+	sb_close_btn.set_border_width_all(1)
+	
+	var sb_close_hover := sb_close_btn.duplicate()
+	sb_close_hover.bg_color = Color("#d61c1c")
+	
+	var sb_close_pressed := sb_close_btn.duplicate()
+	sb_close_pressed.bg_color = Color("#961212")
+	
+	btn_close_top.add_theme_stylebox_override("normal", sb_close_btn)
+	btn_close_top.add_theme_stylebox_override("hover", sb_close_hover)
+	btn_close_top.add_theme_stylebox_override("pressed", sb_close_pressed)
+	btn_close_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_close_top.visible = false
+	btn_close_top.pressed.connect(func():
+		pause_game()
+		center_container(con_confirm_quit)
+		con_confirm_quit.visible = true
+	)
+	top_bar.add_child(btn_close_top)
+	# --------------------------------------------------------------
 
 	can_main = Control.new()
 	can_main.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -241,6 +329,49 @@ func _build_base_layout() -> void:
 	day_timer.wait_time = 1.0
 	day_timer.timeout.connect(_on_day_timer_timeout)
 	add_child(day_timer)
+	
+	sys_timer = Timer.new()
+	sys_timer.wait_time = 1.0
+	sys_timer.autostart = true
+	sys_timer.timeout.connect(_update_system_time)
+	add_child(sys_timer)
+	
+	_update_system_time()
+
+
+func _build_con_confirm_quit() -> void:
+	con_confirm_quit = DraggableWindow.new()
+	con_confirm_quit.size = Vector2(340, 160)
+	can_main.add_child(con_confirm_quit)
+
+	_add_label(con_confirm_quit, "Quit Game", Vector2(15, 12), Vector2(310, 20), 13)
+
+	var bg := ColorRect.new()
+	bg.color = Color.WHITE
+	bg.position = Vector2(15, 35)
+	bg.size = Vector2(310, 70)
+	con_confirm_quit.add_child(bg)
+
+	var lbl_text := _add_label(con_confirm_quit, "Do you want to quit to the main menu?\nUnsaved progress will be lost.", Vector2(25, 42), Vector2(290, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl_text.add_theme_color_override("font_color", Color.BLACK)
+	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	# --- MODIFIED: Removed the red theme overrides so it falls back to the default global blue theme ---
+	var btn_ok := _add_button(con_confirm_quit, "OK!", Vector2(80, 115), Vector2(80, 30))
+	btn_ok.pressed.connect(func():
+		con_confirm_quit.visible = false
+		_hide_all_containers()
+		GameManager.my_distro = null
+		center_container(con_main_menu)
+		con_main_menu.visible = true
+		lbl_date.text = ""
+	)
+
+	var btn_cancel := _add_button(con_confirm_quit, "Cancel", Vector2(180, 115), Vector2(80, 30))
+	btn_cancel.pressed.connect(func():
+		con_confirm_quit.visible = false
+		unpause_game()
+	)
 
 func _build_con_main_menu() -> void:
 	con_main_menu = DraggableWindow.new()
@@ -854,16 +985,16 @@ func _build_con_new_release() -> void:
 
 func _build_con_settings() -> void:
 	con_settings = DraggableWindow.new()
-	con_settings.size = Vector2(340, 230)
+	con_settings.size = Vector2(340, 260) 
 	can_main.add_child(con_settings)
 
 	_add_label(con_settings, "Settings", Vector2(15, 12), Vector2(200, 20), 16)
 
-	var lbl_lang := _add_label(con_settings, "Language:", Vector2(25, 50), Vector2(100, 20), 13)
+	var lbl_lang := _add_label(con_settings, "Language:", Vector2(25, 45), Vector2(100, 20), 13)
 	lbl_lang.add_theme_color_override("font_color", Color.WHITE)
 
 	var opt_lang := OptionButton.new()
-	opt_lang.position = Vector2(125, 45)
+	opt_lang.position = Vector2(125, 40)
 	opt_lang.size = Vector2(180, 25)
 	opt_lang.add_item("English")
 	opt_lang.add_theme_color_override("font_color", Color.WHITE)
@@ -871,11 +1002,11 @@ func _build_con_settings() -> void:
 	opt_lang.add_theme_color_override("font_pressed_color", Color.WHITE)
 	con_settings.add_child(opt_lang)
 
-	var lbl_vol := _add_label(con_settings, "Music Volume:", Vector2(25, 95), Vector2(100, 20), 13)
+	var lbl_vol := _add_label(con_settings, "Music Volume:", Vector2(25, 85), Vector2(100, 20), 13)
 	lbl_vol.add_theme_color_override("font_color", Color.WHITE)
 
 	var sld_vol := HSlider.new()
-	sld_vol.position = Vector2(125, 95)
+	sld_vol.position = Vector2(125, 85)
 	sld_vol.size = Vector2(180, 20)
 	sld_vol.min_value = 0
 	sld_vol.max_value = 100
@@ -884,18 +1015,40 @@ func _build_con_settings() -> void:
 
 	var chk_mute := CheckBox.new()
 	chk_mute.text = "Mute Music"
-	chk_mute.position = Vector2(120, 130) 
+	chk_mute.position = Vector2(120, 120) 
 	chk_mute.size = Vector2(150, 24)
 	chk_mute.add_theme_color_override("font_color", Color.WHITE)
 	chk_mute.add_theme_color_override("font_hover_color", Color.WHITE)
 	chk_mute.add_theme_color_override("font_pressed_color", Color.WHITE)
 	chk_mute.add_theme_font_size_override("font_size", 13)
 	con_settings.add_child(chk_mute)
+	
+	var lbl_sys := _add_label(con_settings, "System Time:", Vector2(25, 160), Vector2(100, 20), 13)
+	lbl_sys.add_theme_color_override("font_color", Color.WHITE)
 
-	var btn_cancel := _add_button(con_settings, "Cancel", Vector2(165, 175), Vector2(75, 30))
+	# --- MODIFIED: Added options for optional seconds ---
+	var opt_sys := OptionButton.new()
+	opt_sys.position = Vector2(125, 155)
+	opt_sys.size = Vector2(180, 25)
+	opt_sys.add_item("None")
+	opt_sys.add_item("12-Hour (AM/PM)")
+	opt_sys.add_item("12-Hour (with seconds)")
+	opt_sys.add_item("24-Hour (HH:MM)")
+	opt_sys.add_item("24-Hour (with seconds)")
+	opt_sys.add_theme_color_override("font_color", Color.WHITE)
+	opt_sys.add_theme_color_override("font_hover_color", Color.WHITE)
+	opt_sys.add_theme_color_override("font_pressed_color", Color.WHITE)
+	opt_sys.selected = sys_time_format
+	opt_sys.item_selected.connect(func(idx: int):
+		sys_time_format = idx
+		_update_system_time()
+	)
+	con_settings.add_child(opt_sys)
+
+	var btn_cancel := _add_button(con_settings, "Cancel", Vector2(165, 205), Vector2(75, 30))
 	btn_cancel.pressed.connect(func(): con_settings.visible = false)
 
-	var btn_ok := _add_button(con_settings, "OK!", Vector2(250, 175), Vector2(75, 30))
+	var btn_ok := _add_button(con_settings, "OK!", Vector2(250, 205), Vector2(75, 30))
 	btn_ok.pressed.connect(func(): con_settings.visible = false)
 
 func _build_con_confirm_release() -> void:
@@ -927,7 +1080,6 @@ func _build_con_confirm_release() -> void:
 		unpause_game()
 	)
 
-# --- NEW: Credits and License Windows ---
 func _build_con_credits() -> void:
 	con_credits = DraggableWindow.new()
 	con_credits.size = Vector2(340, 230)
@@ -953,7 +1105,6 @@ func _build_con_credits() -> void:
 
 func _build_con_license() -> void:
 	con_license = DraggableWindow.new()
-	# Increased height to 460 to accommodate the new URL link button
 	con_license.size = Vector2(550, 460)
 	can_main.add_child(con_license)
 
@@ -962,7 +1113,6 @@ func _build_con_license() -> void:
 	var lbl_intro := _add_label(con_license, "Linux Tycoon is licensed under GNU General Public License v2 (GPLv2):", Vector2(15, 40), Vector2(520, 20), 13)
 	lbl_intro.add_theme_color_override("font_color", Color.WHITE)
 
-	# --- NEW: Added URL link below the intro text ---
 	var link_lic := LinkButton.new()
 	link_lic.text = "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"
 	link_lic.position = Vector2(15, 62)
@@ -974,7 +1124,7 @@ func _build_con_license() -> void:
 
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
-	bg.position = Vector2(15, 90) # Shifted down to Y: 90
+	bg.position = Vector2(15, 90)
 	bg.size = Vector2(520, 315)
 	con_license.add_child(bg)
 
@@ -990,7 +1140,6 @@ func _build_con_license() -> void:
 	lbl_lic.add_theme_color_override("font_color", Color.BLACK)
 	lbl_lic.add_theme_font_size_override("font_size", 11)
 	
-	# Stripped all indentation for a flush left layout
 	lbl_lic.text = """GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
@@ -1356,7 +1505,7 @@ func _setup_initial_positions() -> void:
 	con_distro_rank.position = Vector2(w - con_distro_rank.size.x - 5, 68)
 	con_notifications.position = Vector2(con_overview.position.x, 68)
 
-	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings, con_confirm_release, con_credits, con_license]:
+	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings, con_confirm_release, con_confirm_quit, con_credits, con_license]:
 		center_container(centered)
 
 func center_container(ctrl: Control) -> void:
@@ -1372,22 +1521,52 @@ func _hide_all_containers() -> void:
 func pause_game() -> void:
 	day_timer.stop()
 	btn_pause.visible = false
+	btn_settings_top.visible = false
+	btn_close_top.visible = false
 
 func unpause_game() -> void:
 	day_timer.start()
 	btn_pause.visible = true
+	btn_settings_top.visible = true
+	btn_close_top.visible = true
 
 func _on_btn_pause_pressed() -> void:
-	if btn_pause.text == "||":
-		GameManager.is_paused = true
-		btn_pause.text = ">"
+	GameManager.is_paused = not GameManager.is_paused
+	if GameManager.is_paused:
+		btn_pause.icon = tex_play
 	else:
-		GameManager.is_paused = false
-		btn_pause.text = "||"
+		btn_pause.icon = tex_pause
 
 func _on_day_timer_timeout() -> void:
 	if not GameManager.is_paused and GameManager.my_distro != null:
 		GameManager.increment_by_a_day()
+
+# --- NEW: System Time Updater ---
+func _update_system_time() -> void:
+	if sys_time_format == 0:
+		lbl_sys_time.visible = false
+	else:
+		lbl_sys_time.visible = true
+		var t := Time.get_time_dict_from_system()
+		
+		# --- MODIFIED: Added formatting branches for the new dropdown indices ---
+		if sys_time_format == 1:
+			var h: int = t.hour % 12
+			if h == 0: h = 12
+			var ampm: String = "AM" if t.hour < 12 else "PM"
+			lbl_sys_time.text = "%d:%02d %s" % [h, t.minute, ampm]
+			
+		elif sys_time_format == 2:
+			var h: int = t.hour % 12
+			if h == 0: h = 12
+			var ampm: String = "AM" if t.hour < 12 else "PM"
+			lbl_sys_time.text = "%d:%02d:%02d %s" % [h, t.minute, t.second, ampm]
+			
+		elif sys_time_format == 3:
+			lbl_sys_time.text = "%02d:%02d" % [t.hour, t.minute]
+			
+		elif sys_time_format == 4:
+			lbl_sys_time.text = "%02d:%02d:%02d" % [t.hour, t.minute, t.second]
 
 func _on_stats_updated() -> void:
 	if GameManager.my_distro == null:
