@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7hmx5eq30y7c"
-path="res://.godot/imported/settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png-0d897410b248f4f32970edc4ab91abf8.ctex"
+uid="uid://bpk0cr3louccl"
+path="res://.godot/imported/volume_up_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png-69c2e4f9091d3e850a6af7eed3d0f1f4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"
-dest_files=["res://.godot/imported/settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png-0d897410b248f4f32970edc4ab91abf8.ctex"]
+source_file="res://icons/volume_up_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"
+dest_files=["res://.godot/imported/volume_up_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png-69c2e4f9091d3e850a6af7eed3d0f1f4.ctex"]
 
 [params]
 

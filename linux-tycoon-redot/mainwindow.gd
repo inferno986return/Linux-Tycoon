@@ -6,9 +6,24 @@ var lbl_date: Label
 var lbl_sys_time: Label 
 var btn_pause: Button
 var btn_settings_top: Button 
+var btn_close_top: Button
 var can_main: Control
 
-var sys_time_format: int = 0 # 0: None, 1: 12-Hour, 2: 24-Hour
+var sys_time_format: int = 0 # 0: None, 1: 12-Hour, 2: 12-Hour w/ secs, 3: 24-Hour, 4: 24-Hour w/ secs
+
+# --- NEW: Audio & Playlist Variables ---
+var audio_player: AudioStreamPlayer
+var playlist: Array[Dictionary] = []
+var current_track_idx: int = 0
+var is_muted: bool = false
+var music_volume: float = 50.0
+
+var btn_skip_prev: Button
+var btn_skip_next: Button
+var btn_mute: Button
+var lbl_mp3: Label
+var chk_mute: CheckBox # Elevated to keep settings and top bar in sync
+# ---------------------------------------
 
 # Sub-containers
 var con_main_menu: DraggableWindow
@@ -23,6 +38,7 @@ var con_sacrifice_worker: DraggableWindow
 var con_new_release: DraggableWindow
 var con_settings: DraggableWindow
 var con_confirm_release: DraggableWindow 
+var con_confirm_quit: DraggableWindow 
 var con_credits: DraggableWindow
 var con_license: DraggableWindow
 
@@ -75,10 +91,14 @@ var tex_bryan: Texture2D
 var tex_pause: Texture2D
 var tex_play: Texture2D
 var tex_settings: Texture2D
-
-var btn_close_top: Button
-var con_confirm_quit: DraggableWindow
 var tex_close: Texture2D
+var tex_skip_prev: Texture2D
+var tex_skip_next: Texture2D
+var tex_mute: Texture2D
+var tex_volume_up: Texture2D # NEW
+
+var bryan_new_release: TextureRect
+var btn_ok_new_release: Button
 
 func _ready() -> void:
 	if ResourceLoader.exists("res://Tux32x32.png"):
@@ -86,14 +106,37 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://Bryan.png"):
 		tex_bryan = load("res://Bryan.png")
 		
-	if ResourceLoader.exists("res://pause_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
-		tex_pause = load("res://pause_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
-	if ResourceLoader.exists("res://play_arrow_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
-		tex_play = load("res://play_arrow_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
-	if ResourceLoader.exists("res://settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
-		tex_settings = load("res://settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
-	if ResourceLoader.exists("res://close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
-		tex_close = load("res://close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	# --- FIXED: Paths updated to pull from the 'icons/' folder ---
+	if ResourceLoader.exists("res://icons/pause_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_pause = load("res://icons/pause_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/play_arrow_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_play = load("res://icons/play_arrow_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_settings = load("res://icons/settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_close = load("res://icons/close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+		
+	if ResourceLoader.exists("res://icons/skip_previous_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_skip_prev = load("res://icons/skip_previous_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/skip_next_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_skip_next = load("res://icons/skip_next_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/volume_off_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_mute = load("res://icons/volume_off_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/volume_up_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_volume_up = load("res://icons/volume_up_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+
+	# --- NEW: Audio Player Setup ---
+	audio_player = AudioStreamPlayer.new()
+	add_child(audio_player)
+	audio_player.finished.connect(_on_track_finished)
+	
+	_add_track("res://music/alex-morgan-downtempo-chill-electronic-528322.mp3", "Alex Morgan — Downtempo Chill Electronic")
+	_add_track("res://music/amplify_music-jazz-cafe-music-electric-velvet-groove-337638.mp3", "Amplify Music — Jazz Cafe Music")
+	_add_track("res://music/kulakovka-inspiring-downtempo-278455.mp3", "Kulakovka — Inspiring Downtempo")
+	_add_track("res://music/soundsurfer-downtempo-613674.mp3", "Soundsurfer — Downtempo")
+	_add_track("res://music/turning_pages-kindling-the-flame-479806.mp3", "Turning Pages — Kindling The Flame")
+	_add_track("res://music/alex-morgan-acid-jazz-cafe-lounge-groove-573653.mp3", "Alex Morgan — Acid Jazz Cafe")
+	# -------------------------------
 
 	_apply_xojo_theme()
 	_build_base_layout()
@@ -109,7 +152,7 @@ func _ready() -> void:
 	_build_con_new_release()
 	_build_con_settings()
 	_build_con_confirm_release() 
-	_build_con_confirm_quit() # NEW
+	_build_con_confirm_quit()
 	_build_con_credits()
 	_build_con_license()
 	_build_dialogs()
@@ -125,6 +168,44 @@ func _ready() -> void:
 	
 	pause_game() 
 	lbl_date.text = ""
+	
+	if playlist.size() > 0:
+		_play_track(0)
+		_update_volume()
+
+# --- NEW: Audio Helper Functions ---
+func _add_track(path: String, title: String) -> void:
+	if ResourceLoader.exists(path):
+		var stream = load(path)
+		playlist.append({"stream": stream, "title": title})
+
+func _play_track(idx: int) -> void:
+	if playlist.is_empty():
+		return
+	current_track_idx = posmod(idx, playlist.size())
+	var track = playlist[current_track_idx]
+	audio_player.stream = track["stream"]
+	audio_player.play()
+	if lbl_mp3 != null:
+		lbl_mp3.text = "♫ " + track["title"]
+
+func _on_track_finished() -> void:
+	_play_track(current_track_idx + 1)
+
+func _update_volume() -> void:
+	if audio_player == null: return
+	if is_muted or music_volume <= 0.0:
+		audio_player.volume_db = -80.0
+	else:
+		audio_player.volume_db = linear_to_db(music_volume / 100.0)
+		
+func _on_mute_toggled() -> void:
+	is_muted = !is_muted
+	btn_mute.icon = tex_mute if is_muted else tex_volume_up
+	if chk_mute != null:
+		chk_mute.set_pressed_no_signal(is_muted)
+	_update_volume()
+# -----------------------------------
 
 func _apply_xojo_theme() -> void:
 	var t := Theme.new()
@@ -248,6 +329,73 @@ func _build_base_layout() -> void:
 	var sb_icon_pressed := sb_icon_btn.duplicate()
 	sb_icon_pressed.bg_color = Color8(35, 75, 140)
 
+	btn_skip_prev = Button.new()
+	btn_skip_prev.anchor_left = 0.5
+	btn_skip_prev.anchor_right = 0.5
+	btn_skip_prev.offset_left = -165
+	btn_skip_prev.offset_right = -135
+	btn_skip_prev.offset_top = 2
+	btn_skip_prev.offset_bottom = 24
+	btn_skip_prev.icon = tex_skip_prev
+	btn_skip_prev.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_skip_prev.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_skip_prev.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_skip_prev.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_skip_prev.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_skip_prev.pressed.connect(func(): _play_track(current_track_idx - 1))
+	top_bar.add_child(btn_skip_prev)
+
+	var mp3_bg := ColorRect.new()
+	mp3_bg.color = Color.BLACK
+	mp3_bg.anchor_left = 0.5
+	mp3_bg.anchor_right = 0.5
+	mp3_bg.offset_left = -130
+	mp3_bg.offset_right = 130
+	mp3_bg.offset_top = 2
+	mp3_bg.offset_bottom = 24
+	top_bar.add_child(mp3_bg)
+
+	lbl_mp3 = Label.new()
+	lbl_mp3.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lbl_mp3.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl_mp3.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl_mp3.add_theme_color_override("font_color", Color.GREEN)
+	lbl_mp3.add_theme_font_size_override("font_size", 11)
+	lbl_mp3.text = "♫ Artist — Song Name"
+	mp3_bg.add_child(lbl_mp3)
+
+	btn_skip_next = Button.new()
+	btn_skip_next.anchor_left = 0.5
+	btn_skip_next.anchor_right = 0.5
+	btn_skip_next.offset_left = 135
+	btn_skip_next.offset_right = 165
+	btn_skip_next.offset_top = 2
+	btn_skip_next.offset_bottom = 24
+	btn_skip_next.icon = tex_skip_next
+	btn_skip_next.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_skip_next.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_skip_next.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_skip_next.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_skip_next.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_skip_next.pressed.connect(func(): _play_track(current_track_idx + 1))
+	top_bar.add_child(btn_skip_next)
+
+	btn_mute = Button.new()
+	btn_mute.anchor_left = 0.5
+	btn_mute.anchor_right = 0.5
+	btn_mute.offset_left = 170
+	btn_mute.offset_right = 200
+	btn_mute.offset_top = 2
+	btn_mute.offset_bottom = 24
+	btn_mute.icon = tex_volume_up
+	btn_mute.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_mute.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_mute.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_mute.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_mute.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_mute.pressed.connect(_on_mute_toggled)
+	top_bar.add_child(btn_mute)
+
 	btn_pause = Button.new()
 	btn_pause.anchor_left = 1.0
 	btn_pause.anchor_right = 1.0
@@ -285,7 +433,6 @@ func _build_base_layout() -> void:
 	)
 	top_bar.add_child(btn_settings_top)
 
-	# --- MODIFIED: Red styling applied directly to the X button ---
 	btn_close_top = Button.new()
 	btn_close_top.anchor_left = 1.0
 	btn_close_top.anchor_right = 1.0
@@ -318,7 +465,6 @@ func _build_base_layout() -> void:
 		con_confirm_quit.visible = true
 	)
 	top_bar.add_child(btn_close_top)
-	# --------------------------------------------------------------
 
 	can_main = Control.new()
 	can_main.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -337,41 +483,6 @@ func _build_base_layout() -> void:
 	add_child(sys_timer)
 	
 	_update_system_time()
-
-
-func _build_con_confirm_quit() -> void:
-	con_confirm_quit = DraggableWindow.new()
-	con_confirm_quit.size = Vector2(340, 160)
-	can_main.add_child(con_confirm_quit)
-
-	_add_label(con_confirm_quit, "Quit Game", Vector2(15, 12), Vector2(310, 20), 13)
-
-	var bg := ColorRect.new()
-	bg.color = Color.WHITE
-	bg.position = Vector2(15, 35)
-	bg.size = Vector2(310, 70)
-	con_confirm_quit.add_child(bg)
-
-	var lbl_text := _add_label(con_confirm_quit, "Do you want to quit to the main menu?\nUnsaved progress will be lost.", Vector2(25, 42), Vector2(290, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
-	lbl_text.add_theme_color_override("font_color", Color.BLACK)
-	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-	# --- MODIFIED: Removed the red theme overrides so it falls back to the default global blue theme ---
-	var btn_ok := _add_button(con_confirm_quit, "OK!", Vector2(80, 115), Vector2(80, 30))
-	btn_ok.pressed.connect(func():
-		con_confirm_quit.visible = false
-		_hide_all_containers()
-		GameManager.my_distro = null
-		center_container(con_main_menu)
-		con_main_menu.visible = true
-		lbl_date.text = ""
-	)
-
-	var btn_cancel := _add_button(con_confirm_quit, "Cancel", Vector2(180, 115), Vector2(80, 30))
-	btn_cancel.pressed.connect(func():
-		con_confirm_quit.visible = false
-		unpause_game()
-	)
 
 func _build_con_main_menu() -> void:
 	con_main_menu = DraggableWindow.new()
@@ -592,6 +703,13 @@ func _build_con_distro_stats() -> void:
 	stats_btn_release.pressed.connect(func(): 
 		pause_game()
 		center_container(con_confirm_release)
+		
+		# --- FIXED: Force the UI to show the dialog contents ---
+		for child in con_confirm_release.get_children():
+			if child is CanvasItem:
+				child.show()
+		# -------------------------------------------------------
+		
 		con_confirm_release.visible = true
 	)
 
@@ -673,16 +791,20 @@ func _refresh_distro_rank() -> void:
 	for i in range(all_list.size()):
 		var d := all_list[i]
 		var row := ColorRect.new()
-		row.custom_minimum_size = Vector2(140, 28)
+		
+		# Expanded height to 34 to fix vertical text clipping, reduced width to 135 to clear the scrollbar
+		row.custom_minimum_size = Vector2(135, 34)
 		row.color = Color8(230, 240, 255) if d == GameManager.my_distro else (Color.WHITE if i % 2 == 0 else Color8(245, 245, 245))
 
-		var l_num := _add_label(row, str(i + 1), Vector2(3, 4), Vector2(24, 20), 13)
+		# Shifted Y offsets down slightly to center them in the taller row
+		var l_num := _add_label(row, str(i + 1), Vector2(3, 7), Vector2(24, 20), 13)
 		l_num.add_theme_color_override("font_color", Color.BLACK)
 
-		var l_name := _add_label(row, d.name, Vector2(26, 1), Vector2(112, 16), 11)
+		# Reduced width to 105 to prevent text from bleeding into the scrollbar
+		var l_name := _add_label(row, d.name, Vector2(26, 2), Vector2(105, 16), 11)
 		l_name.add_theme_color_override("font_color", Color.BLACK)
 
-		var l_users := _add_label(row, "Users: %d" % d.users, Vector2(26, 14), Vector2(112, 14), 9)
+		var l_users := _add_label(row, "Users: %d" % d.users, Vector2(26, 17), Vector2(105, 14), 9)
 		l_users.add_theme_color_override("font_color", Color8(60, 60, 60))
 
 		rank_vbox.add_child(row)
@@ -970,18 +1092,18 @@ func _build_con_new_release() -> void:
 	con_new_release.size = Vector2(410, 190)
 	can_main.add_child(con_new_release)
 
-	var bryan := TextureRect.new()
-	bryan.texture = tex_bryan
-	bryan.position = Vector2(14, 17)
-	bryan.size = Vector2(46, 99)
-	bryan.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	con_new_release.add_child(bryan)
+	bryan_new_release = TextureRect.new()
+	bryan_new_release.texture = tex_bryan
+	bryan_new_release.position = Vector2(14, 17)
+	bryan_new_release.size = Vector2(46, 99)
+	bryan_new_release.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	con_new_release.add_child(bryan_new_release)
 
 	release_lbl_text = _add_label(con_new_release, "", Vector2(72, 17), Vector2(314, 99), 11)
 	release_lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	var btn_ok := _add_button(con_new_release, "OK!", Vector2(300, 135), Vector2(80, 32))
-	btn_ok.pressed.connect(_on_new_release_ok_clicked)
+	btn_ok_new_release = _add_button(con_new_release, "OK!", Vector2(300, 135), Vector2(80, 32))
+	btn_ok_new_release.pressed.connect(_on_new_release_ok_clicked)
 
 func _build_con_settings() -> void:
 	con_settings = DraggableWindow.new()
@@ -1005,15 +1127,22 @@ func _build_con_settings() -> void:
 	var lbl_vol := _add_label(con_settings, "Music Volume:", Vector2(25, 85), Vector2(100, 20), 13)
 	lbl_vol.add_theme_color_override("font_color", Color.WHITE)
 
+	# --- MODIFIED: Connect Audio Volume Slider ---
 	var sld_vol := HSlider.new()
 	sld_vol.position = Vector2(125, 85)
 	sld_vol.size = Vector2(180, 20)
 	sld_vol.min_value = 0
 	sld_vol.max_value = 100
-	sld_vol.value = 50
+	sld_vol.value = music_volume
+	sld_vol.value_changed.connect(func(val: float):
+		music_volume = val
+		if is_muted and val > 0:
+			_on_mute_toggled() 
+		_update_volume()
+	)
 	con_settings.add_child(sld_vol)
 
-	var chk_mute := CheckBox.new()
+	chk_mute = CheckBox.new()
 	chk_mute.text = "Mute Music"
 	chk_mute.position = Vector2(120, 120) 
 	chk_mute.size = Vector2(150, 24)
@@ -1021,12 +1150,18 @@ func _build_con_settings() -> void:
 	chk_mute.add_theme_color_override("font_hover_color", Color.WHITE)
 	chk_mute.add_theme_color_override("font_pressed_color", Color.WHITE)
 	chk_mute.add_theme_font_size_override("font_size", 13)
+	chk_mute.button_pressed = is_muted
+	chk_mute.toggled.connect(func(pressed: bool):
+		is_muted = pressed
+		btn_mute.icon = tex_mute if is_muted else tex_volume_up
+		_update_volume()
+	)
 	con_settings.add_child(chk_mute)
+	# ---------------------------------------------
 	
 	var lbl_sys := _add_label(con_settings, "System Time:", Vector2(25, 160), Vector2(100, 20), 13)
 	lbl_sys.add_theme_color_override("font_color", Color.WHITE)
 
-	# --- MODIFIED: Added options for optional seconds ---
 	var opt_sys := OptionButton.new()
 	opt_sys.position = Vector2(125, 155)
 	opt_sys.size = Vector2(180, 25)
@@ -1053,30 +1188,62 @@ func _build_con_settings() -> void:
 
 func _build_con_confirm_release() -> void:
 	con_confirm_release = DraggableWindow.new()
-	con_confirm_release.size = Vector2(400, 160)
+	# Increased height from 160 to 170 to add padding below the buttons
+	con_confirm_release.size = Vector2(400, 170)
 	can_main.add_child(con_confirm_release)
 
 	_add_label(con_confirm_release, "Release Version", Vector2(15, 12), Vector2(370, 20), 13)
 
-	var bg := ColorRect.new()
-	bg.color = Color.WHITE
-	bg.position = Vector2(15, 35)
-	bg.size = Vector2(370, 70)
-	con_confirm_release.add_child(bg)
+	# --- FIXED: Removed the white ColorRect background ---
 
-	var lbl_text := _add_label(con_confirm_release, "Are you ready to release this version?\nYou won't be able to change any packages or fix any bugs in this version once it is released.", Vector2(25, 42), Vector2(350, 56), 11)
-	lbl_text.add_theme_color_override("font_color", Color.BLACK)
+	# Shifted the text down slightly and changed font color to white
+	var lbl_text := _add_label(con_confirm_release, "Are you ready to release this version?\nYou won't be able to change any packages or fix any bugs in\nthis version once it is released.", Vector2(25, 45), Vector2(350, 56), 11)
+	lbl_text.add_theme_color_override("font_color", Color.WHITE) 
 	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	var btn_yes := _add_button(con_confirm_release, "Yes", Vector2(110, 115), Vector2(80, 30))
+	# Shifted buttons down slightly to balance the new window height
+	var btn_yes := _add_button(con_confirm_release, "Yes", Vector2(110, 120), Vector2(80, 30))
 	btn_yes.pressed.connect(func():
 		con_confirm_release.visible = false
 		_on_release_version_confirmed()
 	)
 
-	var btn_no := _add_button(con_confirm_release, "No", Vector2(210, 115), Vector2(80, 30))
+	var btn_no := _add_button(con_confirm_release, "No", Vector2(210, 120), Vector2(80, 30))
 	btn_no.pressed.connect(func():
 		con_confirm_release.visible = false
+		unpause_game()
+	)
+
+func _build_con_confirm_quit() -> void:
+	con_confirm_quit = DraggableWindow.new()
+	con_confirm_quit.size = Vector2(340, 160)
+	can_main.add_child(con_confirm_quit)
+
+	_add_label(con_confirm_quit, "Quit Game", Vector2(15, 12), Vector2(310, 20), 13)
+
+	var bg := ColorRect.new()
+	bg.color = Color.WHITE
+	bg.position = Vector2(15, 35)
+	bg.size = Vector2(310, 70)
+	con_confirm_quit.add_child(bg)
+
+	var lbl_text := _add_label(con_confirm_quit, "Do you want to quit to the main menu?\nUnsaved progress will be lost.", Vector2(25, 42), Vector2(290, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl_text.add_theme_color_override("font_color", Color.BLACK)
+	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	var btn_ok := _add_button(con_confirm_quit, "OK!", Vector2(80, 115), Vector2(80, 30))
+	btn_ok.pressed.connect(func():
+		con_confirm_quit.visible = false
+		_hide_all_containers()
+		GameManager.my_distro = null
+		center_container(con_main_menu)
+		con_main_menu.visible = true
+		lbl_date.text = ""
+	)
+
+	var btn_cancel := _add_button(con_confirm_quit, "Cancel", Vector2(180, 115), Vector2(80, 30))
+	btn_cancel.pressed.connect(func():
+		con_confirm_quit.visible = false
 		unpause_game()
 	)
 
@@ -1541,7 +1708,6 @@ func _on_day_timer_timeout() -> void:
 	if not GameManager.is_paused and GameManager.my_distro != null:
 		GameManager.increment_by_a_day()
 
-# --- NEW: System Time Updater ---
 func _update_system_time() -> void:
 	if sys_time_format == 0:
 		lbl_sys_time.visible = false
@@ -1549,7 +1715,6 @@ func _update_system_time() -> void:
 		lbl_sys_time.visible = true
 		var t := Time.get_time_dict_from_system()
 		
-		# --- MODIFIED: Added formatting branches for the new dropdown indices ---
 		if sys_time_format == 1:
 			var h: int = t.hour % 12
 			if h == 0: h = 12
@@ -1594,10 +1759,19 @@ func show_main_hud() -> void:
 func _on_release_version_confirmed() -> void:
 	pause_game()
 	_hide_all_containers()
+	
 	release_lbl_text.text = "%s version %d.0 has been successfully released to the public!\n\nNow just sit back and let the fame and riches pour in! (Or get to work on the next version.)" % [
 		GameManager.my_distro.name, GameManager.my_distro.version
 	]
+	
 	center_container(con_new_release)
+	
+	# --- FIXED: Force the UI to show the dialog contents ---
+	for child in con_new_release.get_children():
+		if child is CanvasItem:
+			child.show()
+	# -------------------------------------------------------
+	
 	con_new_release.visible = true
 
 func _on_new_release_ok_clicked() -> void:
