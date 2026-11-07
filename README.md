@@ -9,14 +9,15 @@ At this time, I don't know the full extent of what Bryan Lunduke added to v1.2 a
 Some of the improvements are inspired by the fantastic *CorsixTH* project and I recommend trying it out as it's the definitive way to play *Theme Hospital*.
 
 # What's new!
-* Save As has been moved to a button at the top-right, Save is just Save.
+* Save As has been moved to a button at the top-right, Save is just Save and asks if you want overwrite the existing file.
 * Settings menu with a volume control (and mute), fullscreen support (experimental), localisation placeholder
 * New CorsixTH-inspired features (which can be optionally hidden):
     * An MP3 player at the top-centre with track changing buttons which plays 7 free downtempo tracks from Pixabay
     * A system clock at the top-left corner to keep track of time while playing
 * Buttons with non-text labels now use the Google Material icons which are much more presentable.
-* New dropdown to sort packages by Default, Popularity, Bugs Reported, Volunteers Assigned and Paid Workers Assigned. This will be helpful for mods which have larger package lists.
+* New dropdown to sort packages by Default, Popularity, Bugs Reported, Volunteers Assigned and Paid Workers Assigned (though not Alphabetically which I'll add). This will be helpful for mods which have larger package lists.
 * Bryan notifies you each time you get a new volunteer and paid worker with several randomly-selected phrases.
+* Bryan notifies you when you've saved the game.
 * Fixed the reported bugs and PR from the upstream repo
 
 # Fixed issues and PRs from source repo:
@@ -50,7 +51,10 @@ My playtesting has been limited, but has a number of bugs which I have identifie
     * alex-morgan *Acid Jazz Cafe Lounge Groove*
     * Amplify_Music *Jazz Cafe Music - Electric Velvet Groove*
     * Turning_Pages *Kindling the Flame*
+    * Spirit *Spirit* (from the Packard Bell MP3 Player as an Easter egg track)
 * I could add a play-pause button for the MP3 Player and a track selector button which leads to a window (I downloaded the icon from Google Icons).
+* An acknowledgement from Bryan once the distro is over 900 MB that the ISO will no longer fit on a CD.
+* I'll remove the Name: label so there's space for the distro name.
 
 * Options menu with support for audio, localisation, etc.
 
