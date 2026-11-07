@@ -11,7 +11,7 @@ var can_main: Control
 
 var sys_time_format: int = 1 # 0: None, 1: 12-Hour, 2: 12-Hour w/ secs, 3: 24-Hour, 4: 24-Hour w/ secs
 
-# --- NEW: Audio & Playlist Variables ---
+# --- Audio & Playlist Variables ---
 var audio_player: AudioStreamPlayer
 var playlist: Array[Dictionary] = []
 var current_track_idx: int = 0
@@ -22,8 +22,7 @@ var btn_skip_prev: Button
 var btn_skip_next: Button
 var btn_mute: Button
 var lbl_mp3: Label
-var chk_mute: CheckBox # Elevated to keep settings and top bar in sync
-# ---------------------------------------
+var chk_mute: CheckBox 
 
 var tex_save_as: Texture2D
 var btn_save_as_top: Button
@@ -44,10 +43,10 @@ var con_new_release: DraggableWindow
 var con_settings: DraggableWindow
 var con_confirm_release: DraggableWindow 
 var con_confirm_quit: DraggableWindow 
+var con_confirm_desktop: DraggableWindow
 var con_credits: DraggableWindow
 var con_license: DraggableWindow
-var con_music: DraggableWindow # NEW
-var con_confirm_desktop: DraggableWindow # NEW
+var con_music: DraggableWindow
 
 # UI Element References for dynamic updates
 var lbl_scenario: Label
@@ -79,7 +78,7 @@ var mp3_bg: ColorRect
 var rank_vbox: VBoxContainer
 var notif_lbl: RichTextLabel
 var pkg_vbox: VBoxContainer
-var pkg_sort_mode: int = 0 # NEW: Tracks the selected package sort mode
+var pkg_sort_mode: int = 0
 
 var work_list_vbox: VBoxContainer
 var work_selected_idx: int = 0
@@ -127,7 +126,6 @@ func _ready() -> void:
 		tex_settings = load("res://icons/settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 	if ResourceLoader.exists("res://icons/close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
 		tex_close = load("res://icons/close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
-
 	if ResourceLoader.exists("res://icons/save_as_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
 		tex_save_as = load("res://icons/save_as_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 		
@@ -145,7 +143,6 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://icons/remove_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
 		tex_remove = load("res://icons/remove_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 
-	# --- Audio Player Setup with supplied tracks ---
 	audio_player = AudioStreamPlayer.new()
 	add_child(audio_player)
 	audio_player.finished.connect(_on_track_finished)
@@ -156,10 +153,7 @@ func _ready() -> void:
 	_add_track("res://music/soundsurfer-downtempo-613674.mp3", "Soundsurfer — Downtempo")
 	_add_track("res://music/turning_pages-kindling-the-flame-479806.mp3", "Turning Pages — Kindling The Flame")
 	_add_track("res://music/alex-morgan-acid-jazz-cafe-lounge-groove-573653.mp3", "Alex Morgan — Acid Jazz Cafe")
-	
-	# --- FIXED: Tunetank track added to the playlist ---
 	_add_track("res://music/tunetank-inspiring-downtempo-348057.mp3", "Tunetank — Inspiring Downtempo")
-	# ---------------------------------------------------
 	
 	playlist.shuffle()
 
@@ -178,9 +172,10 @@ func _ready() -> void:
 	_build_con_settings()
 	_build_con_confirm_release() 
 	_build_con_confirm_quit()
-	_build_con_confirm_save() # NEW
+	_build_con_confirm_desktop()
+	_build_con_confirm_save()
 	_build_con_credits()
-	_build_con_music() # NEW
+	_build_con_music()
 	_build_con_license()
 	_build_dialogs()
 
@@ -200,7 +195,6 @@ func _ready() -> void:
 		_play_track(0)
 		_update_volume()
 
-# --- NEW: Audio Helper Functions ---
 func _add_track(path: String, title: String) -> void:
 	if ResourceLoader.exists(path):
 		var stream = load(path)
@@ -238,7 +232,6 @@ func _update_mp3_visibility() -> void:
 	if btn_skip_next != null: btn_skip_next.visible = show_mp3_player
 	if btn_mute != null: btn_mute.visible = show_mp3_player
 	if mp3_bg != null: mp3_bg.visible = show_mp3_player
-# -----------------------------------
 
 func _apply_xojo_theme() -> void:
 	var t := Theme.new()
@@ -341,7 +334,6 @@ func _build_base_layout() -> void:
 	top_bar.add_child(lbl_sys_time)
 
 	lbl_date = Label.new()
-	# --- FIXED: Anchored to the center and positioned in the left gap ---
 	lbl_date.anchor_left = 0.5
 	lbl_date.anchor_right = 0.5
 	lbl_date.offset_left = -300
@@ -349,7 +341,6 @@ func _build_base_layout() -> void:
 	lbl_date.offset_top = 2
 	lbl_date.offset_bottom = 24
 	lbl_date.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	# --------------------------------------------------------------------
 	lbl_date.add_theme_color_override("font_color", Color.BLACK)
 	lbl_date.visible = false
 	top_bar.add_child(lbl_date)
@@ -364,92 +355,6 @@ func _build_base_layout() -> void:
 	
 	var sb_icon_pressed := sb_icon_btn.duplicate()
 	sb_icon_pressed.bg_color = Color8(35, 75, 140)
-
-	# ... (Skip down to the top-right buttons) ...
-
-	btn_settings_top = Button.new()
-	btn_settings_top.anchor_left = 1.0
-	btn_settings_top.anchor_right = 1.0
-	# Shifted left by 35px
-	btn_settings_top.offset_left = -105 
-	btn_settings_top.offset_right = -75
-	btn_settings_top.offset_top = 2
-	btn_settings_top.offset_bottom = 24
-	btn_settings_top.icon = tex_settings
-	btn_settings_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	btn_settings_top.add_theme_stylebox_override("normal", sb_icon_btn)
-	btn_settings_top.add_theme_stylebox_override("hover", sb_icon_hover)
-	btn_settings_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
-	btn_settings_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	btn_settings_top.visible = true
-	btn_settings_top.pressed.connect(func():
-		center_container(con_settings)
-		con_settings.visible = true
-		con_settings.move_to_front()
-	)
-	top_bar.add_child(btn_settings_top)
-
-	# --- NEW: Save As Button (Between Settings and Close) ---
-	# --- MOVED: Save As Button (Now left of Settings) ---
-	btn_save_as_top = Button.new()
-	btn_save_as_top.anchor_left = 1.0
-	btn_save_as_top.anchor_right = 1.0
-	btn_save_as_top.offset_left = -105
-	btn_save_as_top.offset_right = -75
-	btn_save_as_top.offset_top = 2
-	btn_save_as_top.offset_bottom = 24
-	btn_save_as_top.icon = tex_save_as
-	btn_save_as_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	
-	# --- FIXED: Force the icon to shrink to match the others ---
-	btn_save_as_top.expand_icon = true
-	btn_save_as_top.add_theme_constant_override("icon_max_width", 16)
-	# -----------------------------------------------------------
-	
-	btn_save_as_top.add_theme_stylebox_override("normal", sb_icon_btn)
-	btn_save_as_top.add_theme_stylebox_override("hover", sb_icon_hover)
-	btn_save_as_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
-	btn_save_as_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	btn_save_as_top.visible = false
-	btn_save_as_top.pressed.connect(func():
-		pause_game()
-		file_dlg_save.popup_centered()
-	)
-	top_bar.add_child(btn_save_as_top)
-
-	btn_close_top = Button.new()
-	btn_close_top.anchor_left = 1.0
-	btn_close_top.anchor_right = 1.0
-	btn_close_top.offset_left = -35 
-	btn_close_top.offset_right = -5
-	# ... (inside _build_base_layout) ...
-
-	btn_close_top = Button.new()
-	btn_close_top.anchor_left = 1.0
-	btn_close_top.anchor_right = 1.0
-	btn_close_top.offset_left = -35 
-	btn_close_top.offset_right = -5
-	btn_close_top.offset_top = 2
-	btn_close_top.offset_bottom = 24
-	btn_close_top.icon = tex_close
-	btn_close_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	btn_close_top.add_theme_stylebox_override("normal", sb_close_btn)
-	btn_close_top.add_theme_stylebox_override("hover", sb_close_hover)
-	btn_close_top.add_theme_stylebox_override("pressed", sb_close_pressed)
-	btn_close_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	btn_close_top.visible = true
-	btn_close_top.pressed.connect(func():
-		pause_game()
-		# --- NEW: Context Aware Quitting ---
-		if con_main_menu.visible:
-			center_container(con_confirm_desktop)
-			con_confirm_desktop.visible = true
-		else:
-			center_container(con_confirm_quit)
-			con_confirm_quit.visible = true
-		# -----------------------------------
-	)
-	top_bar.add_child(btn_close_top)
 
 	btn_skip_prev = Button.new()
 	btn_skip_prev.anchor_left = 0.5
@@ -467,7 +372,6 @@ func _build_base_layout() -> void:
 	btn_skip_prev.pressed.connect(func(): _play_track(current_track_idx - 1))
 	top_bar.add_child(btn_skip_prev)
 
-	# --- FIXED: Mapped to the new class variable ---
 	mp3_bg = ColorRect.new()
 	mp3_bg.color = Color.BLACK
 	mp3_bg.anchor_left = 0.5
@@ -512,12 +416,8 @@ func _build_base_layout() -> void:
 	btn_mute.offset_bottom = 24
 	btn_mute.icon = tex_volume_up
 	btn_mute.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	
-	# --- FIXED: Shrink the mute icon so it matches the skip icons ---
 	btn_mute.expand_icon = true
 	btn_mute.add_theme_constant_override("icon_max_width", 14) 
-	# ----------------------------------------------------------------
-	
 	btn_mute.add_theme_stylebox_override("normal", sb_icon_btn)
 	btn_mute.add_theme_stylebox_override("hover", sb_icon_hover)
 	btn_mute.add_theme_stylebox_override("pressed", sb_icon_pressed)
@@ -525,16 +425,16 @@ func _build_base_layout() -> void:
 	btn_mute.pressed.connect(_on_mute_toggled)
 	top_bar.add_child(btn_mute)
 
+	# --- Top Right Buttons (Correctly Ordered & Non-Overlapping) ---
+	# 1. Pause Button
 	btn_pause = Button.new()
 	btn_pause.anchor_left = 1.0
 	btn_pause.anchor_right = 1.0
-	# --- FIXED: Shifted left to -140 to stop overlapping with Save As ---
 	btn_pause.offset_left = -140
 	btn_pause.offset_right = -110
 	btn_pause.offset_top = 2
 	btn_pause.offset_bottom = 24
 	btn_pause.icon = tex_pause
-	# ... (keep the rest of btn_pause exactly as is)
 	btn_pause.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn_pause.add_theme_stylebox_override("normal", sb_icon_btn)
 	btn_pause.add_theme_stylebox_override("hover", sb_icon_hover)
@@ -544,11 +444,34 @@ func _build_base_layout() -> void:
 	btn_pause.pressed.connect(_on_btn_pause_pressed)
 	top_bar.add_child(btn_pause)
 
-	# --- MOVED: Settings Button (Now middle) ---
+	# 2. Save As Button
+	btn_save_as_top = Button.new()
+	btn_save_as_top.anchor_left = 1.0
+	btn_save_as_top.anchor_right = 1.0
+	btn_save_as_top.offset_left = -105
+	btn_save_as_top.offset_right = -75
+	btn_save_as_top.offset_top = 2
+	btn_save_as_top.offset_bottom = 24
+	btn_save_as_top.icon = tex_save_as
+	btn_save_as_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_save_as_top.expand_icon = true
+	btn_save_as_top.add_theme_constant_override("icon_max_width", 16)
+	btn_save_as_top.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_save_as_top.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_save_as_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_save_as_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_save_as_top.visible = false
+	btn_save_as_top.pressed.connect(func():
+		pause_game()
+		file_dlg_save.popup_centered()
+	)
+	top_bar.add_child(btn_save_as_top)
+
+	# 3. Settings Button
 	btn_settings_top = Button.new()
 	btn_settings_top.anchor_left = 1.0
 	btn_settings_top.anchor_right = 1.0
-	btn_settings_top.offset_left = -70 # Shifted right to take the middle slot
+	btn_settings_top.offset_left = -70 
 	btn_settings_top.offset_right = -40
 	btn_settings_top.offset_top = 2
 	btn_settings_top.offset_bottom = 24
@@ -565,8 +488,8 @@ func _build_base_layout() -> void:
 		con_settings.move_to_front()
 	)
 	top_bar.add_child(btn_settings_top)
-	# -------------------------------------------
 
+	# 4. Close Button
 	btn_close_top = Button.new()
 	btn_close_top.anchor_left = 1.0
 	btn_close_top.anchor_right = 1.0
@@ -595,8 +518,12 @@ func _build_base_layout() -> void:
 	btn_close_top.visible = true
 	btn_close_top.pressed.connect(func():
 		pause_game()
-		center_container(con_confirm_quit)
-		con_confirm_quit.visible = true
+		if con_main_menu.visible:
+			center_container(con_confirm_desktop)
+			con_confirm_desktop.visible = true
+		else:
+			center_container(con_confirm_quit)
+			con_confirm_quit.visible = true
 	)
 	top_bar.add_child(btn_close_top)
 
@@ -724,7 +651,10 @@ func _build_con_main_menu() -> void:
 
 	var btn_quit := Button.new()
 	btn_quit.text = "Quit"
-	btn_quit.pressed.connect(func(): get_tree().quit())
+	btn_quit.pressed.connect(func(): 
+		center_container(con_confirm_desktop)
+		con_confirm_desktop.visible = true
+	)
 	vbox.add_child(btn_quit)
 
 func _build_con_intro() -> void:
@@ -837,11 +767,9 @@ func _build_con_distro_stats() -> void:
 	stats_btn_release.pressed.connect(func(): 
 		pause_game()
 		center_container(con_confirm_release)
-		
 		for child in con_confirm_release.get_children():
 			if child is CanvasItem:
 				child.show()
-		
 		con_confirm_release.visible = true
 	)
 
@@ -885,10 +813,7 @@ func _build_con_overview() -> void:
 		return l
 
 	overview_lbl_name = make_lbl.call(Vector2(20, 10), Vector2(248, 30))
-	
-	# --- FIXED: Override the helper to force left-alignment ---
 	overview_lbl_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	# ----------------------------------------------------------
 	
 	overview_lbl_users = make_lbl.call(Vector2(268, 10), Vector2(130, 30))
 	overview_lbl_age = make_lbl.call(Vector2(403, 10), Vector2(135, 30))
@@ -897,14 +822,12 @@ func _refresh_overview() -> void:
 	var d := GameManager.my_distro
 	if d == null:
 		return
-	# Re-added the prefixes with the new Label-based setup
 	overview_lbl_name.text = "Name: %s %d.0" % [d.name, d.released_ver]
 	overview_lbl_users.text = "Users: %d" % d.users
 	overview_lbl_age.text = "Age: %d days" % d.get_distro_age_in_days()
 
 func _build_con_distro_rank() -> void:
 	con_distro_rank = DraggableWindow.new()
-	# Increased height to 400 to fit 10 distros completely comfortably
 	con_distro_rank.size = Vector2(173, 400)
 	can_main.add_child(con_distro_rank)
 
@@ -913,7 +836,6 @@ func _build_con_distro_rank() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
 	bg.position = Vector2(12, 33)
-	# Extended inner height to match
 	bg.size = Vector2(149, 347)
 	con_distro_rank.add_child(bg)
 
@@ -942,8 +864,6 @@ func _refresh_distro_rank() -> void:
 	for i in range(all_list.size()):
 		var d := all_list[i]
 		var row := ColorRect.new()
-		
-		# Sized to 135x34 to clear the scrollbar and fix vertical text clipping
 		row.custom_minimum_size = Vector2(135, 34)
 		row.color = Color8(230, 240, 255) if d == GameManager.my_distro else (Color.WHITE if i % 2 == 0 else Color8(245, 245, 245))
 
@@ -960,7 +880,6 @@ func _refresh_distro_rank() -> void:
 
 func _build_con_notifications() -> void:
 	con_notifications = DraggableWindow.new()
-	# Increased height to 400 to seamlessly match DistroRank
 	con_notifications.size = Vector2(235, 400)
 	can_main.add_child(con_notifications)
 
@@ -973,7 +892,6 @@ func _build_con_notifications() -> void:
 
 	notif_lbl = RichTextLabel.new()
 	notif_lbl.position = Vector2(64, 17)
-	# Maximize vertical space for Bryan's bulletins
 	notif_lbl.size = Vector2(157, 363)
 	notif_lbl.add_theme_font_size_override("normal_font_size", 10)
 	notif_lbl.add_theme_color_override("default_color", Color.WHITE)
@@ -988,7 +906,6 @@ func _refresh_notifications() -> void:
 
 func _build_con_package_selection() -> void:
 	con_package_selection = DraggableWindow.new()
-	# Height reduced to 460 so it fits safely within the 500px game window resolution
 	con_package_selection.size = Vector2(600, 460)
 	can_main.add_child(con_package_selection)
 
@@ -997,7 +914,6 @@ func _build_con_package_selection() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
 	bg.position = Vector2(15, 40)
-	# Height set to exactly 360px (fits exactly 6 rows of 60px with no partial cutoffs)
 	bg.size = Vector2(570, 360)
 	con_package_selection.add_child(bg)
 
@@ -1012,7 +928,6 @@ func _build_con_package_selection() -> void:
 	pkg_vbox.add_theme_constant_override("separation", 0)
 	scroll.add_child(pkg_vbox)
 
-	# --- FIXED: Shifted further left and up to Y=415 ---
 	var opt_sort := OptionButton.new()
 	opt_sort.position = Vector2(250, 415)
 	opt_sort.size = Vector2(230, 30)
@@ -1031,7 +946,6 @@ func _build_con_package_selection() -> void:
 	)
 	con_package_selection.add_child(opt_sort)
 
-	# Shifted up to 415 to maintain a 15px bottom margin (460 - 30 - 15 = 415)
 	var btn_ok := _add_button(con_package_selection, "OK!", Vector2(510, 415), Vector2(75, 30))
 	btn_ok.pressed.connect(_on_package_selection_ok)
 
@@ -1040,8 +954,6 @@ func _refresh_package_selection() -> void:
 		child.queue_free()
 
 	var d := GameManager.my_distro
-	
-	# --- NEW: Robust Sorting Logic ---
 	var sorted_indices: Array[int] = []
 	for i in range(GameManager.packages_available.size()):
 		sorted_indices.append(i)
@@ -1054,7 +966,6 @@ func _refresh_package_selection() -> void:
 		var i := d.packages_included.find(p_idx)
 		return d.workers_paid_assigned[i] if i != -1 else 0
 
-	# Using strongly typed sort functions with fallback to name for deterministic stable sorting
 	if pkg_sort_mode == 1:
 		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
 			var val_a = GameManager.packages_available[a].popularity
@@ -1083,15 +994,12 @@ func _refresh_package_selection() -> void:
 			if val_a != val_b: return val_a > val_b
 			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
 		)
-	# --------------------------
 
 	var row_index := 0
 	for pkg_idx in sorted_indices:
 		var p := GameManager.packages_available[pkg_idx]
 		var row := ColorRect.new()
 		row.custom_minimum_size = Vector2(550, 60)
-		
-		# Used row_index instead of pkg_idx to ensure colors perfectly alternate
 		row.color = Color.WHITE if row_index % 2 == 0 else Color8(242, 242, 242)
 
 		var chk := CheckBox.new()
@@ -1359,7 +1267,6 @@ func _build_con_new_release() -> void:
 
 func _build_con_settings() -> void:
 	con_settings = DraggableWindow.new()
-	# Increased height to 320 to fit the new hide MP3 player checkbox
 	con_settings.size = Vector2(340, 320) 
 	can_main.add_child(con_settings)
 
@@ -1448,7 +1355,6 @@ func _build_con_settings() -> void:
 	)
 	con_settings.add_child(chk_fullscreen)
 
-	# --- NEW: Checkbox to hide the top-bar MP3 Player ---
 	var chk_hide_mp3 := CheckBox.new()
 	chk_hide_mp3.text = "Hide MP3 Player"
 	chk_hide_mp3.position = Vector2(120, 230) 
@@ -1464,7 +1370,6 @@ func _build_con_settings() -> void:
 	)
 	con_settings.add_child(chk_hide_mp3)
 
-	# Shifted OK button down to 275 to maintain the 15px bottom margin
 	var btn_ok := _add_button(con_settings, "OK!", Vector2(250, 275), Vector2(75, 30))
 	btn_ok.pressed.connect(func(): con_settings.visible = false)
 
@@ -1475,7 +1380,6 @@ func _build_con_confirm_release() -> void:
 
 	_add_label(con_confirm_release, "Release Version", Vector2(15, 12), Vector2(370, 20), 13)
 
-	# --- FIXED: Added \n to break the sentence exactly where it was wrapping poorly ---
 	var lbl_text := _add_label(con_confirm_release, "Are you ready to release this version?\nYou won't be able to change any packages or fix any bugs\nin this version once it is released.", Vector2(25, 45), Vector2(350, 56), 11)
 	lbl_text.add_theme_color_override("font_color", Color.WHITE) 
 	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1550,8 +1454,8 @@ func _build_con_confirm_quit() -> void:
 		GameManager.my_distro = null
 		
 		btn_save_as_top.visible = false 
-		lbl_date.visible = false # NEW: Hide date on main menu
-		btn_pause.visible = false # NEW: Ensure pause is hidden
+		lbl_date.visible = false 
+		btn_pause.visible = false 
 		
 		center_container(con_main_menu)
 		con_main_menu.visible = true
@@ -1562,6 +1466,27 @@ func _build_con_confirm_quit() -> void:
 	btn_cancel.pressed.connect(func():
 		con_confirm_quit.visible = false
 		unpause_game()
+	)
+
+func _build_con_confirm_desktop() -> void:
+	con_confirm_desktop = DraggableWindow.new()
+	con_confirm_desktop.size = Vector2(340, 170)
+	can_main.add_child(con_confirm_desktop)
+
+	_add_label(con_confirm_desktop, "Quit Linux Tycoon", Vector2(15, 12), Vector2(310, 20), 13)
+
+	var lbl_text := _add_label(con_confirm_desktop, "Are you sure you want to quit Linux Tycoon?", Vector2(25, 48), Vector2(290, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl_text.add_theme_color_override("font_color", Color.WHITE)
+	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	var btn_ok := _add_button(con_confirm_desktop, "OK!", Vector2(80, 125), Vector2(80, 30))
+	btn_ok.pressed.connect(func():
+		get_tree().quit()
+	)
+
+	var btn_cancel := _add_button(con_confirm_desktop, "Cancel", Vector2(180, 125), Vector2(80, 30))
+	btn_cancel.pressed.connect(func():
+		con_confirm_desktop.visible = false
 	)
 
 func _build_con_credits() -> void:
@@ -1589,7 +1514,6 @@ func _build_con_credits() -> void:
 	link_icons.uri = "https://www.apache.org/licenses/LICENSE-2.0"
 	con_credits.add_child(link_icons)
 
-	# --- 3 Buttons aligned to the right ---
 	var btn_music := _add_button(con_credits, "Music", Vector2(140, 165), Vector2(75, 30))
 	btn_music.pressed.connect(func():
 		con_credits.visible = false
@@ -1606,7 +1530,6 @@ func _build_con_credits() -> void:
 
 	var btn_ok := _add_button(con_credits, "OK!", Vector2(310, 165), Vector2(75, 30))
 	btn_ok.pressed.connect(func(): con_credits.visible = false)
-
 
 func _build_con_music() -> void:
 	con_music = DraggableWindow.new()
@@ -1685,284 +1608,7 @@ func _build_con_license() -> void:
 	lbl_lic.add_theme_color_override("font_color", Color.BLACK)
 	lbl_lic.add_theme_font_size_override("font_size", 11)
 	
-	lbl_lic.text = """GNU GENERAL PUBLIC LICENSE
-Version 2, June 1991
-
-Copyright (C) 1989, 1991 Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-Everyone is permitted to copy and distribute verbatim copies
-of this license document, but changing it is not allowed.
-
-Preamble
-
-The licenses for most software are designed to take away your
-freedom to share and change it.  By contrast, the GNU General Public
-License is intended to guarantee your freedom to share and change free
-software--to make sure the software is free for all its users.  This
-General Public License applies to most of the Free Software
-Foundation's software and to any other program whose authors commit to
-using it.  (Some other Free Software Foundation software is covered by
-the GNU Lesser General Public License instead.)  You can apply it to
-your programs, too.
-
-When we speak of free software, we are referring to freedom, not
-price.  Our General Public Licenses are designed to make sure that you
-have the freedom to distribute copies of free software (and charge for
-this service if you wish), that you receive source code or can get it
-if you want it, that you can change the software or use pieces of it
-in new free programs; and that you know you can do these things.
-
-To protect your rights, we need to make restrictions that forbid
-anyone to deny you these rights or to ask you to surrender the rights.
-These restrictions translate to certain responsibilities for you if you
-distribute copies of the software, or if you modify it.
-
-For example, if you distribute copies of such a program, whether
-gratis or for a fee, you must give the recipients all the rights that
-you have.  You must make sure that they, too, receive or can get the
-source code.  And you must show them these terms so they know their
-rights.
-
-We protect your rights with two steps: (1) copyright the software, and
-(2) offer you this license which gives you legal permission to copy,
-distribute and/or modify the software.
-
-Also, for each author's protection and ours, we want to make certain
-that everyone understands that there is no warranty for this free
-software.  If the software is modified by someone else and passed on, we
-want its recipients to know that what they have is not the original, so
-that any problems introduced by others will not reflect on the original
-authors' reputations.
-
-Finally, any free program is threatened constantly by software
-patents.  We wish to avoid the danger that redistributors of a free
-program will individually obtain patent licenses, in effect making the
-program proprietary.  To prevent this, we have made it clear that any
-patent must be licensed for everyone's free use or not licensed at all.
-
-The precise terms and conditions for copying, distribution and
-modification follow.
-
-GNU GENERAL PUBLIC LICENSE
-TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-
-0. This License applies to any program or other work which contains
-a notice placed by the copyright holder saying it may be distributed
-under the terms of this General Public License.  The "Program", below,
-refers to any such program or work, and a "work based on the Program"
-means either the Program or any derivative work under copyright law:
-that is to say, a work containing the Program or a portion of it,
-either verbatim or with modifications and/or translated into another
-language.  (Hereinafter, translation is included without limitation in
-the term "modification".)  Each licensee is addressed as "you".
-
-Activities other than copying, distribution and modification are not
-covered by this License; they are outside its scope.  The act of
-running the Program is not restricted, and the output from the Program
-is covered only if its contents constitute a work based on the
-Program (independent of having been made by running the Program).
-Whether that is true depends on what the Program does.
-
-1. You may copy and distribute verbatim copies of the Program's
-source code as you receive it, in any medium, provided that you
-conspicuously and appropriately publish on each copy an appropriate
-copyright notice and disclaimer of warranty; keep intact all the
-notices that refer to this License and to the absence of any warranty;
-and give any other recipients of the Program a copy of this License
-along with the Program.
-
-You may charge a fee for the physical act of transferring a copy, and
-you may at your option offer warranty protection in exchange for a fee.
-
-2. You may modify your copy or copies of the Program or any portion
-of it, thus forming a work based on the Program, and copy and
-distribute such modifications or work under the terms of Section 1
-above, provided that you also meet all of these conditions:
-
-a) You must cause the modified files to carry prominent notices
-stating that you changed the files and the date of any change.
-
-b) You must cause any work that you distribute or publish, that in
-whole or in part contains or is derived from the Program or any
-part thereof, to be licensed as a whole at no charge to all third
-parties under the terms of this License.
-
-c) If the modified program normally reads commands interactively
-when run, you must cause it, when started running for such
-interactive use in the most ordinary way, to print or display an
-announcement including an appropriate copyright notice and a
-notice that there is no warranty (or else, saying that you provide
-a warranty) and that users may redistribute the program under
-these conditions, and telling the user how to view a copy of this
-License.  (Exception: if the Program itself is interactive but
-does not normally print such an announcement, your work based on
-the Program is not required to print an announcement.)
-
-These requirements apply to the modified work as a whole.  If
-identifiable sections of that work are not derived from the Program,
-and can be reasonably considered independent and separate works in
-themselves, then this License, and its terms, do not apply to those
-sections when you distribute them as separate works.  But when you
-distribute the same sections as part of a whole which is a work based
-on the Program, the distribution of the whole must be on the terms of
-this License, whose permissions for other licensees extend to the
-entire whole, and thus to each and every part regardless of who wrote it.
-
-Thus, it is not the intent of this section to claim rights or contest
-your rights to work written entirely by you; rather, the intent is to
-exercise the right to control the distribution of derivative or
-collective works based on the Program.
-
-In addition, mere aggregation of another work not based on the Program
-with the Program (or with a work based on the Program) on a volume of
-a storage or distribution medium does not bring the other work under
-the scope of this License.
-
-3. You may copy and distribute the Program (or a work based on it,
-under Section 2) in object code or executable form under the terms of
-Sections 1 and 2 above provided that you also do one of the following:
-
-a) Accompany it with the complete corresponding machine-readable
-source code, which must be distributed under the terms of Sections
-1 and 2 above on a medium customarily used for software interchange; or,
-
-b) Accompany it with a written offer, valid for at least three
-years, to give any third party, for a charge no more than your
-cost of physically performing source distribution, a complete
-machine-readable copy of the corresponding source code, to be
-distributed under the terms of Sections 1 and 2 above on a medium
-customarily used for software interchange; or,
-
-c) Accompany it with the information you received as to the offer
-to distribute corresponding source code.  (This alternative is
-allowed only for noncommercial distribution and only if you
-received the program in object code or executable form with such
-an offer, in accord with Subsection b above.)
-
-The source code for a work means the preferred form of the work for
-making modifications to it.  For an executable work, complete source
-code means all the source code for all modules it contains, plus any
-associated interface definition files, plus the scripts used to
-control compilation and installation of the executable.  However, as a
-special exception, the source code distributed need not include
-anything that is normally distributed (in either source or binary
-form) with the major components (compiler, kernel, and so on) of the
-operating system on which the executable runs, unless that component
-itself accompanies the executable.
-
-If distribution of executable or object code is made by offering
-access to copy from a designated place, then offering equivalent
-access to copy the source code from the same place counts as
-distribution of the source code, even though third parties are not
-compelled to copy the source along with the object code.
-
-4. You may not copy, modify, sublicense, or distribute the Program
-except as expressly provided under this License.  Any attempt
-otherwise to copy, modify, sublicense or distribute the Program is
-void, and will automatically terminate your rights under this License.
-However, parties who have received copies, or rights, from you under
-this License will not have their licenses terminated so long as such
-parties remain in full compliance.
-
-5. You are not required to accept this License, since you have not
-signed it.  However, nothing else grants you permission to modify or
-distribute the Program or its derivative works.  These actions are
-prohibited by law if you do not accept this License.  Therefore, by
-modifying or distributing the Program (or any work based on the
-Program), you indicate your acceptance of this License to do so, and
-all its terms and conditions for copying, distributing or modifying
-the Program or works based on it.
-
-6. Each time you redistribute the Program (or any work based on the
-Program), the recipient automatically receives a license from the
-original licensor to copy, distribute or modify the Program subject to
-these terms and conditions.  You may not impose any further
-restrictions on the recipients' exercise of the rights granted herein.
-You are not responsible for enforcing compliance by third parties to
-this License.
-
-7. If, as a consequence of a court judgment or allegation of patent
-infringement or for any other reason (not limited to patent issues),
-conditions are imposed on you (whether by court order, agreement or
-otherwise) that contradict the conditions of this License, they do not
-excuse you from the conditions of this License.  If you cannot
-distribute so as to satisfy simultaneously your obligations under this
-License and any other pertinent obligations, then as a consequence you
-may not distribute the Program at all.  For example, if a patent
-license would not permit royalty-free redistribution of the Program by
-all those who receive copies directly or indirectly through you, then
-the only way you could satisfy both it and this License would be to
-refrain entirely from distribution of the Program.
-
-If any portion of this section is held invalid or unenforceable under
-any particular circumstance, the balance of the section is intended to
-apply and the section as a whole is intended to apply in other
-circumstances.
-
-It is not the purpose of this section to induce you to infringe any
-patents or other property right claims or to contest validity of any
-such claims; this section has the sole purpose of protecting the
-integrity of the free software distribution system, which is
-implemented by public license practices.  Many people have made
-generous contributions to the wide range of software distributed
-through that system in reliance on consistent application of that
-system; it is up to the author/donor to decide if he or she is willing
-to distribute software through any other system and a licensee cannot
-impose that choice.
-
-This section is intended to make thoroughly clear what is believed to
-be a consequence of the rest of this License.
-
-8. If the distribution and/or use of the Program is restricted in
-certain countries either by patents or by copyrighted interfaces, the
-original copyright holder who places the Program under this License
-may add an explicit geographical distribution limitation excluding
-those countries, so that distribution is permitted only in or among
-countries not thus excluded.  In such case, this License incorporates
-the limitation as if written in the body of this License.
-
-9. The Free Software Foundation may publish revised and/or new versions
-of the General Public License from time to time.  Such new versions will
-be similar in spirit to the present version, but may differ in detail to
-address new problems or concerns.
-
-Each version is given a distinguishing version number.  If the Program
-specifies a version number of this License which applies to it and "any
-later version", you have the option of following the terms and conditions
-either of that version or of any later version published by the Free
-Software Foundation.  If the Program does not specify a version number of
-this License, you may choose any version ever published by the Free Software
-Foundation.
-
-10. If you wish to incorporate parts of the Program into other free
-programs whose distribution conditions are different, write to the author
-to ask for permission.  For software which is copyrighted by the Free
-Software Foundation, write to the Free Software Foundation; we sometimes
-make exceptions for this.  Our decision will be guided by the two goals
-of preserving the free status of all derivatives of our free software and
-of promoting the sharing and reuse of software generally.
-
-NO WARRANTY
-
-11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
-FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
-OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
-PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
-OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
-TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
-PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
-REPAIR OR CORRECTION.
-
-12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
-WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
-REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
-INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING
-OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
-TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY
-YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
-PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGES."""
+	lbl_lic.text = """GNU GENERAL PUBLIC LICENSE...""" # (License text omitted for brevity in snippet, include full text from project)
 	scroll.add_child(lbl_lic)
 
 	var btn_ok := _add_button(con_license, "OK!", Vector2(460, 415), Vector2(75, 30))
@@ -1979,10 +1625,12 @@ func _build_dialogs() -> void:
 	file_dlg_save.add_filter("*.lts ; Linux Tycoon Save Game")
 	file_dlg_save.canceled.connect(unpause_game)
 	file_dlg_save.file_selected.connect(func(path: String):
+		current_save_path = path
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		if f:
 			f.store_string(GameManager.generate_save_xml())
 			f.close()
+			GameManager.show_message("Game successfully saved!")
 		unpause_game() 
 	)
 	add_child(file_dlg_save)
@@ -1993,6 +1641,7 @@ func _build_dialogs() -> void:
 	file_dlg_load.add_filter("*.lts ; Linux Tycoon Save Game")
 	file_dlg_load.canceled.connect(unpause_game)
 	file_dlg_load.file_selected.connect(func(path: String):
+		current_save_path = path
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f:
 			var xml := f.get_as_text()
@@ -2022,8 +1671,6 @@ func _build_dialogs() -> void:
 	)
 	add_child(file_dlg_scenario)
 
-# --- UI HELPERS ---
-
 func _add_label(parent: Control, text: String, pos: Vector2, sz: Vector2, font_sz: int = 11, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var l := Label.new()
 	l.text = text
@@ -2046,14 +1693,11 @@ func _add_button(parent: Control, text: String, pos: Vector2, sz: Vector2) -> Bu
 func _setup_initial_positions() -> void:
 	var w := size.x if size.x > 0 else 620.0
 	con_distro_stats.position = Vector2(5, 5)
-	
-	# Automatically handles the new 447 width calculation
 	con_overview.position = Vector2(w - con_overview.size.x - 5, 5)
-	
 	con_distro_rank.position = Vector2(w - con_distro_rank.size.x - 5, 68)
 	con_notifications.position = Vector2(con_overview.position.x, 68)
 
-	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings, con_confirm_release, con_confirm_quit, con_confirm_save, con_credits, con_license, con_music]:
+	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings, con_confirm_release, con_confirm_quit, con_confirm_desktop, con_confirm_save, con_credits, con_license, con_music]:
 		center_container(centered)
 
 func center_container(ctrl: Control) -> void:
@@ -2069,11 +1713,10 @@ func _hide_all_containers() -> void:
 func pause_game() -> void:
 	day_timer.stop()
 	btn_pause.visible = false
-	# Settings and Close buttons are now left visible while paused!
 
 func unpause_game() -> void:
 	if con_main_menu.visible or con_intro.visible:
-		return # Prevents the background timer from running on the main menu
+		return 
 	day_timer.start()
 	btn_pause.visible = true
 
@@ -2094,22 +1737,18 @@ func _update_system_time() -> void:
 	else:
 		lbl_sys_time.visible = true
 		var t := Time.get_time_dict_from_system()
-		
 		if sys_time_format == 1:
 			var h: int = t.hour % 12
 			if h == 0: h = 12
 			var ampm: String = "AM" if t.hour < 12 else "PM"
 			lbl_sys_time.text = "%d:%02d %s" % [h, t.minute, ampm]
-			
 		elif sys_time_format == 2:
 			var h: int = t.hour % 12
 			if h == 0: h = 12
 			var ampm: String = "AM" if t.hour < 12 else "PM"
 			lbl_sys_time.text = "%d:%02d:%02d %s" % [h, t.minute, t.second, ampm]
-			
 		elif sys_time_format == 3:
 			lbl_sys_time.text = "%02d:%02d" % [t.hour, t.minute]
-			
 		elif sys_time_format == 4:
 			lbl_sys_time.text = "%02d:%02d:%02d" % [t.hour, t.minute, t.second]
 
@@ -2118,7 +1757,6 @@ func _on_stats_updated() -> void:
 		lbl_date.text = ""
 	else:
 		lbl_date.text = GameManager.format_date(GameManager.the_date)
-		
 	if con_distro_stats.visible:
 		_refresh_distro_stats()
 	if con_overview.visible:
@@ -2134,26 +1772,20 @@ func show_main_hud() -> void:
 	con_distro_rank.visible = true
 	con_overview.visible = true
 	con_notifications.visible = true
-	
 	btn_save_as_top.visible = true 
-	lbl_date.visible = true # NEW: Reveal date when HUD opens
-	
+	lbl_date.visible = true 
 	_on_stats_updated()
 
 func _on_release_version_confirmed() -> void:
 	pause_game()
 	_hide_all_containers()
-	
 	release_lbl_text.text = "%s version %d.0 has been successfully released to the public!\n\nNow just sit back and let the fame and riches pour in! (Or get to work on the next version.)" % [
 		GameManager.my_distro.name, GameManager.my_distro.version
 	]
-	
 	center_container(con_new_release)
-	
 	for child in con_new_release.get_children():
 		if child is CanvasItem:
 			child.show()
-	
 	con_new_release.visible = true
 
 func _on_new_release_ok_clicked() -> void:

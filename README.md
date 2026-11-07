@@ -50,6 +50,7 @@ My playtesting has been limited, but has a number of bugs which I have identifie
     * alex-morgan *Acid Jazz Cafe Lounge Groove*
     * Amplify_Music *Jazz Cafe Music - Electric Velvet Groove*
     * Turning_Pages *Kindling the Flame*
+* I could add a play-pause button for the MP3 Player and a track selector button which leads to a window (I downloaded the icon from Google Icons).
 
 * Options menu with support for audio, localisation, etc.
 
