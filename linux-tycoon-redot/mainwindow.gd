@@ -25,6 +25,11 @@ var lbl_mp3: Label
 var chk_mute: CheckBox # Elevated to keep settings and top bar in sync
 # ---------------------------------------
 
+var tex_save_as: Texture2D
+var btn_save_as_top: Button
+var con_confirm_save: DraggableWindow
+var current_save_path: String = "user://SaveGame.lts"
+
 # Sub-containers
 var con_main_menu: DraggableWindow
 var con_intro: DraggableWindow
@@ -42,6 +47,7 @@ var con_confirm_quit: DraggableWindow
 var con_credits: DraggableWindow
 var con_license: DraggableWindow
 var con_music: DraggableWindow # NEW
+var con_confirm_desktop: DraggableWindow # NEW
 
 # UI Element References for dynamic updates
 var lbl_scenario: Label
@@ -73,6 +79,7 @@ var mp3_bg: ColorRect
 var rank_vbox: VBoxContainer
 var notif_lbl: RichTextLabel
 var pkg_vbox: VBoxContainer
+var pkg_sort_mode: int = 0 # NEW: Tracks the selected package sort mode
 
 var work_list_vbox: VBoxContainer
 var work_selected_idx: int = 0
@@ -120,6 +127,9 @@ func _ready() -> void:
 		tex_settings = load("res://icons/settings_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 	if ResourceLoader.exists("res://icons/close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
 		tex_close = load("res://icons/close_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+
+	if ResourceLoader.exists("res://icons/save_as_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_save_as = load("res://icons/save_as_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 		
 	if ResourceLoader.exists("res://icons/skip_previous_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
 		tex_skip_prev = load("res://icons/skip_previous_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
@@ -168,6 +178,7 @@ func _ready() -> void:
 	_build_con_settings()
 	_build_con_confirm_release() 
 	_build_con_confirm_quit()
+	_build_con_confirm_save() # NEW
 	_build_con_credits()
 	_build_con_music() # NEW
 	_build_con_license()
@@ -330,16 +341,19 @@ func _build_base_layout() -> void:
 	top_bar.add_child(lbl_sys_time)
 
 	lbl_date = Label.new()
-	lbl_date.anchor_left = 1.0
-	lbl_date.anchor_right = 1.0
-	lbl_date.offset_left = -332
-	lbl_date.offset_right = -115 
+	# --- FIXED: Anchored to the center and positioned in the left gap ---
+	lbl_date.anchor_left = 0.5
+	lbl_date.anchor_right = 0.5
+	lbl_date.offset_left = -300
+	lbl_date.offset_right = -170 
 	lbl_date.offset_top = 2
 	lbl_date.offset_bottom = 24
-	lbl_date.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	lbl_date.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# --------------------------------------------------------------------
 	lbl_date.add_theme_color_override("font_color", Color.BLACK)
+	lbl_date.visible = false
 	top_bar.add_child(lbl_date)
-	
+
 	var sb_icon_btn := StyleBoxFlat.new()
 	sb_icon_btn.bg_color = Color8(89, 131, 192)
 	sb_icon_btn.border_color = Color8(60, 107, 173)
@@ -350,6 +364,92 @@ func _build_base_layout() -> void:
 	
 	var sb_icon_pressed := sb_icon_btn.duplicate()
 	sb_icon_pressed.bg_color = Color8(35, 75, 140)
+
+	# ... (Skip down to the top-right buttons) ...
+
+	btn_settings_top = Button.new()
+	btn_settings_top.anchor_left = 1.0
+	btn_settings_top.anchor_right = 1.0
+	# Shifted left by 35px
+	btn_settings_top.offset_left = -105 
+	btn_settings_top.offset_right = -75
+	btn_settings_top.offset_top = 2
+	btn_settings_top.offset_bottom = 24
+	btn_settings_top.icon = tex_settings
+	btn_settings_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_settings_top.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_settings_top.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_settings_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_settings_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_settings_top.visible = true
+	btn_settings_top.pressed.connect(func():
+		center_container(con_settings)
+		con_settings.visible = true
+		con_settings.move_to_front()
+	)
+	top_bar.add_child(btn_settings_top)
+
+	# --- NEW: Save As Button (Between Settings and Close) ---
+	# --- MOVED: Save As Button (Now left of Settings) ---
+	btn_save_as_top = Button.new()
+	btn_save_as_top.anchor_left = 1.0
+	btn_save_as_top.anchor_right = 1.0
+	btn_save_as_top.offset_left = -105
+	btn_save_as_top.offset_right = -75
+	btn_save_as_top.offset_top = 2
+	btn_save_as_top.offset_bottom = 24
+	btn_save_as_top.icon = tex_save_as
+	btn_save_as_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	
+	# --- FIXED: Force the icon to shrink to match the others ---
+	btn_save_as_top.expand_icon = true
+	btn_save_as_top.add_theme_constant_override("icon_max_width", 16)
+	# -----------------------------------------------------------
+	
+	btn_save_as_top.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_save_as_top.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_save_as_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_save_as_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_save_as_top.visible = false
+	btn_save_as_top.pressed.connect(func():
+		pause_game()
+		file_dlg_save.popup_centered()
+	)
+	top_bar.add_child(btn_save_as_top)
+
+	btn_close_top = Button.new()
+	btn_close_top.anchor_left = 1.0
+	btn_close_top.anchor_right = 1.0
+	btn_close_top.offset_left = -35 
+	btn_close_top.offset_right = -5
+	# ... (inside _build_base_layout) ...
+
+	btn_close_top = Button.new()
+	btn_close_top.anchor_left = 1.0
+	btn_close_top.anchor_right = 1.0
+	btn_close_top.offset_left = -35 
+	btn_close_top.offset_right = -5
+	btn_close_top.offset_top = 2
+	btn_close_top.offset_bottom = 24
+	btn_close_top.icon = tex_close
+	btn_close_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_close_top.add_theme_stylebox_override("normal", sb_close_btn)
+	btn_close_top.add_theme_stylebox_override("hover", sb_close_hover)
+	btn_close_top.add_theme_stylebox_override("pressed", sb_close_pressed)
+	btn_close_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_close_top.visible = true
+	btn_close_top.pressed.connect(func():
+		pause_game()
+		# --- NEW: Context Aware Quitting ---
+		if con_main_menu.visible:
+			center_container(con_confirm_desktop)
+			con_confirm_desktop.visible = true
+		else:
+			center_container(con_confirm_quit)
+			con_confirm_quit.visible = true
+		# -----------------------------------
+	)
+	top_bar.add_child(btn_close_top)
 
 	btn_skip_prev = Button.new()
 	btn_skip_prev.anchor_left = 0.5
@@ -428,11 +528,13 @@ func _build_base_layout() -> void:
 	btn_pause = Button.new()
 	btn_pause.anchor_left = 1.0
 	btn_pause.anchor_right = 1.0
-	btn_pause.offset_left = -105
-	btn_pause.offset_right = -75
+	# --- FIXED: Shifted left to -140 to stop overlapping with Save As ---
+	btn_pause.offset_left = -140
+	btn_pause.offset_right = -110
 	btn_pause.offset_top = 2
 	btn_pause.offset_bottom = 24
 	btn_pause.icon = tex_pause
+	# ... (keep the rest of btn_pause exactly as is)
 	btn_pause.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn_pause.add_theme_stylebox_override("normal", sb_icon_btn)
 	btn_pause.add_theme_stylebox_override("hover", sb_icon_hover)
@@ -442,10 +544,11 @@ func _build_base_layout() -> void:
 	btn_pause.pressed.connect(_on_btn_pause_pressed)
 	top_bar.add_child(btn_pause)
 
+	# --- MOVED: Settings Button (Now middle) ---
 	btn_settings_top = Button.new()
 	btn_settings_top.anchor_left = 1.0
 	btn_settings_top.anchor_right = 1.0
-	btn_settings_top.offset_left = -70 
+	btn_settings_top.offset_left = -70 # Shifted right to take the middle slot
 	btn_settings_top.offset_right = -40
 	btn_settings_top.offset_top = 2
 	btn_settings_top.offset_bottom = 24
@@ -455,12 +558,14 @@ func _build_base_layout() -> void:
 	btn_settings_top.add_theme_stylebox_override("hover", sb_icon_hover)
 	btn_settings_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
 	btn_settings_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	btn_settings_top.visible = false
+	btn_settings_top.visible = true
 	btn_settings_top.pressed.connect(func():
 		center_container(con_settings)
 		con_settings.visible = true
+		con_settings.move_to_front()
 	)
 	top_bar.add_child(btn_settings_top)
+	# -------------------------------------------
 
 	btn_close_top = Button.new()
 	btn_close_top.anchor_left = 1.0
@@ -487,7 +592,7 @@ func _build_base_layout() -> void:
 	btn_close_top.add_theme_stylebox_override("hover", sb_close_hover)
 	btn_close_top.add_theme_stylebox_override("pressed", sb_close_pressed)
 	btn_close_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	btn_close_top.visible = false
+	btn_close_top.visible = true
 	btn_close_top.pressed.connect(func():
 		pause_game()
 		center_container(con_confirm_quit)
@@ -744,7 +849,8 @@ func _build_con_distro_stats() -> void:
 	stats_btn_save.disabled = true
 	stats_btn_save.pressed.connect(func(): 
 		pause_game()
-		file_dlg_save.popup_centered()
+		center_container(con_confirm_save)
+		con_confirm_save.visible = true
 	)
 
 func _refresh_distro_stats() -> void:
@@ -765,29 +871,33 @@ func _refresh_distro_stats() -> void:
 
 func _build_con_overview() -> void:
 	con_overview = DraggableWindow.new()
-	con_overview.size = Vector2(427, 50)
+	con_overview.size = Vector2(540, 50)
 	can_main.add_child(con_overview)
 
-	# --- FIXED: Switched back to standard Label to natively center horizontally and vertically ---
 	var make_lbl = func(pos: Vector2, sz: Vector2) -> Label:
 		var l := Label.new()
 		l.position = pos
 		l.size = sz
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		l.add_theme_font_size_override("font_size", 14) # Bigger text!
+		l.add_theme_font_size_override("font_size", 12) 
 		con_overview.add_child(l)
 		return l
 
-	overview_lbl_name = make_lbl.call(Vector2(5, 10), Vector2(150, 30))
-	overview_lbl_users = make_lbl.call(Vector2(165, 10), Vector2(110, 30))
-	overview_lbl_age = make_lbl.call(Vector2(285, 10), Vector2(130, 30))
+	overview_lbl_name = make_lbl.call(Vector2(20, 10), Vector2(248, 30))
+	
+	# --- FIXED: Override the helper to force left-alignment ---
+	overview_lbl_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	# ----------------------------------------------------------
+	
+	overview_lbl_users = make_lbl.call(Vector2(268, 10), Vector2(130, 30))
+	overview_lbl_age = make_lbl.call(Vector2(403, 10), Vector2(135, 30))
 
 func _refresh_overview() -> void:
 	var d := GameManager.my_distro
 	if d == null:
 		return
-	# Removed the [b] bold tags
+	# Re-added the prefixes with the new Label-based setup
 	overview_lbl_name.text = "Name: %s %d.0" % [d.name, d.released_ver]
 	overview_lbl_users.text = "Users: %d" % d.users
 	overview_lbl_age.text = "Age: %d days" % d.get_distro_age_in_days()
@@ -878,19 +988,21 @@ func _refresh_notifications() -> void:
 
 func _build_con_package_selection() -> void:
 	con_package_selection = DraggableWindow.new()
-	con_package_selection.size = Vector2(600, 450)
+	# Height reduced to 460 so it fits safely within the 500px game window resolution
+	con_package_selection.size = Vector2(600, 460)
 	can_main.add_child(con_package_selection)
 
 	_add_label(con_package_selection, "Package Selection", Vector2(15, 12), Vector2(200, 20), 13)
 
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
-	bg.position = Vector2(15, 35)
-	bg.size = Vector2(570, 360) 
+	bg.position = Vector2(15, 40)
+	# Height set to exactly 360px (fits exactly 6 rows of 60px with no partial cutoffs)
+	bg.size = Vector2(570, 360)
 	con_package_selection.add_child(bg)
 
 	var scroll := ScrollContainer.new()
-	scroll.position = Vector2(15, 35)
+	scroll.position = Vector2(15, 40)
 	scroll.size = Vector2(570, 360) 
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	con_package_selection.add_child(scroll)
@@ -900,29 +1012,99 @@ func _build_con_package_selection() -> void:
 	pkg_vbox.add_theme_constant_override("separation", 0)
 	scroll.add_child(pkg_vbox)
 
-	var btn_ok := _add_button(con_package_selection, "OK!", Vector2(515, 405), Vector2(70, 30))
+	# --- FIXED: Shifted further left and up to Y=415 ---
+	var opt_sort := OptionButton.new()
+	opt_sort.position = Vector2(250, 415)
+	opt_sort.size = Vector2(230, 30)
+	opt_sort.add_item("Sort: Default")
+	opt_sort.add_item("Sort: Popularity")
+	opt_sort.add_item("Sort: Bug Count")
+	opt_sort.add_item("Sort: Volunteers Assigned")
+	opt_sort.add_item("Sort: Paid Workers Assigned")
+	opt_sort.add_theme_color_override("font_color", Color.WHITE)
+	opt_sort.add_theme_color_override("font_hover_color", Color.WHITE)
+	opt_sort.add_theme_color_override("font_pressed_color", Color.WHITE)
+	opt_sort.selected = pkg_sort_mode
+	opt_sort.item_selected.connect(func(idx: int):
+		pkg_sort_mode = idx
+		_refresh_package_selection()
+	)
+	con_package_selection.add_child(opt_sort)
+
+	# Shifted up to 415 to maintain a 15px bottom margin (460 - 30 - 15 = 415)
+	var btn_ok := _add_button(con_package_selection, "OK!", Vector2(510, 415), Vector2(75, 30))
 	btn_ok.pressed.connect(_on_package_selection_ok)
 
 func _refresh_package_selection() -> void:
 	for child in pkg_vbox.get_children():
 		child.queue_free()
 
+	var d := GameManager.my_distro
+	
+	# --- NEW: Robust Sorting Logic ---
+	var sorted_indices: Array[int] = []
 	for i in range(GameManager.packages_available.size()):
-		var p := GameManager.packages_available[i]
+		sorted_indices.append(i)
+		
+	var get_vols = func(p_idx: int) -> int:
+		var i := d.packages_included.find(p_idx)
+		return d.workers_volunteers_assigned[i] if i != -1 else 0
+		
+	var get_paid = func(p_idx: int) -> int:
+		var i := d.packages_included.find(p_idx)
+		return d.workers_paid_assigned[i] if i != -1 else 0
+
+	# Using strongly typed sort functions with fallback to name for deterministic stable sorting
+	if pkg_sort_mode == 1:
+		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
+			var val_a = GameManager.packages_available[a].popularity
+			var val_b = GameManager.packages_available[b].popularity
+			if val_a != val_b: return val_a > val_b
+			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
+		)
+	elif pkg_sort_mode == 2:
+		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
+			var val_a = GameManager.packages_available[a].bugs
+			var val_b = GameManager.packages_available[b].bugs
+			if val_a != val_b: return val_a > val_b
+			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
+		)
+	elif pkg_sort_mode == 3:
+		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
+			var val_a = get_vols.call(a)
+			var val_b = get_vols.call(b)
+			if val_a != val_b: return val_a > val_b
+			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
+		)
+	elif pkg_sort_mode == 4:
+		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
+			var val_a = get_paid.call(a)
+			var val_b = get_paid.call(b)
+			if val_a != val_b: return val_a > val_b
+			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
+		)
+	# --------------------------
+
+	var row_index := 0
+	for pkg_idx in sorted_indices:
+		var p := GameManager.packages_available[pkg_idx]
 		var row := ColorRect.new()
 		row.custom_minimum_size = Vector2(550, 60)
-		row.color = Color.WHITE if i % 2 == 0 else Color8(242, 242, 242)
+		
+		# Used row_index instead of pkg_idx to ensure colors perfectly alternate
+		row.color = Color.WHITE if row_index % 2 == 0 else Color8(242, 242, 242)
 
 		var chk := CheckBox.new()
 		chk.position = Vector2(10, 16)
 		chk.size = Vector2(24, 24) 
-		chk.button_pressed = GameManager.my_distro.is_package_in_distro(i)
-		var pkg_idx := i
+		chk.button_pressed = d.is_package_in_distro(pkg_idx)
+		
+		var capture_idx := pkg_idx
 		chk.toggled.connect(func(pressed: bool):
 			if pressed:
-				GameManager.my_distro.add_package_to_distro(pkg_idx)
+				d.add_package_to_distro(capture_idx)
 			else:
-				GameManager.my_distro.remove_package_from_distro(pkg_idx)
+				d.remove_package_from_distro(capture_idx)
 		)
 		row.add_child(chk)
 
@@ -941,6 +1123,7 @@ func _refresh_package_selection() -> void:
 		l_stats.add_theme_color_override("font_color", Color8(80, 80, 80))
 
 		pkg_vbox.add_child(row)
+		row_index += 1
 
 func _on_package_selection_ok() -> void:
 	con_package_selection.visible = false
@@ -1292,7 +1475,8 @@ func _build_con_confirm_release() -> void:
 
 	_add_label(con_confirm_release, "Release Version", Vector2(15, 12), Vector2(370, 20), 13)
 
-	var lbl_text := _add_label(con_confirm_release, "Are you ready to release this version?\nYou won't be able to change any packages or fix any bugs in this version once it is released.", Vector2(25, 45), Vector2(350, 56), 11)
+	# --- FIXED: Added \n to break the sentence exactly where it was wrapping poorly ---
+	var lbl_text := _add_label(con_confirm_release, "Are you ready to release this version?\nYou won't be able to change any packages or fix any bugs\nin this version once it is released.", Vector2(25, 45), Vector2(350, 56), 11)
 	lbl_text.add_theme_color_override("font_color", Color.WHITE) 
 	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -1305,6 +1489,40 @@ func _build_con_confirm_release() -> void:
 	var btn_no := _add_button(con_confirm_release, "No", Vector2(210, 120), Vector2(80, 30))
 	btn_no.pressed.connect(func():
 		con_confirm_release.visible = false
+		unpause_game()
+	)
+
+func _build_con_confirm_save() -> void:
+	con_confirm_save = DraggableWindow.new()
+	con_confirm_save.size = Vector2(340, 160)
+	can_main.add_child(con_confirm_save)
+
+	_add_label(con_confirm_save, "Overwrite Save?", Vector2(15, 12), Vector2(310, 20), 13)
+
+	var bg := ColorRect.new()
+	bg.color = Color.WHITE
+	bg.position = Vector2(15, 35)
+	bg.size = Vector2(310, 70)
+	con_confirm_save.add_child(bg)
+
+	var lbl_text := _add_label(con_confirm_save, "Are you sure you want to overwrite your\ncurrently loaded save file?", Vector2(25, 42), Vector2(290, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl_text.add_theme_color_override("font_color", Color.BLACK)
+	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	var btn_yes := _add_button(con_confirm_save, "Yes", Vector2(80, 115), Vector2(80, 30))
+	btn_yes.pressed.connect(func():
+		con_confirm_save.visible = false
+		var f := FileAccess.open(current_save_path, FileAccess.WRITE)
+		if f:
+			f.store_string(GameManager.generate_save_xml())
+			f.close()
+			GameManager.show_message("Game successfully overwritten!")
+		unpause_game()
+	)
+
+	var btn_no := _add_button(con_confirm_save, "No", Vector2(180, 115), Vector2(80, 30))
+	btn_no.pressed.connect(func():
+		con_confirm_save.visible = false
 		unpause_game()
 	)
 
@@ -1330,6 +1548,11 @@ func _build_con_confirm_quit() -> void:
 		con_confirm_quit.visible = false
 		_hide_all_containers()
 		GameManager.my_distro = null
+		
+		btn_save_as_top.visible = false 
+		lbl_date.visible = false # NEW: Hide date on main menu
+		btn_pause.visible = false # NEW: Ensure pause is hidden
+		
 		center_container(con_main_menu)
 		con_main_menu.visible = true
 		lbl_date.text = ""
@@ -1823,11 +2046,14 @@ func _add_button(parent: Control, text: String, pos: Vector2, sz: Vector2) -> Bu
 func _setup_initial_positions() -> void:
 	var w := size.x if size.x > 0 else 620.0
 	con_distro_stats.position = Vector2(5, 5)
+	
+	# Automatically handles the new 447 width calculation
 	con_overview.position = Vector2(w - con_overview.size.x - 5, 5)
+	
 	con_distro_rank.position = Vector2(w - con_distro_rank.size.x - 5, 68)
 	con_notifications.position = Vector2(con_overview.position.x, 68)
 
-	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings, con_confirm_release, con_confirm_quit, con_credits, con_license, con_music]:
+	for centered in [con_main_menu, con_intro, con_package_selection, con_worker_assignment, con_sacrifice_worker, con_new_release, con_settings, con_confirm_release, con_confirm_quit, con_confirm_save, con_credits, con_license, con_music]:
 		center_container(centered)
 
 func center_container(ctrl: Control) -> void:
@@ -1843,14 +2069,13 @@ func _hide_all_containers() -> void:
 func pause_game() -> void:
 	day_timer.stop()
 	btn_pause.visible = false
-	btn_settings_top.visible = false
-	btn_close_top.visible = false
+	# Settings and Close buttons are now left visible while paused!
 
 func unpause_game() -> void:
+	if con_main_menu.visible or con_intro.visible:
+		return # Prevents the background timer from running on the main menu
 	day_timer.start()
 	btn_pause.visible = true
-	btn_settings_top.visible = true
-	btn_close_top.visible = true
 
 func _on_btn_pause_pressed() -> void:
 	GameManager.is_paused = not GameManager.is_paused
@@ -1909,6 +2134,10 @@ func show_main_hud() -> void:
 	con_distro_rank.visible = true
 	con_overview.visible = true
 	con_notifications.visible = true
+	
+	btn_save_as_top.visible = true 
+	lbl_date.visible = true # NEW: Reveal date when HUD opens
+	
 	_on_stats_updated()
 
 func _on_release_version_confirmed() -> void:

@@ -2,11 +2,22 @@
 
 A port of Linux Tycoon Classic v1.1.2 from around 14 years ago made with the help of the Google Gemini Pro and Argon LLMs using the Redot Engine v26.3 with the Compatibility renderer which can support desktop, mobile and even the web - since Linux Tycoon is a 2D game, it may as well run anywhere.
 
-We might beat Bryan Lunduke to the Android port, but desktop functionality is crucial at this stage.
-
-This isn't a 1:1 port as all the windows are draggable and it should support full-screen.
+We might beat Bryan Lunduke to the punch with the Android port, but desktop functionality is crucial at this stage and Android is a faff as you need to setup a build environment for it with the Google tools.
 
 At this time, I don't know the full extent of what Bryan Lunduke added to v1.2 and v1.3.
+
+Some of the improvements are inspired by the fantastic *CorsixTH* project and I recommend trying it out as it's the definitive way to play *Theme Hospital*.
+
+# What's new!
+* Save As has been moved to a button at the top-right, Save is just Save.
+* Settings menu with a volume control (and mute), fullscreen support (experimental), localisation placeholder
+* New CorsixTH-inspired features (which can be optionally hidden):
+    * An MP3 player at the top-centre with track changing buttons which plays 7 free downtempo tracks from Pixabay
+    * A system clock at the top-left corner to keep track of time while playing
+* Buttons with non-text labels now use the Google Material icons which are much more presentable.
+* New dropdown to sort packages by Default, Popularity, Bugs Reported, Volunteers Assigned and Paid Workers Assigned. This will be helpful for mods which have larger package lists.
+* Bryan notifies you each time you get a new volunteer and paid worker with several randomly-selected phrases.
+* Fixed the reported bugs and PR from the upstream repo
 
 # Fixed issues and PRs from source repo:
 

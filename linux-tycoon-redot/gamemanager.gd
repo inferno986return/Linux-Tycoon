@@ -174,19 +174,47 @@ func new_day_new_productivity() -> void:
 				packages_available[i].remove_a_bug()
 
 func new_day_new_workers() -> void:
-	if my_distro.workers_paid < roundi(float(my_distro.users) / 1000.0):
+	# --- PAID WORKERS ---
+	var target_paid := roundi(float(my_distro.users) / 1000.0)
+	if my_distro.workers_paid < target_paid:
 		if randi_range(0, 150) == 1:
-			my_distro.workers_paid += 1
+			var shortfall := target_paid - my_distro.workers_paid
+			var hired_amount := randi_range(1, mini(shortfall, 5))
+			my_distro.workers_paid += hired_amount
+			
 			if is_first_worker_paid:
 				is_first_worker_paid = false
 				show_message("You've been growing so much, you can now afford your first paid worker!  A paid worker can get twice as much done in a day than a volunteer!")
+			else:
+				var s := "s" if hired_amount > 1 else ""
+				var paid_msgs = [
+					"You secured %d new paid worker%s today! Put them to work!",
+					"Budget approved! We just hired %d paid worker%s to squash some bugs.",
+					"Good news! %d new paid worker%s signed on this morning. Time to assign them to a package.",
+					"%d new paid worker%s joined the payroll. Let's get them coding!"
+				]
+				show_message(paid_msgs.pick_random() % [hired_amount, s])
 
-	if my_distro.workers_volunteers < roundi(float(my_distro.users) / 20.0):
+	# --- VOLUNTEERS ---
+	var target_vol := roundi(float(my_distro.users) / 20.0)
+	if my_distro.workers_volunteers < target_vol:
 		if randi_range(0, 50) == 1:
-			my_distro.workers_volunteers += 1
+			var shortfall := target_vol - my_distro.workers_volunteers
+			var hired_amount := randi_range(1, mini(shortfall, 15)) 
+			my_distro.workers_volunteers += hired_amount
+			
 			if is_first_worker_volunteer:
 				is_first_worker_volunteer = false
 				show_message("You just got your first volunteer!  You can assign workers to fix bugs on any package you like by using the 'Assign Workers' button.")
+			else:
+				var s := "s" if hired_amount > 1 else ""
+				var vol_msgs = [
+					"Awesome! %d new volunteer%s joined the project today. Assign them to a package to speed up bug fixes!",
+					"The community is growing! %d new volunteer%s decided to help out today.",
+					"Great news! We just got %d new volunteer%s offering their free time for the distro.",
+					"%d open-source enthusiast%s just volunteered to join your ranks. Put them to good use!"
+				]
+				show_message(vol_msgs.pick_random() % [hired_amount, s])
 
 func new_day_new_users() -> void:
 	var share := int(new_linux_users_daily / 5.0)
