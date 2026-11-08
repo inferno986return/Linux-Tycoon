@@ -5,7 +5,8 @@ var sys_timer: Timer
 var lbl_date: Label
 var lbl_sys_time: Label 
 var btn_pause: Button
-var btn_settings_top: Button 
+var lbl_paused: Label # NEW: The paused text indicator
+var btn_settings_top: Button
 var btn_close_top: Button
 var can_main: Control
 
@@ -424,6 +425,24 @@ func _build_base_layout() -> void:
 	btn_mute.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	btn_mute.pressed.connect(_on_mute_toggled)
 	top_bar.add_child(btn_mute)
+
+	# --- NEW: Paused Text Indicator ---
+	lbl_paused = Label.new()
+	lbl_paused.anchor_left = 1.0
+	lbl_paused.anchor_right = 1.0
+	lbl_paused.offset_left = -210
+	lbl_paused.offset_right = -150 
+	lbl_paused.offset_top = 2
+	lbl_paused.offset_bottom = 24
+	lbl_paused.text = "Paused"
+	lbl_paused.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	lbl_paused.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	
+	# --- FIXED: Now strictly black ---
+	lbl_paused.add_theme_color_override("font_color", Color.BLACK)
+	lbl_paused.add_theme_font_size_override("font_size", 13)
+	lbl_paused.visible = false
+	top_bar.add_child(lbl_paused)
 
 	# --- Top Right Buttons (Correctly Ordered & Non-Overlapping) ---
 	# 1. Pause Button
@@ -929,16 +948,28 @@ func _build_con_package_selection() -> void:
 	scroll.add_child(pkg_vbox)
 
 	var opt_sort := OptionButton.new()
-	opt_sort.position = Vector2(250, 415)
+	opt_sort.position = Vector2(270, 415)
 	opt_sort.size = Vector2(230, 30)
-	opt_sort.add_item("Sort: Default")
-	opt_sort.add_item("Sort: Popularity")
-	opt_sort.add_item("Sort: Bug Count")
-	opt_sort.add_item("Sort: Volunteers Assigned")
-	opt_sort.add_item("Sort: Paid Workers Assigned")
+	
+	# --- FIXED: Dropdown options organized alphabetically ---
+	opt_sort.add_item("Sort: Default")        # Index 0
+	opt_sort.add_item("Sort: Alphabetical")   # Index 1
+	opt_sort.add_item("Sort: Bug Count")      # Index 2
+	opt_sort.add_item("Sort: Nerd Cred")      # Index 3
+	opt_sort.add_item("Sort: Open Source")    # Index 4
+	opt_sort.add_item("Sort: Popularity")     # Index 5
+	opt_sort.add_item("Sort: Size")           # Index 6
+	# --------------------------------------------------------
+
 	opt_sort.add_theme_color_override("font_color", Color.WHITE)
 	opt_sort.add_theme_color_override("font_hover_color", Color.WHITE)
 	opt_sort.add_theme_color_override("font_pressed_color", Color.WHITE)
+	opt_sort.add_theme_color_override("font_focus_color", Color.WHITE)
+	
+	var popup := opt_sort.get_popup()
+	popup.add_theme_color_override("font_color", Color.WHITE)
+	popup.add_theme_color_override("font_hover_color", Color.WHITE)
+
 	opt_sort.selected = pkg_sort_mode
 	opt_sort.item_selected.connect(func(idx: int):
 		pkg_sort_mode = idx
@@ -954,46 +985,52 @@ func _refresh_package_selection() -> void:
 		child.queue_free()
 
 	var d := GameManager.my_distro
+	
 	var sorted_indices: Array[int] = []
 	for i in range(GameManager.packages_available.size()):
 		sorted_indices.append(i)
-		
-	var get_vols = func(p_idx: int) -> int:
-		var i := d.packages_included.find(p_idx)
-		return d.workers_volunteers_assigned[i] if i != -1 else 0
-		
-	var get_paid = func(p_idx: int) -> int:
-		var i := d.packages_included.find(p_idx)
-		return d.workers_paid_assigned[i] if i != -1 else 0
 
-	if pkg_sort_mode == 1:
+	# --- FIXED: Mapped the new indices to their respective sorting rules ---
+	if pkg_sort_mode == 1: # Alphabetical
 		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
-			var val_a = GameManager.packages_available[a].popularity
-			var val_b = GameManager.packages_available[b].popularity
-			if val_a != val_b: return val_a > val_b
 			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
 		)
-	elif pkg_sort_mode == 2:
+	elif pkg_sort_mode == 2: # Bug Count
 		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
 			var val_a = GameManager.packages_available[a].bugs
 			var val_b = GameManager.packages_available[b].bugs
 			if val_a != val_b: return val_a > val_b
 			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
 		)
-	elif pkg_sort_mode == 3:
+	elif pkg_sort_mode == 3: # Nerd Cred
 		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
-			var val_a = get_vols.call(a)
-			var val_b = get_vols.call(b)
+			var val_a = GameManager.packages_available[a].nerd_cred
+			var val_b = GameManager.packages_available[b].nerd_cred
 			if val_a != val_b: return val_a > val_b
 			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
 		)
-	elif pkg_sort_mode == 4:
+	elif pkg_sort_mode == 4: # Open Source (True > False)
 		sorted_indices.sort_custom(func(a: int, b: int) -> bool: 
-			var val_a = get_paid.call(a)
-			var val_b = get_paid.call(b)
+			var val_a = GameManager.packages_available[a].is_open_source
+			var val_b = GameManager.packages_available[b].is_open_source
+			if val_a != val_b: return val_a
+			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
+		)
+	elif pkg_sort_mode == 5: # Popularity
+		sorted_indices.sort_custom(func(a: int, b: int) -> bool:
+			var val_a = GameManager.packages_available[a].popularity
+			var val_b = GameManager.packages_available[b].popularity
 			if val_a != val_b: return val_a > val_b
 			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
 		)
+	elif pkg_sort_mode == 6: # Size
+		sorted_indices.sort_custom(func(a: int, b: int) -> bool:
+			var val_a = GameManager.packages_available[a].size_in_mb
+			var val_b = GameManager.packages_available[b].size_in_mb
+			if val_a != val_b: return val_a > val_b
+			return GameManager.packages_available[a].name < GameManager.packages_available[b].name
+		)
+	# -----------------------------------------------------------------------
 
 	var row_index := 0
 	for pkg_idx in sorted_indices:
@@ -1448,6 +1485,7 @@ func _build_con_confirm_quit() -> void:
 	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	var btn_ok := _add_button(con_confirm_quit, "OK!", Vector2(80, 115), Vector2(80, 30))
+
 	btn_ok.pressed.connect(func():
 		con_confirm_quit.visible = false
 		_hide_all_containers()
@@ -1456,6 +1494,8 @@ func _build_con_confirm_quit() -> void:
 		btn_save_as_top.visible = false 
 		lbl_date.visible = false 
 		btn_pause.visible = false 
+		lbl_paused.visible = false # NEW: Hide on main menu
+		GameManager.is_paused = false # NEW: Reset the underlying logic
 		
 		center_container(con_main_menu)
 		con_main_menu.visible = true
@@ -1713,19 +1753,25 @@ func _hide_all_containers() -> void:
 func pause_game() -> void:
 	day_timer.stop()
 	btn_pause.visible = false
+	if lbl_paused != null:
+		lbl_paused.visible = false # Hide it when a menu covers the game
 
 func unpause_game() -> void:
 	if con_main_menu.visible or con_intro.visible:
 		return 
 	day_timer.start()
 	btn_pause.visible = true
+	if lbl_paused != null:
+		lbl_paused.visible = GameManager.is_paused # Restore it if the game was already soft-paused
 
 func _on_btn_pause_pressed() -> void:
 	GameManager.is_paused = not GameManager.is_paused
 	if GameManager.is_paused:
 		btn_pause.icon = tex_play
+		lbl_paused.visible = true # Reveal text
 	else:
 		btn_pause.icon = tex_pause
+		lbl_paused.visible = false # Hide text
 
 func _on_day_timer_timeout() -> void:
 	if not GameManager.is_paused and GameManager.my_distro != null:

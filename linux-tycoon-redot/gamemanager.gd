@@ -11,6 +11,7 @@ var packages_available: Array[PackageData] = []
 var is_first_run: bool = true
 var is_first_worker_paid: bool = true
 var is_first_worker_volunteer: bool = true
+var has_warned_cd_size: bool = false # NEW: Tracks if Bryan has yelled at you about CDs
 var is_paused: bool = false
 var new_linux_users_daily: int = 50
 var the_date: int = 0 # Unix timestamp in seconds
@@ -27,6 +28,7 @@ func reset_new_game_state() -> void:
 	is_first_run = true
 	is_first_worker_paid = true
 	is_first_worker_volunteer = true
+	has_warned_cd_size = false # NEW
 	new_linux_users_daily = 50
 	msg_text.clear()
 	msg_date.clear()
@@ -249,6 +251,12 @@ func new_day_new_users() -> void:
 	# Bigger than a 700MB CD penalty
 	if my_distro.get_distro_size_in_mb() > 700:
 		my_distro.new_user_change -= int(my_distro.users / 100.0)
+		
+		# --- NEW: Bryan warns you why you are losing users ---
+		if not has_warned_cd_size:
+			has_warned_cd_size = true
+			show_message("The ISO for %s is over 700 MB! It will no longer fit on a standard CD. Some users with older hardware might look elsewhere." % my_distro.name)
+		# -----------------------------------------------------
 
 	# Bug Count
 	my_distro.new_user_change -= int(for_bug_count * my_distro.get_distro_bug_percentage())
@@ -487,6 +495,8 @@ func load_xml_string(xml_content: String, is_save_file: bool) -> bool:
 			is_first_worker_paid = false
 		if my_distro.workers_volunteers > 0:
 			is_first_worker_volunteer = false
+		if my_distro.get_distro_size_in_mb() > 700:
+			has_warned_cd_size = true # NEW: Stops him from repeating the warning on load
 	# --------------------------------
 
 	stats_updated.emit()
