@@ -35,6 +35,13 @@ These issues and PR from the source repo should be fixed now!
 # Current status
 The game actually launches in Redot! 
 
+You can try it yourself:
+
+1. Clone this repository or at least download the "linux-tycoon-redot" folder as a .zip.
+2. Download a copy of the Redot Engine: https://www.redotengine.org/download/
+3. Open the "linux-tycoon-redot" as a project.
+4. Click the "Run Project (F5)" (play icon) button at the top-right corner.
+
 My playtesting has been limited, but has a number of bugs which I have identified so far:
 
 ## Critical
@@ -58,7 +65,7 @@ My playtesting has been limited, but has a number of bugs which I have identifie
 * I could add a play-pause button for the MP3 Player and a track selector button which leads to a window (I downloaded the icon from Google Icons).
 * An acknowledgement from Bryan once the distro is over 900 MB that the ISO will no longer fit on a CD.
 * I could remove the Name: label so there's space for the distro name.
-* 
+* Donation links for Bryan Lunduke, Redot Engine and my PayPal.
 
 * Options menu with support for audio, localisation, etc.
 
