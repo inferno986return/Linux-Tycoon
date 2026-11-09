@@ -24,6 +24,25 @@ var btn_mute: Button
 var lbl_mp3: Label
 var chk_mute: CheckBox 
 
+var btn_mp3_player: Button 
+var con_mp3_player: DraggableWindow 
+var playlist_vbox: VBoxContainer 
+
+# --- NEW: Global references for the Jukebox controls ---
+var btn_mp3_play: Button
+var btn_mp3_pause: Button
+var btn_mp3_stop: Button
+var btn_mp3_shuf: Button
+# -------------------------------------------------------
+
+var tex_list: Texture2D
+var tex_shuffle: Texture2D
+var tex_stop: Texture2D # NEW: The stop icon
+
+var is_mp3_playing: bool = true 
+var is_mp3_paused: bool = false # NEW: Tracks stream suspension
+var is_shuffled: bool = true
+
 var tex_save_as: Texture2D
 var btn_save_as_top: Button
 var con_confirm_save: DraggableWindow
@@ -144,6 +163,13 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://icons/remove_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
 		tex_remove = load("res://icons/remove_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 
+	if ResourceLoader.exists("res://icons/list_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_list = load("res://icons/list_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/stop_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_stop = load("res://icons/stop_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/shuffle_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
+		tex_shuffle = load("res://icons/shuffle_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+
 	audio_player = AudioStreamPlayer.new()
 	add_child(audio_player)
 	audio_player.finished.connect(_on_track_finished)
@@ -179,6 +205,7 @@ func _ready() -> void:
 	_build_con_confirm_save()
 	_build_con_credits()
 	_build_con_music()
+	_build_con_mp3_player()
 	_build_con_license()
 	_build_dialogs()
 
@@ -201,17 +228,53 @@ func _ready() -> void:
 func _add_track(path: String, title: String) -> void:
 	if ResourceLoader.exists(path):
 		var stream = load(path)
-		playlist.append({"stream": stream, "title": title})
+		# NEW: Added "enabled" state
+		playlist.append({"stream": stream, "title": title, "enabled": true})
 
 func _play_track(idx: int) -> void:
 	if playlist.is_empty():
 		return
+
+	# Prevent infinite loops if everything is disabled
+	var any_enabled := false
+	for track in playlist:
+		if track["enabled"]:
+			any_enabled = true
+			break
+	if not any_enabled:
+		audio_player.stop()
+		is_mp3_playing = false
+		is_mp3_paused = false
+		audio_player.stream_paused = false
+		if lbl_mp3 != null:
+			lbl_mp3.text = "♫ No Tracks Enabled"
+		_sync_mp3_ui()
+		return
+
+	# Loop forward until we find an enabled track
+	var attempts := 0
 	current_track_idx = posmod(idx, playlist.size())
+	while not playlist[current_track_idx]["enabled"] and attempts < playlist.size():
+		current_track_idx = posmod(current_track_idx + 1, playlist.size())
+		attempts += 1
+
 	var track = playlist[current_track_idx]
+	
+	# Purge the engine lockup state before assigning a new track
+	audio_player.stream_paused = false 
 	audio_player.stream = track["stream"]
-	audio_player.play()
+	
+	if is_mp3_playing:
+		audio_player.play()
+		if is_mp3_paused:
+			audio_player.stream_paused = true
+	else:
+		audio_player.stop()
+		
 	if lbl_mp3 != null:
 		lbl_mp3.text = "♫ " + track["title"]
+		
+	_sync_mp3_ui()
 
 func _on_track_finished() -> void:
 	_play_track(current_track_idx + 1)
@@ -231,10 +294,24 @@ func _on_mute_toggled() -> void:
 	_update_volume()
 
 func _update_mp3_visibility() -> void:
+	if btn_mp3_player != null: btn_mp3_player.visible = show_mp3_player
 	if btn_skip_prev != null: btn_skip_prev.visible = show_mp3_player
 	if btn_skip_next != null: btn_skip_next.visible = show_mp3_player
 	if btn_mute != null: btn_mute.visible = show_mp3_player
 	if mp3_bg != null: mp3_bg.visible = show_mp3_player
+
+func _sync_mp3_ui() -> void:
+	if btn_mp3_play != null:
+		btn_mp3_play.disabled = (is_mp3_playing and not is_mp3_paused)
+		btn_mp3_play.modulate = Color(0.5, 0.5, 0.5, 1.0) if btn_mp3_play.disabled else Color.WHITE
+		
+		btn_mp3_pause.disabled = (not is_mp3_playing or is_mp3_paused)
+		btn_mp3_pause.modulate = Color(0.5, 0.5, 0.5, 1.0) if btn_mp3_pause.disabled else Color.WHITE
+		
+		btn_mp3_stop.disabled = not is_mp3_playing
+		btn_mp3_stop.modulate = Color(0.5, 0.5, 0.5, 1.0) if btn_mp3_stop.disabled else Color.WHITE
+		
+		btn_mp3_shuf.modulate = Color.WHITE if is_shuffled else Color(0.5, 0.5, 0.5, 1.0)
 
 func _apply_xojo_theme() -> void:
 	var t := Theme.new()
@@ -328,7 +405,7 @@ func _build_base_layout() -> void:
 	lbl_sys_time.anchor_left = 0.0
 	lbl_sys_time.anchor_right = 0.0
 	lbl_sys_time.offset_left = 5 
-	lbl_sys_time.offset_right = 205
+	lbl_sys_time.offset_right = 85
 	lbl_sys_time.offset_top = 2
 	lbl_sys_time.offset_bottom = 24
 	lbl_sys_time.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -337,10 +414,10 @@ func _build_base_layout() -> void:
 	top_bar.add_child(lbl_sys_time)
 
 	lbl_date = Label.new()
-	lbl_date.anchor_left = 0.5
+	lbl_date.anchor_left = 0.0
 	lbl_date.anchor_right = 0.5
-	lbl_date.offset_left = -300
-	lbl_date.offset_right = -170 
+	lbl_date.offset_left = 85
+	lbl_date.offset_right = -200 
 	lbl_date.offset_top = 2
 	lbl_date.offset_bottom = 24
 	lbl_date.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -374,6 +451,28 @@ func _build_base_layout() -> void:
 	var sb_icon_pressed := sb_icon_btn.duplicate()
 	sb_icon_pressed.bg_color = Color8(35, 75, 140)
 
+	# MP3 Player List Button
+	btn_mp3_player = Button.new()
+	btn_mp3_player.anchor_left = 0.5
+	btn_mp3_player.anchor_right = 0.5
+	btn_mp3_player.offset_left = -200
+	btn_mp3_player.offset_right = -170
+	btn_mp3_player.offset_top = 2
+	btn_mp3_player.offset_bottom = 24
+	btn_mp3_player.icon = tex_list
+	btn_mp3_player.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_mp3_player.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_mp3_player.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_mp3_player.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_mp3_player.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_mp3_player.pressed.connect(func():
+		center_container(con_mp3_player)
+		con_mp3_player.visible = true
+		con_mp3_player.move_to_front()
+	)
+	top_bar.add_child(btn_mp3_player)
+
+	# Previous Button
 	btn_skip_prev = Button.new()
 	btn_skip_prev.anchor_left = 0.5
 	btn_skip_prev.anchor_right = 0.5
@@ -409,6 +508,7 @@ func _build_base_layout() -> void:
 	lbl_mp3.text = "♫ Artist — Song Name"
 	mp3_bg.add_child(lbl_mp3)
 
+	# Next Button
 	btn_skip_next = Button.new()
 	btn_skip_next.anchor_left = 0.5
 	btn_skip_next.anchor_right = 0.5
@@ -1670,6 +1770,161 @@ func _build_con_music() -> void:
 		con_credits.visible = true
 	)
 
+func _build_con_mp3_player() -> void:
+	con_mp3_player = DraggableWindow.new()
+	con_mp3_player.size = Vector2(400, 440) # Height increased to 440px
+	can_main.add_child(con_mp3_player)
+
+	_add_label(con_mp3_player, "MP3 Player", Vector2(15, 12), Vector2(200, 20), 16)
+
+	# --- Control Buttons (Centered at Y=45) ---
+	var sb_icon_btn := StyleBoxFlat.new()
+	sb_icon_btn.bg_color = Color8(89, 131, 192)
+	sb_icon_btn.border_color = Color8(60, 107, 173)
+	sb_icon_btn.set_border_width_all(1)
+	
+	var sb_icon_hover := sb_icon_btn.duplicate()
+	sb_icon_hover.bg_color = Color8(47, 92, 159)
+	
+	var sb_icon_pressed := sb_icon_btn.duplicate()
+	sb_icon_pressed.bg_color = Color8(35, 75, 140)
+
+	var build_ctrl_btn = func(tex: Texture2D, pos: Vector2) -> Button:
+		var b := Button.new()
+		b.position = pos
+		b.size = Vector2(30, 30)
+		b.icon = tex
+		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		b.add_theme_stylebox_override("normal", sb_icon_btn)
+		b.add_theme_stylebox_override("hover", sb_icon_hover)
+		b.add_theme_stylebox_override("pressed", sb_icon_pressed)
+		b.add_theme_stylebox_override("disabled", sb_icon_btn)
+		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+		con_mp3_player.add_child(b)
+		return b
+
+	btn_mp3_play = build_ctrl_btn.call(tex_play, Vector2(85, 45)) as Button
+	btn_mp3_pause = build_ctrl_btn.call(tex_pause, Vector2(125, 45)) as Button
+	btn_mp3_stop = build_ctrl_btn.call(tex_stop, Vector2(165, 45)) as Button
+	var btn_prev: Button = build_ctrl_btn.call(tex_skip_prev, Vector2(205, 45)) as Button
+	var btn_next: Button = build_ctrl_btn.call(tex_skip_next, Vector2(245, 45)) as Button
+	btn_mp3_shuf = build_ctrl_btn.call(tex_shuffle, Vector2(285, 45)) as Button
+
+	btn_mp3_play.pressed.connect(func():
+		is_mp3_playing = true
+		is_mp3_paused = false
+		audio_player.stream_paused = false
+		if not audio_player.playing:
+			audio_player.play()
+		_sync_mp3_ui()
+	)
+
+	btn_mp3_pause.pressed.connect(func():
+		if is_mp3_playing:
+			is_mp3_paused = true
+			audio_player.stream_paused = true
+			_sync_mp3_ui()
+	)
+
+	btn_mp3_stop.pressed.connect(func():
+		is_mp3_playing = false
+		is_mp3_paused = false
+		audio_player.stream_paused = false
+		audio_player.stop()
+		_sync_mp3_ui()
+	)
+	
+	btn_prev.pressed.connect(func(): _play_track(current_track_idx - 1))
+	btn_next.pressed.connect(func(): _play_track(current_track_idx + 1))
+	
+	btn_mp3_shuf.pressed.connect(func():
+		is_shuffled = not is_shuffled
+		if is_shuffled:
+			playlist.shuffle()
+			_play_track(0)
+			_refresh_mp3_list() # FIXED: Refreshes list instead of building a new window
+		else:
+			_sync_mp3_ui()
+	)
+
+	# --- Track List Background ---
+	var bg := ColorRect.new()
+	bg.color = Color.WHITE
+	bg.position = Vector2(15, 85)
+	bg.size = Vector2(370, 300) # Increased height to 300px
+	con_mp3_player.add_child(bg)
+
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(15, 85)
+	scroll.size = Vector2(370, 300)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	con_mp3_player.add_child(scroll)
+
+	playlist_vbox = VBoxContainer.new()
+	playlist_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	playlist_vbox.add_theme_constant_override("separation", 0)
+	scroll.add_child(playlist_vbox)
+
+	_refresh_mp3_list()
+	_sync_mp3_ui()
+
+	# --- Bottom Row Buttons (Y = 395) ---
+	var btn_enable_all := _add_button(con_mp3_player, "Enable All", Vector2(15, 395), Vector2(90, 30))
+	btn_enable_all.pressed.connect(func():
+		for t in playlist:
+			t["enabled"] = true
+		_refresh_mp3_list()
+	)
+
+	var btn_disable_all := _add_button(con_mp3_player, "Disable All", Vector2(115, 395), Vector2(90, 30))
+	btn_disable_all.pressed.connect(func():
+		for t in playlist:
+			t["enabled"] = false
+		_refresh_mp3_list()
+	)
+
+	var btn_ok := _add_button(con_mp3_player, "OK!", Vector2(310, 395), Vector2(75, 30))
+	btn_ok.pressed.connect(func(): con_mp3_player.visible = false)
+
+func _refresh_mp3_list() -> void:
+	for child in playlist_vbox.get_children():
+		child.queue_free()
+
+	for i in range(playlist.size()):
+		var track = playlist[i]
+		var row := ColorRect.new()
+		row.custom_minimum_size = Vector2(360, 30)
+		row.color = Color.WHITE if i % 2 == 0 else Color8(242, 242, 242)
+
+		# Invisible button sits in background
+		var btn_play_direct := Button.new()
+		btn_play_direct.flat = true
+		btn_play_direct.set_anchors_preset(Control.PRESET_FULL_RECT)
+		var cap_idx := i
+		btn_play_direct.pressed.connect(func():
+			is_mp3_playing = true
+			is_mp3_paused = false
+			_play_track(cap_idx)
+			_sync_mp3_ui()
+		)
+		row.add_child(btn_play_direct)
+
+		# Checkbox sits on top
+		var chk := CheckBox.new()
+		chk.position = Vector2(10, 3)
+		chk.size = Vector2(24, 24) 
+		chk.button_pressed = track["enabled"]
+		chk.toggled.connect(func(pressed: bool):
+			playlist[cap_idx]["enabled"] = pressed
+		)
+		row.add_child(chk)
+
+		var display_title = "%d. %s" % [i + 1, track["title"]]
+		var l_title := _add_label(row, display_title, Vector2(45, 0), Vector2(300, 30), 11)
+		l_title.add_theme_color_override("font_color", Color.BLACK)
+		
+		playlist_vbox.add_child(row)
+
 func _build_con_license() -> void:
 	con_license = DraggableWindow.new()
 	con_license.size = Vector2(550, 460)
@@ -2122,6 +2377,8 @@ func _on_day_timer_timeout() -> void:
 func _update_system_time() -> void:
 	if sys_time_format == 0:
 		lbl_sys_time.visible = false
+		if lbl_date != null:
+			lbl_date.offset_left = 5
 	else:
 		lbl_sys_time.visible = true
 		var t := Time.get_time_dict_from_system()
@@ -2139,6 +2396,9 @@ func _update_system_time() -> void:
 			lbl_sys_time.text = "%02d:%02d" % [t.hour, t.minute]
 		elif sys_time_format == 4:
 			lbl_sys_time.text = "%02d:%02d:%02d" % [t.hour, t.minute, t.second]
+			
+		if lbl_date != null:
+			lbl_date.offset_left = 5 + lbl_sys_time.get_minimum_size().x
 
 func _on_stats_updated() -> void:
 	if GameManager.my_distro == null:

@@ -13,7 +13,7 @@ Some of the improvements are inspired by the fantastic *CorsixTH* project and I 
 * Save As has been moved to a button at the top-right, Save is just Save and asks if you want overwrite the existing file.
 * Settings menu with a volume control (and mute), fullscreen support (experimental), localisation placeholder
 * New CorsixTH-inspired features (which can be optionally hidden):
-    * An MP3 player at the top-centre with track changing buttons which plays 7 free downtempo tracks from Pixabay
+    * An MP3 player at the top-centre with track changing buttons and a full jukebox playlist with retro-inspired buttons which plays 9 free downtempo tracks from Pixabay
     * A system clock at the top-left corner to keep track of the time while playing (in case you have work, school or simply chores to do)
 * Buttons with non-text labels now use the Google Material icons which are much more presentable.
 * New dropdown to sort packages by Default, Popularity, Bugs Reported, Volunteers Assigned and Paid Workers Assigned (though not Alphabetically or by size which I'll add). This will be helpful for mods which have larger package lists.
