@@ -22,7 +22,7 @@ While preserving the core mechanics, classic pixel aesthetic, and dry satirical 
 
 ### 🎵 In-Game MP3 Jukebox
 
-![MP3 Player](mp3_player.png)
+![MP3 Player](mp3-player.png)
 
 * **Top Bar Mini-Player:** Displays the current track ticker with an authentic music note icon alongside quick Skip and Mute controls.
 * **Full CorsixTH-Inspired Jukebox Window:** Click the list icon to open the dedicated MP3 Player window featuring:
@@ -68,10 +68,7 @@ This Redot port resolves several longstanding issues and unmerged pull requests 
   👉 [Download Redot Engine](https://www.redotengine.org/download/)
 
 ### Running from Source
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/linux-tycoon-redot.git
-   ```
+1. Clone this repository: `git clone https://github.com/YOUR_USERNAME/linux-tycoon-redot.git`
 2. Launch the Redot Engine editor.
 3. Click **Import**, navigate to the cloned folder, and select `project.godot`.
 4. Click **Run Project** (or press `F5`).
