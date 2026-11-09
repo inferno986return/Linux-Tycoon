@@ -66,6 +66,9 @@ My playtesting has been limited, but has a number of bugs which I have identifie
 * An acknowledgement from Bryan once the distro is over 900 MB that the ISO will no longer fit on a CD.
 * I could remove the Name: label so there's space for the distro name.
 * Donation links for Bryan Lunduke, Redot Engine and my PayPal.
+* Tooltips for the buttons - either standard black text on a white background or Ubuntu-style with white text on a black background
+* The MP3 Player should allow you to pick a track to play from the list.
+* The windows for "Save" and "Release Version" spawn underneath, but they should always be on top!
 
 * Options menu with support for audio, localisation, etc.
 
