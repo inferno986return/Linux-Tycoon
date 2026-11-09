@@ -37,7 +37,9 @@ var btn_mp3_shuf: Button
 
 var tex_list: Texture2D
 var tex_shuffle: Texture2D
-var tex_stop: Texture2D # NEW: The stop icon
+var tex_stop: Texture2D
+var tex_music_note: Texture2D # NEW: Music note icon for the MP3 ticker
+var mp3_icon: TextureRect
 
 var is_mp3_playing: bool = true 
 var is_mp3_paused: bool = false # NEW: Tracks stream suspension
@@ -169,6 +171,8 @@ func _ready() -> void:
 		tex_stop = load("res://icons/stop_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 	if ResourceLoader.exists("res://icons/shuffle_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
 		tex_shuffle = load("res://icons/shuffle_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
+	if ResourceLoader.exists("res://icons/music_note_2_18dp_E3E3E3_FILL1_wght400_GRAD0_opsz20.png"):
+		tex_music_note = load("res://icons/music_note_2_18dp_E3E3E3_FILL1_wght400_GRAD0_opsz20.png")
 
 	audio_player = AudioStreamPlayer.new()
 	add_child(audio_player)
@@ -183,6 +187,7 @@ func _ready() -> void:
 	_add_track("res://music/tunetank-inspiring-downtempo-348057.mp3", "Tunetank — Inspiring Downtempo")
 	_add_track("res://music/pavetraxx-digital-beauty-264973.mp3", "Pavetraxx — Digital Beauty")
 	_add_track("res://music/sergepavkinmusic-looking-at-the-horizon-148802.mp3", "Serge Pavkin — Looking at the Horizon")
+	_add_track("res://music/tunetank-downtempo-beat-347779.mp3", "Tunetank — Downtempo Beat") # NEW: Track 10
 	
 	playlist.shuffle()
 
@@ -247,8 +252,10 @@ func _play_track(idx: int) -> void:
 		is_mp3_paused = false
 		audio_player.stream_paused = false
 		if lbl_mp3 != null:
-			lbl_mp3.text = "♫ No Tracks Enabled"
+			lbl_mp3.text = "No Tracks Enabled"
 		_sync_mp3_ui()
+		if playlist_vbox != null:
+			_refresh_mp3_list()
 		return
 
 	# Loop forward until we find an enabled track
@@ -272,9 +279,12 @@ func _play_track(idx: int) -> void:
 		audio_player.stop()
 		
 	if lbl_mp3 != null:
-		lbl_mp3.text = "♫ " + track["title"]
+		lbl_mp3.text = track["title"]
 		
 	_sync_mp3_ui()
+
+	if playlist_vbox != null:
+		_refresh_mp3_list()
 
 func _on_track_finished() -> void:
 	_play_track(current_track_idx + 1)
@@ -289,6 +299,7 @@ func _update_volume() -> void:
 func _on_mute_toggled() -> void:
 	is_muted = !is_muted
 	btn_mute.icon = tex_mute if is_muted else tex_volume_up
+	_set_desktop_tooltip(btn_mute, "Unmute Music" if is_muted else "Mute Music")
 	if chk_mute != null:
 		chk_mute.set_pressed_no_signal(is_muted)
 	_update_volume()
@@ -369,7 +380,20 @@ func _apply_xojo_theme() -> void:
 	t.set_color("title_color", "Window", Color.BLACK)
 	t.set_font_size("title_font_size", "Window", 13)
 
+	var sb_tooltip := _make_btn_style(Color.BLACK, Color.BLACK)
+	sb_tooltip.content_margin_left = 8
+	sb_tooltip.content_margin_right = 8
+	sb_tooltip.content_margin_top = 4
+	sb_tooltip.content_margin_bottom = 4
+	t.set_stylebox("panel", "TooltipPanel", sb_tooltip)
+	t.set_color("font_color", "TooltipLabel", Color.WHITE)
+	t.set_font_size("font_size", "TooltipLabel", 11)
+
 	theme = t
+
+func _set_desktop_tooltip(ctrl: Control, tip: String) -> void:
+	if OS.get_name() in ["Windows", "macOS", "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD"]:
+		ctrl.tooltip_text = tip
 
 func _make_btn_style(bg: Color, border: Color) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
@@ -499,14 +523,28 @@ func _build_base_layout() -> void:
 	mp3_bg.offset_bottom = 24
 	top_bar.add_child(mp3_bg)
 
+	var mp3_hbox := HBoxContainer.new()
+	mp3_hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	mp3_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	mp3_hbox.add_theme_constant_override("separation", 4)
+	mp3_bg.add_child(mp3_hbox)
+
+	mp3_icon = TextureRect.new()
+	mp3_icon.texture = tex_music_note
+	mp3_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	mp3_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	mp3_icon.custom_minimum_size = Vector2(12, 12) # Scaled down to match 11pt text
+	mp3_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	mp3_icon.modulate = Color.GREEN
+	mp3_hbox.add_child(mp3_icon)
+
 	lbl_mp3 = Label.new()
-	lbl_mp3.set_anchors_preset(Control.PRESET_FULL_RECT)
 	lbl_mp3.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl_mp3.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl_mp3.add_theme_color_override("font_color", Color.GREEN)
 	lbl_mp3.add_theme_font_size_override("font_size", 11)
-	lbl_mp3.text = "♫ Artist — Song Name"
-	mp3_bg.add_child(lbl_mp3)
+	lbl_mp3.text = "Artist — Song Name"
+	mp3_hbox.add_child(lbl_mp3)
 
 	# Next Button
 	btn_skip_next = Button.new()
@@ -638,7 +676,17 @@ func _build_base_layout() -> void:
 			center_container(con_confirm_quit)
 			con_confirm_quit.visible = true
 	)
+
 	top_bar.add_child(btn_close_top)
+
+	_set_desktop_tooltip(btn_mp3_player, "MP3 Player")
+	_set_desktop_tooltip(btn_skip_prev, "Previous Track")
+	_set_desktop_tooltip(btn_skip_next, "Next Track")
+	_set_desktop_tooltip(btn_mute, "Mute Music")
+	_set_desktop_tooltip(btn_pause, "Pause Game")
+	_set_desktop_tooltip(btn_save_as_top, "Save Game As...")
+	_set_desktop_tooltip(btn_settings_top, "Settings")
+	_set_desktop_tooltip(btn_close_top, "Quit")
 
 	can_main = Control.new()
 	can_main.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1240,9 +1288,11 @@ func _build_con_worker_assignment() -> void:
 	
 	var btn_p_minus := Button.new()
 	setup_icon_btn.call(btn_p_minus, tex_remove, Vector2(455, 161))
+	_set_desktop_tooltip(btn_p_minus, "Remove Paid Worker")
+	
 	var btn_p_plus := Button.new()
 	setup_icon_btn.call(btn_p_plus, tex_add, Vector2(483, 161))
-
+	_set_desktop_tooltip(btn_p_plus, "Assign Paid Worker")
 	btn_p_minus.pressed.connect(func():
 		var d := GameManager.my_distro
 		if work_selected_idx < d.workers_paid_assigned.size() and d.workers_paid_assigned[work_selected_idx] > 0:
@@ -1261,8 +1311,11 @@ func _build_con_worker_assignment() -> void:
 	
 	var btn_v_minus := Button.new()
 	setup_icon_btn.call(btn_v_minus, tex_remove, Vector2(455, 193))
+	_set_desktop_tooltip(btn_v_minus, "Remove Volunteer")
+	
 	var btn_v_plus := Button.new()
 	setup_icon_btn.call(btn_v_plus, tex_add, Vector2(483, 193))
+	_set_desktop_tooltip(btn_v_plus, "Assign Volunteer")
 
 	btn_v_minus.pressed.connect(func():
 		var d := GameManager.my_distro
@@ -1576,6 +1629,7 @@ func _build_con_settings() -> void:
 func _build_con_confirm_release() -> void:
 	con_confirm_release = DraggableWindow.new()
 	con_confirm_release.size = Vector2(400, 180)
+	con_confirm_release.z_index = 100
 	can_main.add_child(con_confirm_release)
 
 	_add_label(con_confirm_release, "Release Version", Vector2(15, 12), Vector2(370, 20), 13)
@@ -1599,6 +1653,7 @@ func _build_con_confirm_release() -> void:
 func _build_con_confirm_save() -> void:
 	con_confirm_save = DraggableWindow.new()
 	con_confirm_save.size = Vector2(340, 180)
+	con_confirm_release.z_index = 100
 	can_main.add_child(con_confirm_save)
 
 	_add_label(con_confirm_save, "Overwrite Save?", Vector2(15, 12), Vector2(310, 20), 13)
@@ -1633,6 +1688,7 @@ func _build_con_confirm_save() -> void:
 func _build_con_confirm_quit() -> void:
 	con_confirm_quit = DraggableWindow.new()
 	con_confirm_quit.size = Vector2(340, 180)
+	con_confirm_release.z_index = 100
 	can_main.add_child(con_confirm_quit)
 
 	_add_label(con_confirm_quit, "Quit Game", Vector2(15, 12), Vector2(310, 20), 13)
@@ -1673,6 +1729,7 @@ func _build_con_confirm_quit() -> void:
 func _build_con_confirm_desktop() -> void:
 	con_confirm_desktop = DraggableWindow.new()
 	con_confirm_desktop.size = Vector2(340, 180)
+	con_confirm_release.z_index = 100
 	can_main.add_child(con_confirm_desktop)
 
 	_add_label(con_confirm_desktop, "Quit Linux Tycoon", Vector2(15, 12), Vector2(310, 20), 13)
@@ -1735,14 +1792,22 @@ func _build_con_credits() -> void:
 
 func _build_con_music() -> void:
 	con_music = DraggableWindow.new()
-	
-	# --- FIXED: Increased window height from 310 to 350 to fit the two new lines ---
-	con_music.size = Vector2(400, 350)
-	# -------------------------------------------------------------------------------
-	
+	con_music.size = Vector2(400, 372) # Increased by 22px for Track 10
 	can_main.add_child(con_music)
 
-	# ... (skip to the tracks array) ...
+	_add_label(con_music, "Music Credits", Vector2(15, 12), Vector2(200, 20), 16)
+
+	var lbl_music := _add_label(con_music, "Music provided by Pixabay:", Vector2(20, 45), Vector2(360, 20), 13)
+	lbl_music.add_theme_color_override("font_color", Color.WHITE)
+
+	var link_pixabay := LinkButton.new()
+	link_pixabay.text = "https://pixabay.com/service/license-summary/"
+	link_pixabay.position = Vector2(20, 65)
+	link_pixabay.add_theme_font_size_override("font_size", 11)
+	link_pixabay.add_theme_color_override("font_color", Color.WHITE)
+	link_pixabay.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_pixabay.uri = "https://pixabay.com/service/license-summary/"
+	con_music.add_child(link_pixabay)
 
 	var tracks = [
 		"Alex Morgan — Downtempo Chill Electronic",
@@ -1753,7 +1818,8 @@ func _build_con_music() -> void:
 		"Alex Morgan — Acid Jazz Cafe",
 		"Tunetank — Inspiring Downtempo",
 		"Pavetraxx — Digital Beauty",
-		"Serge Pavkin — Looking at the Horizon"
+		"Serge Pavkin — Looking at the Horizon",
+		"Tunetank — Downtempo Beat"
 	]
 	
 	for i in range(tracks.size()):
@@ -1761,10 +1827,7 @@ func _build_con_music() -> void:
 		var lbl_t := _add_label(con_music, "• " + tracks[i], Vector2(20, y_pos), Vector2(360, 20), 11)
 		lbl_t.add_theme_color_override("font_color", Color.WHITE)
 
-	# --- FIXED: Shifted OK button down from 265 to 305 to match new window size ---
-	var btn_ok := _add_button(con_music, "OK!", Vector2(310, 305), Vector2(75, 30))
-	# ------------------------------------------------------------------------------
-	
+	var btn_ok := _add_button(con_music, "OK!", Vector2(310, 327), Vector2(75, 30))
 	btn_ok.pressed.connect(func():
 		con_music.visible = false
 		con_credits.visible = true
@@ -1804,11 +1867,17 @@ func _build_con_mp3_player() -> void:
 		return b
 
 	btn_mp3_play = build_ctrl_btn.call(tex_play, Vector2(85, 45)) as Button
+	_set_desktop_tooltip(btn_mp3_play, "Play")
 	btn_mp3_pause = build_ctrl_btn.call(tex_pause, Vector2(125, 45)) as Button
+	_set_desktop_tooltip(btn_mp3_pause, "Pause")
 	btn_mp3_stop = build_ctrl_btn.call(tex_stop, Vector2(165, 45)) as Button
+	_set_desktop_tooltip(btn_mp3_stop, "Stop")
 	var btn_prev: Button = build_ctrl_btn.call(tex_skip_prev, Vector2(205, 45)) as Button
+	_set_desktop_tooltip(btn_prev, "Previous Track")
 	var btn_next: Button = build_ctrl_btn.call(tex_skip_next, Vector2(245, 45)) as Button
+	_set_desktop_tooltip(btn_next, "Next Track")
 	btn_mp3_shuf = build_ctrl_btn.call(tex_shuffle, Vector2(285, 45)) as Button
+	_set_desktop_tooltip(btn_mp3_shuf, "Toggle Shuffle")
 
 	btn_mp3_play.pressed.connect(func():
 		is_mp3_playing = true
@@ -1887,18 +1956,25 @@ func _build_con_mp3_player() -> void:
 	btn_ok.pressed.connect(func(): con_mp3_player.visible = false)
 
 func _refresh_mp3_list() -> void:
+	if playlist_vbox == null:
+		return
 	for child in playlist_vbox.get_children():
 		child.queue_free()
 
 	for i in range(playlist.size()):
 		var track = playlist[i]
+		var is_selected := (i == current_track_idx)
 		var row := ColorRect.new()
 		row.custom_minimum_size = Vector2(360, 30)
-		row.color = Color.WHITE if i % 2 == 0 else Color8(242, 242, 242)
+		if is_selected:
+			row.color = Color8(89, 131, 192)
+		else:
+			row.color = Color.WHITE if i % 2 == 0 else Color8(242, 242, 242)
 
-		# Invisible button sits in background
+		# Invisible button sits in background without stealing focus box
 		var btn_play_direct := Button.new()
 		btn_play_direct.flat = true
+		btn_play_direct.focus_mode = Control.FOCUS_NONE
 		btn_play_direct.set_anchors_preset(Control.PRESET_FULL_RECT)
 		var cap_idx := i
 		btn_play_direct.pressed.connect(func():
@@ -1921,7 +1997,7 @@ func _refresh_mp3_list() -> void:
 
 		var display_title = "%d. %s" % [i + 1, track["title"]]
 		var l_title := _add_label(row, display_title, Vector2(45, 0), Vector2(300, 30), 11)
-		l_title.add_theme_color_override("font_color", Color.BLACK)
+		l_title.add_theme_color_override("font_color", Color.WHITE if is_selected else Color.BLACK)
 		
 		playlist_vbox.add_child(row)
 
@@ -2366,9 +2442,11 @@ func _on_btn_pause_pressed() -> void:
 	if GameManager.is_paused:
 		btn_pause.icon = tex_play
 		lbl_paused.visible = true
+		_set_desktop_tooltip(btn_pause, "Resume Game")
 	else:
 		btn_pause.icon = tex_pause
 		lbl_paused.visible = false
+		_set_desktop_tooltip(btn_pause, "Pause Game")
 
 func _on_day_timer_timeout() -> void:
 	if not GameManager.is_paused and GameManager.my_distro != null:
