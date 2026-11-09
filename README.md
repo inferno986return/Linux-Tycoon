@@ -1,108 +1,118 @@
-# Linux Tycoon (Redot Engine)
+# Linux Tycoon Classic (Redot Engine Port)
 
-A port of Linux Tycoon Classic v1.1.2 from around 14 years ago made with the help of the Google Gemini Pro and Argon LLMs using the Redot Engine v26.3 with the Compatibility renderer which can support desktop, mobile and even the web - since Linux Tycoon is a 2D game, it may as well run anywhere.
+[![Engine](https://img.shields.io/badge/Engine-Redot%20v26.3-blue.svg)](https://www.redotengine.org/)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-green.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![Target Resolution](https://img.shields.io/badge/Target%20Resolution-850x500-orange.svg)]()
 
-We might beat Bryan Lunduke to the punch with the Android port, but desktop functionality is crucial at this stage and Android is a faff as you need to setup a build environment for it with the Google tools.
+A complete modern port of **Linux Tycoon Classic v1.1.2** (originally released in 2012 by Bryan Lunduke), rebuilt from the ground up in **GDScript** using the community-driven **Redot Engine v26.3** (Compatibility Renderer). 
 
-At this time, I don't know the full extent of what Bryan Lunduke added to v1.2 and v1.3.
+Originally authored in proprietary Xojo (REALbasic), this open-source revival brings the premier Linux distribution simulation into the modern era—running natively across **GNU/Linux, Windows, and macOS**, with mobile and Web export targets on the horizon.
 
-Some of the improvements are inspired by the fantastic *CorsixTH* project and I recommend trying it out as it's the definitive way to play *Theme Hospital*.
+Developed with collaborative programming and architectural assistance from Google Gemini and Argon LLMs.
 
-# What's new!
-* A simple label that says "Paused" displays to clearly show when the game is paused.
-* Save As has been moved to a button at the top-right, Save is just Save and asks if you want overwrite the existing file.
-* Settings menu with a volume control (and mute), fullscreen support (experimental), localisation placeholder
-* New CorsixTH-inspired features (which can be optionally hidden):
-    * An MP3 player at the top-centre with track changing buttons and a full jukebox playlist with retro-inspired buttons which plays 9 free downtempo tracks from Pixabay
-    * A system clock at the top-left corner to keep track of the time while playing (in case you have work, school or simply chores to do)
-* Buttons with non-text labels now use the Google Material icons which are much more presentable.
-* New dropdown to sort packages by Default, Popularity, Bugs Reported, Volunteers Assigned and Paid Workers Assigned (though not Alphabetically or by size which I'll add). This will be helpful for mods which have larger package lists.
-* More Bryan notifications to the player. He let's you know when:
-    * Each time you get a new volunteer and paid worker with several randomly-selected phrases.
-    * When you've saved the game.
-    * Once, when your distro has exceeded 700 MB and the ISO can no longer fit on a single CD (yes - the game is this old, lol)
-* Fixed the reported bugs and PR from the upstream repo
+---
 
-# Fixed issues and PRs from source repo:
+## What's New & Modernized
 
-These issues and PR from the source repo should be fixed now!
+While preserving the core mechanics, classic pixel aesthetic, and dry satirical wit of Lunduke's original release, this version incorporates substantial quality-of-life additions—many inspired by open-source classics like the [*CorsixTH*](https://corsixth.com/) project:
 
-* **Tea23:patch-1** which Tea23 opened on Sep 5, 2013 (https://github.com/BryanLunduke/Linux-Tycoon/pull/3): They call it the Grocer's Apostrophe.
-* **Worker/Volunteer Deja Vu** which Ala-lala opened on Apr 9, 2014 (https://github.com/BryanLunduke/Linux-Tycoon/issues/5): Get say 30 volunteers and 10 paid workers, save your game and quit, then start up and resume your game. When you get your 31st volunteer or your 11th paid worker, you get a message saying that you have gotten your first volunteer or paid worker. (From Windows download).
-* **Game should pause while dialogs are open** which mechanical-snail opened on Jun 3, 2013
-(https://github.com/BryanLunduke/Linux-Tycoon/issues/2): If you press the "Release Version" or "Save" buttons while the game is running, it keeps running while the dialog is open. It is therefore not clear what version is being released and what state is being saved. The game should pause whenever dialogs are open. (Version 1.1.1 on Linux)
+### 🎵 In-Game MP3 Jukebox
+* **Top Bar Mini-Player:** Displays the current track ticker with an authentic music note icon alongside quick Skip and Mute controls.
+* **Full CorsixTH-Inspired Jukebox Window:** Click the list icon to open the dedicated MP3 Player window featuring:
+  * Individual track checkboxes to include or exclude songs from playback.
+  * Dedicated mechanical-style controls: **Play**, **Pause**, **Stop**, **Skip Previous/Next**, and **Shuffle**.
+  * Quick **Enable All** and **Disable All** playlist buttons.
+  * Active track row highlighting with crisp white text contrast.
+  * Includes 10 royalty-free downtempo and acid-jazz tracks from Pixabay artists.
 
-# Current status
-The game actually launches in Redot! 
+### 🖥️ Modernized UI & HUD Layout
+* **Normalized Window Layout (850x500 Target):** Main panels (Development Stats, Bryan Notifications, and DistroRank) are vertically locked and padded so buttons never touch window borders.
+* **Expanded DistroRank:** View up to 14 competing distros at once without cramped scrolling.
+* **System Clock:** A customizable real-world clock at the top-left (12-hour, 24-hour, optional seconds, or disabled) so you don't lose track of time managing packages.
+* **Dynamic Header Date:** The in-game calendar date dynamically centers itself in the available top-bar space.
+* **Google Material Icons:** Clean icon buttons for top-bar functions and worker assignments with Ubuntu-style (black background, white text) hover tooltips on desktop builds.
+* **Z-Index Layer Management:** Modal dialogs (*Save Overwrite*, *Release Version*, and *Quit Confirmation*) always lock to the top layer (`z_index = 100`) so they never get hidden behind draggable windows.
 
-You can try it yourself:
+### 📦 Enhanced Package & Worker Management
+* **Package Selection Sorting:** Multi-criteria sorting dropdown supporting Default, Alphabetical, Bug Count, Nerd Cred, Open Source status, Popularity, and Size (MB).
+* **Worker Assignment Up-Opening Sort:** Sort assigned workers by Default, Alphabetical, Bug Count, Paid Workers Assigned, or Volunteers Assigned.
+* **Aligned Control Steppers:** `+` and `-` worker assignment buttons are neatly aligned with total volunteer and paid worker availability counters.
 
-1. Clone this repository or at least download the "linux-tycoon-redot" folder as a .zip.
-2. Download a copy of the Redot Engine: https://www.redotengine.org/download/
-3. Open the "linux-tycoon-redot" as a project.
-4. Click the "Run Project (F5)" (play icon) button at the top-right corner.
+### 🐐 Bryan's Guidance & Feedback
+* **CD Size Warning:** Bryan now warns you the moment your distribution exceeds **700 MB**, letting you know that exceeding standard CD-ROM capacity will begin hurting your daily user conversion on older hardware.
+* **Varied Community Notifications:** New volunteers, hires, and save confirmations now cycle through randomized notification dialogs rather than repetitive static text.
 
-My playtesting has been limited, but has a number of bugs which I have identified so far:
+---
 
-## Critical
-* No saving - the "Save" button is greyed out and unusable
-* No assign workers - the "Assign Workers" button is also greyed out and unusable
+## Legacy Upstream Bug Fixes
 
-## Minor
-* The buttons are of varying widths and some touch the window border such as "Import scenario".
-* The "Package Selection" dialogue has an ugly box drawn around the checkboxes used to select packages.
-* The text is ugly and seems to have hinting problems. I don't mind using Open Sans instead of Roboto, but it has to look good!
+This Redot port resolves several longstanding issues and unmerged pull requests from the original 2012–2014 upstream repository:
 
-# Planned features
-* How do Scenarios work? - I see they are XML files...
-* How did the Online mode work? Do we have any documentation on that? - I can see on Google there was a "Linux Tycoon Server" back in the day.
-* Music would be cool! Some cool free .oggs with a tycoon vibe. Perhaps an MP3 player-style music control window with play, pause, track changers and displays what the song is?
-    * https://pixabay.com/music/search/acid%20jazz%20cafe%20lounge%20groove/ - https://pixabay.com/service/license-summary/
-    * alex-morgan *Acid Jazz Cafe Lounge Groove*
-    * Amplify_Music *Jazz Cafe Music - Electric Velvet Groove*
-    * Turning_Pages *Kindling the Flame*
-    * Spirit *Spirit* (from the Packard Bell MP3 Player as an Easter egg track)
-* I could add a play-pause button for the MP3 Player and a track selector button which leads to a window (I downloaded the icon from Google Icons).
-* An acknowledgement from Bryan once the distro is over 900 MB that the ISO will no longer fit on a CD.
-* I could remove the Name: label so there's space for the distro name.
-* Donation links for Bryan Lunduke, Redot Engine and my PayPal.
-* Tooltips for the buttons - either standard black text on a white background or Ubuntu-style with white text on a black background
-* The MP3 Player should allow you to pick a track to play from the list.
-* The windows for "Save" and "Release Version" spawn underneath, but they should always be on top!
+1. **Grocer's Apostrophe Fix ([PR #3 / Tea23](https://github.com/BryanLunduke/Linux-Tycoon/pull/3)):** Corrected erratic punctuation and apostrophe usage across dialog strings.
+2. **Worker/Volunteer "Deja Vu" Bug ([Issue #5 / Ala-lala](https://github.com/BryanLunduke/Linux-Tycoon/issues/5)):** Resuming a saved game that already had volunteers or paid workers previously caused Bryan to re-trigger the *"You got your first volunteer/paid worker!"* tutorial message on the next hire. Save-state parsing now correctly tracks prior workforce history.
+3. **Modal Dialog Pause Enforcement ([Issue #2 / mechanical-snail](https://github.com/BryanLunduke/Linux-Tycoon/issues/2)):** Opening modal confirmations (such as *Release Version*, *Save*, or *Quit*) now immediately pauses simulation time so the game state does not advance underneath confirmation dialogs.
 
-* Options menu with support for audio, localisation, etc.
+---
 
-# Buy a copy of Linux Tycoon from itch.io
+## Getting Started
 
-Support Bryan Lunduke directly by purchasing a copy of Linux Tycoon v1.3 from itch.io:
+### Prerequisites
+* A copy of the **Redot Engine v26.3** (or compatible Godot 4.x build using the Compatibility / OpenGL3 backend):  
+  👉 [Download Redot Engine](https://www.redotengine.org/download/)
 
-* https://lunduke.itch.io/linux-tycoon-mega-collection - all the games for just $12, which includes the additional Android and Gameboy ports!
-* https://lunduke.itch.io/linux-tycoon-3 - $5
-* https://lunduke.itch.io/linux-tycoon-for-dos - $10
-* https://lunduke.itch.io/linux-tycoon-classic - $10
+### Running from Source
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/linux-tycoon-redot.git
+   ```
+2. Launch the Redot Engine editor.
+3. Click **Import**, navigate to the cloned folder, and select `project.godot`.
+4. Click **Run Project** (or press `F5`).
 
-## Lunduke Computer Operating System (LCOS)
+---
 
-https://lunduke.com/lcos.html
+## Planned Features & Roadmap
 
-Bryan Lunduke released his own GNU/Linux distro called the **Lunduke Computer Operating System (LCOS)**:
+- [ ] **Scenario Architecture:** Document and extend the XML scenario specification (`*.ltx`) to allow community custom scenario authoring.
+- [ ] **Online Mode Investigation:** Research the protocol behind the legacy *Linux Tycoon Server* for potential headless server recreation.
+- [ ] **Android / Mobile Touch Support:** Implement a responsive touch layout alternative to right-click dragging and small steppers.
+- [ ] **Extended Localization:** Expand beyond the English base strings with community translations.
+- [ ] **Distro ISO Targets:** Option to configure media format targets beyond CD-ROM (e.g., Floppy sets, DVD, USB Flash drive).
 
-* No Age or ID Verification.
-* No Online Accounts Needed.
-* No Built-in AI Features.
-* No Weird Politics.
-* No Systemd.
-* No Forced Rust Clones.
-* Modern Tech. With 90s Inspirations.
+---
 
-It even has some games included, such as a fork of *Micropolis* called "Lunduke City". But I don't see *Linux Tycoon*, which is stuck in the proprietary Xojo (formerly RealBASIC) language. Therefore, let's try porting the game to the modern Redot Engine to use GDScript instead with the assistance of Google Gemini!
+## Music Soundtrack
 
-**Side note:** I hope Bryan Lunduke open-sources more of his older projects from 10+ years ago.
+All background music is provided royalty-free via Pixabay licenses:
 
-# Licence
+1. **Alex Morgan** — *Downtempo Chill Electronic*
+2. **Amplify Music** — *Jazz Cafe Music - Electric Velvet Groove*
+3. **Kulakovka** — *Inspiring Downtempo*
+4. **Soundsurfer** — *Downtempo*
+5. **Turning Pages** — *Kindling The Flame*
+6. **Alex Morgan** — *Acid Jazz Cafe*
+7. **Tunetank** — *Inspiring Downtempo*
+8. **Pavetraxx** — *Digital Beauty*
+9. **Serge Pavkin** — *Looking at the Horizon*
+10. **Tunetank** — *Downtempo Beat*
 
-The original *Linux Tycoon* project was licenced under the GNU GPLv2 and since this is a derivative project, the licence also applies here.
+---
 
-Bryan Lunduke himself is very welcome to incorporate the latest features in a proprietary build of this game, and in fact, I would be flattered if he did!
+## Support Bryan Lunduke & Original Releases
 
-I will mention this on the main menu at the bottom, and also include a full copy of the licence with a dedicated "License" button in the Credits.
+If you enjoy *Linux Tycoon*, consider supporting the original creator, **Bryan Lunduke**, by picking up his commercial releases and collections on itch.io:
+
+* 🐧 [Linux Tycoon Mega Collection on itch.io](https://lunduke.itch.io/linux-tycoon-mega-collection) ($12 for the full bundle, including classic DOS, Game Boy, and Android editions)
+* 🐧 [Linux Tycoon 3](https://lunduke.itch.io/linux-tycoon-3)
+* 🐧 [Lunduke Computer Operating System (LCOS)](https://lunduke.com/lcos.html)
+* 🌐 Official Website: [lunduke.com](https://lunduke.com/)
+
+I would love to see more of his legacy projects become open-sourced in a similar manner!
+
+---
+
+## License
+
+*Linux Tycoon Classic (Redot)* is licensed under the **GNU General Public License v2 (GPLv2)**, in accordance with the licensing of the original upstream project. You are free to inspect, modify, and redistribute this software under the terms of GPLv2.
+
+See the full license text in the game's **Credits > License** menu or consult [gnu.org/licenses/old-licenses/gpl-2.0.html](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
