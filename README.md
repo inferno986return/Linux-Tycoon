@@ -10,13 +10,20 @@ Originally authored in proprietary Xojo (REALbasic), this open-source revival br
 
 Developed with collaborative programming and architectural assistance from Google Gemini and Argon LLMs.
 
+![Main Menu](menu.png)
+
 ---
 
 ## What's New & Modernized
 
+![In-game](in-game.png)
+
 While preserving the core mechanics, classic pixel aesthetic, and dry satirical wit of Lunduke's original release, this version incorporates substantial quality-of-life additions—many inspired by open-source classics like the [*CorsixTH*](https://corsixth.com/) project:
 
 ### 🎵 In-Game MP3 Jukebox
+
+![MP3 Player](mp3_player.png)
+
 * **Top Bar Mini-Player:** Displays the current track ticker with an authentic music note icon alongside quick Skip and Mute controls.
 * **Full CorsixTH-Inspired Jukebox Window:** Click the list icon to open the dedicated MP3 Player window featuring:
   * Individual track checkboxes to include or exclude songs from playback.
