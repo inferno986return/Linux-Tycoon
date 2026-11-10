@@ -9,7 +9,8 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 ~~* The "Release Version" and "Quit" dialogues have centred buttons when all "Ok!" and "Cancel" should be right-aligned.~~ <-- No! This looks worse.
 * Basic button grey out with tooltips but not there yet and the Save As icon disappears, should match the MP3 Player jukebox.
 * The "Save" button dialog still has the dark blue background and doesn't work above the MP3 Player jukebox
-
+* The game still has weird text rendering issues.
+* We can squeeze row 11 on the DistroRank with the optimal window sizing and arrangement.
 
 ## Long-term
 
