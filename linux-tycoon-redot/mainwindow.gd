@@ -449,21 +449,6 @@ func _build_base_layout() -> void:
 	lbl_date.visible = false
 	top_bar.add_child(lbl_date)
 
-	lbl_paused = Label.new()
-	lbl_paused.anchor_left = 1.0
-	lbl_paused.anchor_right = 1.0
-	lbl_paused.offset_left = -210
-	lbl_paused.offset_right = -150 
-	lbl_paused.offset_top = 2
-	lbl_paused.offset_bottom = 24
-	lbl_paused.text = "Paused"
-	lbl_paused.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	lbl_paused.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl_paused.add_theme_color_override("font_color", Color.BLACK)
-	lbl_paused.add_theme_font_size_override("font_size", 13)
-	lbl_paused.visible = false
-	top_bar.add_child(lbl_paused)
-
 	var sb_icon_btn := StyleBoxFlat.new()
 	sb_icon_btn.bg_color = Color8(89, 131, 192)
 	sb_icon_btn.border_color = Color8(60, 107, 173)
@@ -533,7 +518,7 @@ func _build_base_layout() -> void:
 	mp3_icon.texture = tex_music_note
 	mp3_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	mp3_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	mp3_icon.custom_minimum_size = Vector2(12, 12) # Scaled down to match 11pt text
+	mp3_icon.custom_minimum_size = Vector2(12, 12) 
 	mp3_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	mp3_icon.modulate = Color.GREEN
 	mp3_hbox.add_child(mp3_icon)
@@ -593,10 +578,51 @@ func _build_base_layout() -> void:
 	btn_pause.add_theme_stylebox_override("normal", sb_icon_btn)
 	btn_pause.add_theme_stylebox_override("hover", sb_icon_hover)
 	btn_pause.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_pause.add_theme_stylebox_override("disabled", sb_icon_btn) # ADDED
 	btn_pause.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	btn_pause.visible = false
 	btn_pause.pressed.connect(_on_btn_pause_pressed)
 	top_bar.add_child(btn_pause)
+
+	btn_save_as_top = Button.new()
+	btn_save_as_top.anchor_left = 1.0
+	btn_save_as_top.anchor_right = 1.0
+	btn_save_as_top.offset_left = -105
+	btn_save_as_top.offset_right = -75
+	btn_save_as_top.offset_top = 2
+	btn_save_as_top.offset_bottom = 24
+	btn_save_as_top.icon = tex_save_as
+	btn_save_as_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_save_as_top.expand_icon = true
+	btn_save_as_top.add_theme_constant_override("icon_max_width", 16)
+	btn_save_as_top.add_theme_stylebox_override("normal", sb_icon_btn)
+	btn_save_as_top.add_theme_stylebox_override("hover", sb_icon_hover)
+	btn_save_as_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
+	btn_save_as_top.add_theme_stylebox_override("disabled", sb_icon_btn) # ADDED
+	btn_save_as_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn_save_as_top.visible = false
+	btn_save_as_top.pressed.connect(func():
+		pause_game()
+		file_dlg_save.popup_centered()
+	)
+	top_bar.add_child(btn_save_as_top)
+
+	# --- FIXED: Paused Label ---
+	# Moved below the button instantiations so it renders correctly
+	lbl_paused = Label.new()
+	lbl_paused.anchor_left = 0.5
+	lbl_paused.anchor_right = 1.0
+	lbl_paused.offset_left = 200 
+	lbl_paused.offset_right = -140 
+	lbl_paused.offset_top = 2
+	lbl_paused.offset_bottom = 24
+	lbl_paused.text = "Paused"
+	lbl_paused.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl_paused.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl_paused.add_theme_color_override("font_color", Color.BLACK)
+	lbl_paused.add_theme_font_size_override("font_size", 13)
+	lbl_paused.visible = false
+	top_bar.add_child(lbl_paused)
 
 	btn_save_as_top = Button.new()
 	btn_save_as_top.anchor_left = 1.0
@@ -672,9 +698,11 @@ func _build_base_layout() -> void:
 		if con_main_menu.visible:
 			center_container(con_confirm_desktop)
 			con_confirm_desktop.visible = true
+			con_confirm_desktop.move_to_front() # <--- ADDED
 		else:
 			center_container(con_confirm_quit)
 			con_confirm_quit.visible = true
+			con_confirm_quit.move_to_front() # <--- ADDED
 	)
 
 	top_bar.add_child(btn_close_top)
@@ -933,6 +961,7 @@ func _build_con_distro_stats() -> void:
 			if child is CanvasItem:
 				child.show()
 		con_confirm_release.visible = true
+		con_confirm_release.move_to_front() # <--- ADDED
 	)
 
 	stats_btn_save = _add_button(con_distro_stats, "Save", Vector2(20, 386), Vector2(145, 32))
@@ -941,6 +970,7 @@ func _build_con_distro_stats() -> void:
 		pause_game()
 		center_container(con_confirm_save)
 		con_confirm_save.visible = true
+		con_confirm_save.move_to_front() # <--- ADDED
 	)
 
 func _refresh_distro_stats() -> void:
@@ -1520,7 +1550,7 @@ func _build_con_new_release() -> void:
 
 func _build_con_settings() -> void:
 	con_settings = DraggableWindow.new()
-	con_settings.size = Vector2(340, 320) 
+	con_settings.size = Vector2(340, 340) # Increased height to add space below the OK button
 	can_main.add_child(con_settings)
 
 	_add_label(con_settings, "Settings", Vector2(15, 12), Vector2(200, 20), 16)
@@ -1535,6 +1565,12 @@ func _build_con_settings() -> void:
 	opt_lang.add_theme_color_override("font_color", Color.WHITE)
 	opt_lang.add_theme_color_override("font_hover_color", Color.WHITE)
 	opt_lang.add_theme_color_override("font_pressed_color", Color.WHITE)
+	opt_lang.add_theme_color_override("font_focus_color", Color.WHITE)
+	
+	# ADDED: Extract the popup menu to override its font color to white as well
+	var pop_lang := opt_lang.get_popup()
+	pop_lang.add_theme_color_override("font_color", Color.WHITE)
+	pop_lang.add_theme_color_override("font_hover_color", Color.WHITE)
 	con_settings.add_child(opt_lang)
 
 	var lbl_vol := _add_label(con_settings, "Music Volume:", Vector2(25, 85), Vector2(100, 20), 13)
@@ -1561,6 +1597,7 @@ func _build_con_settings() -> void:
 	chk_mute.add_theme_color_override("font_color", Color.WHITE)
 	chk_mute.add_theme_color_override("font_hover_color", Color.WHITE)
 	chk_mute.add_theme_color_override("font_pressed_color", Color.WHITE)
+	chk_mute.add_theme_color_override("font_focus_color", Color.WHITE)
 	chk_mute.add_theme_font_size_override("font_size", 13)
 	chk_mute.button_pressed = is_muted
 	chk_mute.toggled.connect(func(pressed: bool):
@@ -1584,6 +1621,13 @@ func _build_con_settings() -> void:
 	opt_sys.add_theme_color_override("font_color", Color.WHITE)
 	opt_sys.add_theme_color_override("font_hover_color", Color.WHITE)
 	opt_sys.add_theme_color_override("font_pressed_color", Color.WHITE)
+	opt_sys.add_theme_color_override("font_focus_color", Color.WHITE)
+	
+	# ADDED: Extract the popup menu to override its font color to white as well
+	var pop_sys := opt_sys.get_popup()
+	pop_sys.add_theme_color_override("font_color", Color.WHITE)
+	pop_sys.add_theme_color_override("font_hover_color", Color.WHITE)
+
 	opt_sys.selected = sys_time_format
 	opt_sys.item_selected.connect(func(idx: int):
 		sys_time_format = idx
@@ -1598,6 +1642,7 @@ func _build_con_settings() -> void:
 	chk_fullscreen.add_theme_color_override("font_color", Color.WHITE)
 	chk_fullscreen.add_theme_color_override("font_hover_color", Color.WHITE)
 	chk_fullscreen.add_theme_color_override("font_pressed_color", Color.WHITE)
+	chk_fullscreen.add_theme_color_override("font_focus_color", Color.WHITE)
 	chk_fullscreen.add_theme_font_size_override("font_size", 13)
 	chk_fullscreen.button_pressed = (DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN or DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 	chk_fullscreen.toggled.connect(func(pressed: bool):
@@ -1615,6 +1660,7 @@ func _build_con_settings() -> void:
 	chk_hide_mp3.add_theme_color_override("font_color", Color.WHITE)
 	chk_hide_mp3.add_theme_color_override("font_hover_color", Color.WHITE)
 	chk_hide_mp3.add_theme_color_override("font_pressed_color", Color.WHITE)
+	chk_hide_mp3.add_theme_color_override("font_focus_color", Color.WHITE)
 	chk_hide_mp3.add_theme_font_size_override("font_size", 13)
 	chk_hide_mp3.button_pressed = !show_mp3_player
 	chk_hide_mp3.toggled.connect(func(pressed: bool):
@@ -1652,23 +1698,26 @@ func _build_con_confirm_release() -> void:
 
 func _build_con_confirm_save() -> void:
 	con_confirm_save = DraggableWindow.new()
-	con_confirm_save.size = Vector2(340, 180)
-	con_confirm_release.z_index = 100
+	con_confirm_save.size = Vector2(400, 180)
+	con_confirm_save.z_index = 100 # Fix: Ensures the window renders on top
 	can_main.add_child(con_confirm_save)
 
-	_add_label(con_confirm_save, "Overwrite Save?", Vector2(15, 12), Vector2(310, 20), 13)
+	_add_label(con_confirm_save, "Overwrite Save", Vector2(15, 12), Vector2(370, 20), 13)
 
+	# Fix: Classic blue background
 	var bg := ColorRect.new()
-	bg.color = Color.WHITE
+	bg.color = Color("2f5c9f") 
 	bg.position = Vector2(15, 35)
-	bg.size = Vector2(310, 80)
+	bg.size = Vector2(370, 80)
 	con_confirm_save.add_child(bg)
 
-	var lbl_text := _add_label(con_confirm_save, "Are you sure you want to overwrite your\ncurrently loaded save file?", Vector2(0, 48), Vector2(340, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
-	lbl_text.add_theme_color_override("font_color", Color.BLACK)
+	# Fix: White text color
+	var lbl_text := _add_label(con_confirm_save, "A save file already exists.\nDo you want to overwrite it?", Vector2(0, 55), Vector2(400, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl_text.add_theme_color_override("font_color", Color.WHITE)
 	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	var btn_yes := _add_button(con_confirm_save, "Yes", Vector2(85, 130), Vector2(80, 30))
+	# Centered buttons
+	var btn_yes := _add_button(con_confirm_save, "Yes", Vector2(115, 130), Vector2(80, 30))
 	btn_yes.pressed.connect(func():
 		con_confirm_save.visible = false
 		var f := FileAccess.open(current_save_path, FileAccess.WRITE)
@@ -1679,7 +1728,7 @@ func _build_con_confirm_save() -> void:
 		unpause_game()
 	)
 
-	var btn_no := _add_button(con_confirm_save, "No", Vector2(175, 130), Vector2(80, 30))
+	var btn_no := _add_button(con_confirm_save, "No", Vector2(205, 130), Vector2(80, 30))
 	btn_no.pressed.connect(func():
 		con_confirm_save.visible = false
 		unpause_game()
@@ -1688,19 +1737,16 @@ func _build_con_confirm_save() -> void:
 func _build_con_confirm_quit() -> void:
 	con_confirm_quit = DraggableWindow.new()
 	con_confirm_quit.size = Vector2(340, 180)
-	con_confirm_release.z_index = 100
+	con_confirm_quit.z_index = 100 
 	can_main.add_child(con_confirm_quit)
 
 	_add_label(con_confirm_quit, "Quit Game", Vector2(15, 12), Vector2(310, 20), 13)
 
-	var bg := ColorRect.new()
-	bg.color = Color.WHITE
-	bg.position = Vector2(15, 35)
-	bg.size = Vector2(310, 80)
-	con_confirm_quit.add_child(bg)
+	# Removed the ColorRect completely so it uses the window's natural background
 
-	var lbl_text := _add_label(con_confirm_quit, "Do you want to quit to the main menu?\nUnsaved progress will be lost.", Vector2(0, 48), Vector2(340, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
-	lbl_text.add_theme_color_override("font_color", Color.BLACK)
+	# Centered text in the gap between the title and buttons, increased font to 13
+	var lbl_text := _add_label(con_confirm_quit, "Do you want to quit to the main menu?\nUnsaved progress will be lost.", Vector2(0, 35), Vector2(340, 95), 13, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl_text.add_theme_color_override("font_color", Color.WHITE)
 	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	var btn_ok := _add_button(con_confirm_quit, "OK!", Vector2(85, 130), Vector2(80, 30))
@@ -1729,12 +1775,16 @@ func _build_con_confirm_quit() -> void:
 func _build_con_confirm_desktop() -> void:
 	con_confirm_desktop = DraggableWindow.new()
 	con_confirm_desktop.size = Vector2(340, 180)
-	con_confirm_release.z_index = 100
+	con_confirm_desktop.z_index = 100
 	can_main.add_child(con_confirm_desktop)
 
 	_add_label(con_confirm_desktop, "Quit Linux Tycoon", Vector2(15, 12), Vector2(310, 20), 13)
 
-	var lbl_text := _add_label(con_confirm_desktop, "Are you sure you want to quit Linux Tycoon?", Vector2(0, 50), Vector2(340, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	# Increased font size to 13.
+	# Expanded the Y-size to 95 to span the exact gap between the title (Y=35) 
+	# and the buttons (Y=130). Your _add_label helper already uses VERTICAL_ALIGNMENT_CENTER, 
+	# so this perfectly centers the text in that empty space.
+	var lbl_text := _add_label(con_confirm_desktop, "Are you sure you want to quit Linux Tycoon?", Vector2(0, 35), Vector2(340, 95), 13, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl_text.add_theme_color_override("font_color", Color.WHITE)
 	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -1750,44 +1800,87 @@ func _build_con_confirm_desktop() -> void:
 
 func _build_con_credits() -> void:
 	con_credits = DraggableWindow.new()
-	con_credits.size = Vector2(400, 210)
+	con_credits.size = Vector2(490, 330) # Increased height to accommodate the new URL
 	can_main.add_child(con_credits)
 
 	_add_label(con_credits, "Credits", Vector2(15, 12), Vector2(200, 20), 16)
 
-	var lbl_dev := _add_label(con_credits, "Originally developed by Bryan Lunduke", Vector2(20, 45), Vector2(360, 20), 13)
+	var bryan := TextureRect.new()
+	bryan.texture = tex_bryan
+	bryan.position = Vector2(15, 40) 
+	bryan.size = Vector2(46, 99)
+	bryan.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	con_credits.add_child(bryan)
+
+	var lbl_dev := _add_label(con_credits, "Originally developed by Bryan Lunduke:", Vector2(75, 40), Vector2(400, 20), 13) 
 	lbl_dev.add_theme_color_override("font_color", Color.WHITE)
 
-	var lbl_port := _add_label(con_credits, "Ported to the Redot Engine by Hal Motley (inferno986return)", Vector2(20, 75), Vector2(360, 20), 13)
+	var link_lunduke := LinkButton.new()
+	link_lunduke.text = "https://www.Lunduke.com/"
+	link_lunduke.position = Vector2(75, 60)
+	link_lunduke.add_theme_font_size_override("font_size", 13) 
+	link_lunduke.add_theme_color_override("font_color", Color.WHITE)
+	link_lunduke.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_lunduke.uri = "https://www.lunduke.com/"
+	con_credits.add_child(link_lunduke)
+
+	var lbl_port := _add_label(con_credits, "Ported to the Redot Engine by Hal Motley (inferno986return):", Vector2(75, 90), Vector2(400, 20), 13)
 	lbl_port.add_theme_color_override("font_color", Color.WHITE)
 
-	var lbl_icons := _add_label(con_credits, "UI Icons by Google Material Icons (Apache License 2.0):", Vector2(20, 105), Vector2(360, 20), 13)
+	var link_motley := LinkButton.new()
+	link_motley.text = "https://paypal.me/HalMotley/"
+	link_motley.position = Vector2(75, 110)
+	link_motley.add_theme_font_size_override("font_size", 13) 
+	link_motley.add_theme_color_override("font_color", Color.WHITE)
+	link_motley.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_motley.uri = "https://paypal.me/HalMotley/"
+	con_credits.add_child(link_motley)
+
+	# ADDED: GitHub Link (spaced directly below the PayPal link)
+	var link_github := LinkButton.new()
+	link_github.text = "https://github.com/inferno986return/"
+	link_github.position = Vector2(75, 130)
+	link_github.add_theme_font_size_override("font_size", 13)
+	link_github.add_theme_color_override("font_color", Color.WHITE)
+	link_github.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_github.uri = "https://github.com/inferno986return/"
+	con_credits.add_child(link_github)
+
+	# Shifted remaining elements down by 20px to account for the new URL line
+	var lbl_icons := _add_label(con_credits, "UI Icons by Google Material Icons (Apache License 2.0):", Vector2(75, 160), Vector2(400, 20), 13)
 	lbl_icons.add_theme_color_override("font_color", Color.WHITE)
 
 	var link_icons := LinkButton.new()
 	link_icons.text = "https://www.apache.org/licenses/LICENSE-2.0"
-	link_icons.position = Vector2(20, 125)
-	link_icons.add_theme_font_size_override("font_size", 11)
+	link_icons.position = Vector2(75, 180)
+	link_icons.add_theme_font_size_override("font_size", 13)
 	link_icons.add_theme_color_override("font_color", Color.WHITE)
 	link_icons.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
 	link_icons.uri = "https://www.apache.org/licenses/LICENSE-2.0"
 	con_credits.add_child(link_icons)
 
-	var btn_music := _add_button(con_credits, "Music", Vector2(140, 165), Vector2(75, 30))
+	var lbl_ip := _add_label(con_credits, "Linux is a registered trademark of Linus Torvalds.\nTux the penguin was created by Larry Ewing.", Vector2(75, 210), Vector2(400, 40), 13)
+	lbl_ip.add_theme_color_override("font_color", Color.WHITE)
+
+	# EXPLICIT BUTTON SPACING:
+	# All buttons are exactly 75px wide.
+	# Music ends at 305 (230 + 75). License starts at 315. Gap = exactly 10 pixels.
+	# License ends at 390 (315 + 75). OK! starts at 400. Gap = exactly 10 pixels.
+	var btn_music := _add_button(con_credits, "Music", Vector2(230, 280), Vector2(75, 30))
 	btn_music.pressed.connect(func():
 		con_credits.visible = false
 		center_container(con_music)
 		con_music.visible = true
 	)
 
-	var btn_license := _add_button(con_credits, "License", Vector2(225, 165), Vector2(75, 30))
+	var btn_license := _add_button(con_credits, "License", Vector2(315, 280), Vector2(75, 30))
 	btn_license.pressed.connect(func():
 		con_credits.visible = false
 		center_container(con_license)
 		con_license.visible = true
 	)
 
-	var btn_ok := _add_button(con_credits, "OK!", Vector2(310, 165), Vector2(75, 30))
+	var btn_ok := _add_button(con_credits, "OK!", Vector2(400, 280), Vector2(75, 30))
 	btn_ok.pressed.connect(func(): con_credits.visible = false)
 
 func _build_con_music() -> void:
@@ -1833,9 +1926,11 @@ func _build_con_music() -> void:
 		con_credits.visible = true
 	)
 
+
 func _build_con_mp3_player() -> void:
 	con_mp3_player = DraggableWindow.new()
-	con_mp3_player.size = Vector2(400, 440) # Height increased to 440px
+	# Increased height from 440 to 455 to add more space below the bottom buttons
+	con_mp3_player.size = Vector2(400, 455) 
 	can_main.add_child(con_mp3_player)
 
 	_add_label(con_mp3_player, "MP3 Player", Vector2(15, 12), Vector2(200, 20), 16)
@@ -1911,7 +2006,7 @@ func _build_con_mp3_player() -> void:
 		if is_shuffled:
 			playlist.shuffle()
 			_play_track(0)
-			_refresh_mp3_list() # FIXED: Refreshes list instead of building a new window
+			_refresh_mp3_list() 
 		else:
 			_sync_mp3_ui()
 	)
@@ -1920,7 +2015,7 @@ func _build_con_mp3_player() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
 	bg.position = Vector2(15, 85)
-	bg.size = Vector2(370, 300) # Increased height to 300px
+	bg.size = Vector2(370, 300)
 	con_mp3_player.add_child(bg)
 
 	var scroll := ScrollContainer.new()
@@ -1938,6 +2033,8 @@ func _build_con_mp3_player() -> void:
 	_sync_mp3_ui()
 
 	# --- Bottom Row Buttons (Y = 395) ---
+	# With the window height at 455 and buttons ending at 425 (395 + 30), 
+	# there is now a comfortable 30px gap at the bottom.
 	var btn_enable_all := _add_button(con_mp3_player, "Enable All", Vector2(15, 395), Vector2(90, 30))
 	btn_enable_all.pressed.connect(func():
 		for t in playlist:
@@ -2425,15 +2522,32 @@ func _hide_all_containers() -> void:
 
 func pause_game() -> void:
 	day_timer.stop()
-	btn_pause.visible = false
+	
+	# Grey out instead of hiding
+	if btn_pause != null:
+		btn_pause.disabled = true
+	if btn_save_as_top != null:
+		btn_save_as_top.disabled = true
+		
 	if lbl_paused != null:
-		lbl_paused.visible = false
+		# Hide on main menu or intro screen, otherwise show it to indicate suspended state!
+		if con_main_menu != null and (con_main_menu.visible or con_intro.visible):
+			lbl_paused.visible = false
+		else:
+			lbl_paused.visible = true
 
 func unpause_game() -> void:
 	if con_main_menu.visible or con_intro.visible:
 		return 
 	day_timer.start()
-	btn_pause.visible = true
+	
+	# Re-enable the buttons
+	if btn_pause != null:
+		btn_pause.disabled = false
+		btn_pause.visible = true
+	if btn_save_as_top != null:
+		btn_save_as_top.disabled = false
+		
 	if lbl_paused != null:
 		lbl_paused.visible = GameManager.is_paused
 
