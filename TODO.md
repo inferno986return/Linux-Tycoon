@@ -24,4 +24,6 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Add a localisation for Esperanto to pave the way for translations.
 * Implement multiplayer exactly as Bryan Lunduke intended and enable the "Run Server" and "Online Game" buttons in the Main Menu.
 * Other single player modes - I would like getting a certain rank or higher within 1 year or 2 years with balancing adjustments made (or even player-set parameters like FNAF's "Custom Night")
-* Achievements (though I like the Newgrounds term of "medals" too) for playing for 10, 20, 500 and 100 years, reaching the top 10, then number 1 and keeping number 1 for at least 1 year, getting 100,000 users, exceeding 700MB (Got a flash drive?), etc.
+* Achievements (though I like the Newgrounds term of "medals" too) for playing for 10, 20, 500 and 100 years, reaching the top 10, then number 1 and keeping number 1 for at least 1 year, getting 100,000 and then 150,000 users, exceeding 700MB (Got a flash drive?), etc.
+* I'd like more random events and a hard mode.
+* Provide some kind of end game, as the classic game has no end
