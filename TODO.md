@@ -17,9 +17,13 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Add up and down arrows to the right on DistroRank which correspond to user growth and recession
 * Could do gold, silver, and bronze colouration for the top 3 on DistroRank.
 * Bryan shouts out as you progress into the Top 10 on DistroRank.
+* The 32px Redot logo on the main menu should have its background removed to match Tux.
+* The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
 
 ## Long-term
 
+* A hamburger (3 horizontal lines ≡) or kebab (vertical ellipis ⁝) menu in the top-right if there is a button overspill and we need a dedicated menu for Save As, Quit, etc.
+* Different speeds like with SimCity and RCT: 0 - Paused, 1 - Normal, 2 - Fast, 3 - Extreme
 * Actually compile the game for Windows and GNU/Linux, then test the "Fullscreen" checkbox in the "Settings" actually works.
 * Add a localisation for Esperanto to pave the way for translations.
 * Implement multiplayer exactly as Bryan Lunduke intended and enable the "Run Server" and "Online Game" buttons in the Main Menu.

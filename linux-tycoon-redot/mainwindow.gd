@@ -120,6 +120,8 @@ var file_dlg_scenario: FileDialog
 
 var tex_tux: Texture2D
 var tex_bryan: Texture2D
+var tex_redot: Texture2D
+
 var tex_pause: Texture2D
 var tex_play: Texture2D
 var tex_settings: Texture2D
@@ -139,6 +141,8 @@ func _ready() -> void:
 		tex_tux = load("res://Tux32x32.png")
 	if ResourceLoader.exists("res://Bryan.png"):
 		tex_bryan = load("res://Bryan.png")
+	if ResourceLoader.exists("res://redot.png"):
+		tex_redot = load("res://redot.png")
 		
 	if ResourceLoader.exists("res://icons/pause_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png"):
 		tex_pause = load("res://icons/pause_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
@@ -314,13 +318,10 @@ func _update_mp3_visibility() -> void:
 func _sync_mp3_ui() -> void:
 	if btn_mp3_play != null:
 		btn_mp3_play.disabled = (is_mp3_playing and not is_mp3_paused)
-		btn_mp3_play.modulate = Color(0.5, 0.5, 0.5, 1.0) if btn_mp3_play.disabled else Color.WHITE
 		
 		btn_mp3_pause.disabled = (not is_mp3_playing or is_mp3_paused)
-		btn_mp3_pause.modulate = Color(0.5, 0.5, 0.5, 1.0) if btn_mp3_pause.disabled else Color.WHITE
 		
 		btn_mp3_stop.disabled = not is_mp3_playing
-		btn_mp3_stop.modulate = Color(0.5, 0.5, 0.5, 1.0) if btn_mp3_stop.disabled else Color.WHITE
 		
 		btn_mp3_shuf.modulate = Color.WHITE if is_shuffled else Color(0.5, 0.5, 0.5, 1.0)
 
@@ -343,6 +344,7 @@ func _apply_xojo_theme() -> void:
 	t.set_color("font_hover_color", "Button", Color.WHITE)
 	t.set_color("font_pressed_color", "Button", Color.WHITE)
 	t.set_color("font_disabled_color", "Button", Color8(200, 200, 200))
+	t.set_color("icon_disabled_color", "Button", Color(1, 1, 1, 0.5)) # Updated for perfect disabled wash
 
 	var sb_empty := StyleBoxEmpty.new()
 	t.set_stylebox("normal", "CheckBox", sb_empty)
@@ -624,28 +626,6 @@ func _build_base_layout() -> void:
 	lbl_paused.visible = false
 	top_bar.add_child(lbl_paused)
 
-	btn_save_as_top = Button.new()
-	btn_save_as_top.anchor_left = 1.0
-	btn_save_as_top.anchor_right = 1.0
-	btn_save_as_top.offset_left = -105
-	btn_save_as_top.offset_right = -75
-	btn_save_as_top.offset_top = 2
-	btn_save_as_top.offset_bottom = 24
-	btn_save_as_top.icon = tex_save_as
-	btn_save_as_top.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	btn_save_as_top.expand_icon = true
-	btn_save_as_top.add_theme_constant_override("icon_max_width", 16)
-	btn_save_as_top.add_theme_stylebox_override("normal", sb_icon_btn)
-	btn_save_as_top.add_theme_stylebox_override("hover", sb_icon_hover)
-	btn_save_as_top.add_theme_stylebox_override("pressed", sb_icon_pressed)
-	btn_save_as_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	btn_save_as_top.visible = false
-	btn_save_as_top.pressed.connect(func():
-		pause_game()
-		file_dlg_save.popup_centered()
-	)
-	top_bar.add_child(btn_save_as_top)
-
 	btn_settings_top = Button.new()
 	btn_settings_top.anchor_left = 1.0
 	btn_settings_top.anchor_right = 1.0
@@ -772,17 +752,24 @@ func _build_con_main_menu() -> void:
 	link_itch.uri = "https://lunduke.itch.io/linux-tycoon-mega-collection/"
 	con_main_menu.add_child(link_itch)
 
-	var redot_lbl := _add_label(con_main_menu, "Powered by Redot Engine v26.3:", Vector2(75, 350), Vector2(330, 45), 13)
+	# --- Redot Engine Branding ---
+	var redot_icon := TextureRect.new()
+	redot_icon.texture = tex_redot
+	redot_icon.position = Vector2(30, 332) # Aligned vertically with the text block
+	redot_icon.size = Vector2(32, 32)
+	redot_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	con_main_menu.add_child(redot_icon)
+
+	var redot_lbl := _add_label(con_main_menu, "Powered by Redot Engine v26.3:", Vector2(75, 330), Vector2(330, 20), 13)
 	
 	var link_redot := LinkButton.new()
 	link_redot.text = "https://www.redotengine.org/"
-	link_redot.position = Vector2(75, 385)
+	link_redot.position = Vector2(75, 355)
 	link_redot.add_theme_font_size_override("font_size", 13)
 	link_redot.add_theme_color_override("font_color", Color.WHITE)
 	link_redot.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
 	link_redot.uri = "https://www.redotengine.org/"
 	con_main_menu.add_child(link_redot)
-
 	var vbox := VBoxContainer.new()
 	vbox.position = Vector2(430, 30)
 	vbox.size = Vector2(160, 370)
@@ -1108,12 +1095,12 @@ func _build_con_package_selection() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color.WHITE
 	bg.position = Vector2(15, 40)
-	bg.size = Vector2(570, 360)
+	bg.size = Vector2(570, 350) # Reduced from 360
 	con_package_selection.add_child(bg)
 
 	var scroll := ScrollContainer.new()
 	scroll.position = Vector2(15, 40)
-	scroll.size = Vector2(570, 360) 
+	scroll.size = Vector2(570, 350) # Reduced from 360
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	con_package_selection.add_child(scroll)
 
@@ -1123,7 +1110,7 @@ func _build_con_package_selection() -> void:
 	scroll.add_child(pkg_vbox)
 
 	var opt_sort := OptionButton.new()
-	opt_sort.position = Vector2(270, 415)
+	opt_sort.position = Vector2(270, 405) # Moved up from 415
 	opt_sort.size = Vector2(230, 30)
 	opt_sort.add_item("Sort: Default")
 	opt_sort.add_item("Sort: Alphabetical")
@@ -1148,7 +1135,7 @@ func _build_con_package_selection() -> void:
 	)
 	con_package_selection.add_child(opt_sort)
 
-	var btn_ok := _add_button(con_package_selection, "OK!", Vector2(510, 415), Vector2(75, 30))
+	var btn_ok := _add_button(con_package_selection, "OK!", Vector2(510, 405), Vector2(75, 30)) # Moved up from 415
 	btn_ok.pressed.connect(_on_package_selection_ok)
 
 func _refresh_package_selection() -> void:
