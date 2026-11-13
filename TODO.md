@@ -21,9 +21,7 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
 
 ## Long-term
-
-* A hamburger (3 horizontal lines ≡) or kebab (vertical ellipis ⁝) menu in the top-right if there is a button overspill and we need a dedicated menu for Save As, Quit, etc.
-* Different speeds like with SimCity and RCT: 0 - Paused, 1 - Normal, 2 - Fast, 3 - Extreme
+* Formally support Scenarios and test them.
 * Actually compile the game for Windows and GNU/Linux, then test the "Fullscreen" checkbox in the "Settings" actually works.
 * Add a localisation for Esperanto to pave the way for translations.
 * Implement multiplayer exactly as Bryan Lunduke intended and enable the "Run Server" and "Online Game" buttons in the Main Menu.
@@ -31,3 +29,5 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Achievements (though I like the Newgrounds term of "medals" too) for playing for 10, 20, 500 and 100 years, reaching the top 10, then number 1 and keeping number 1 for at least 1 year, getting 100,000 and then 150,000 users, exceeding 700MB (Got a flash drive?), etc.
 * I'd like more random events and a hard mode.
 * Provide some kind of end game, as the classic game has no end
+* A hamburger (3 horizontal lines ≡) or kebab (vertical ellipis ⁝) menu in the top-right if there is a button overspill and we need a dedicated menu for Save As, Quit, etc.
+* Different speeds like with SimCity and RCT: 0 - Paused, 1 - Normal, 2 - Fast, 3 - Extreme
