@@ -6,21 +6,18 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 
 * Continue playtesting to find unexpected bugs.
 * Many of the windows have buttons which touch the bottom border without making any space. The space should be conistent too!
-~~* The "Release Version" and "Quit" dialogues have centred buttons when all "Ok!" and "Cancel" should be right-aligned.~~ <-- No! This looks worse.
-* Basic button grey out with tooltips but not there yet and the Save As icon disappears, should match the MP3 Player jukebox.
-* The "Save" button dialog still has the dark blue background and doesn't work above the MP3 Player jukebox
+* ~~The "Release Version" and "Quit" dialogues have centred buttons when all "Ok!" and "Cancel" should be right-aligned.~~ <-- No! This looks worse.
 * The game still has weird text rendering issues.
 * The main menu quit dialogue buttons don't work ontop of the MP3 Player.
 * We can squeeze row 11 on the DistroRank with the optimal window sizing and arrangement.
-* In-game hotkeys (with underlining and tooltips): Space (to pause/play the game), S to Save, A to Assign Workers, P to Edit Packages, M for MP3 Player, audio playback keys for the music (some keyboards have them)
+* In-game hotkeys (with underlining and tooltips): Space (to pause/play the game), S to Save, A to Assign Workers, P to Edit Packages, M for MP3 Player, audio playback keys for the music (some keyboards have them), F5 does Quicksave
 * Make the distro development window shorter and DistroRank longer to show 11 and 12.
-* Add up and down arrows to the right on DistroRank which correspond to user growth and recession
-* Could do gold, silver, and bronze colouration for the top 3 on DistroRank.
-* Bryan shouts out as you progress into the Top 10 on DistroRank.
-* The 32px Redot logo on the main menu should have its background removed to match Tux.
+* Could do a light gold, silver, and bronze colouration background for the top 3 on DistroRank. With a crown at the top for number 1 spot.
 * The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
+* Hotkeys button in the Settings menu which shows and allows rebinding hotkeys.
 
 ## Long-term
+* Dedicated GitHub website - would be cool if it had the same blue window design using Hugo or something.
 * Formally support Scenarios and test them.
 * Actually compile the game for Windows and GNU/Linux, then test the "Fullscreen" checkbox in the "Settings" actually works.
 * Add a localisation for Esperanto to pave the way for translations.
@@ -31,3 +28,4 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Provide some kind of end game, as the classic game has no end
 * A hamburger (3 horizontal lines ≡) or kebab (vertical ellipis ⁝) menu in the top-right if there is a button overspill and we need a dedicated menu for Save As, Quit, etc.
 * Different speeds like with SimCity and RCT: 0 - Paused, 1 - Normal, 2 - Fast, 3 - Extreme
+* Refactor all the code to be as efficient as it can be.

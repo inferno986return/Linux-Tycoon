@@ -133,6 +133,12 @@ var tex_volume_up: Texture2D
 var tex_add: Texture2D
 var tex_remove: Texture2D
 
+var tex_arrow_up: Texture2D
+var tex_arrow_down: Texture2D
+var tex_crown: Texture2D
+
+var tex_cultist: Texture2D
+
 var bryan_new_release: TextureRect
 var btn_ok_new_release: Button
 
@@ -177,6 +183,25 @@ func _ready() -> void:
 		tex_shuffle = load("res://icons/shuffle_18dp_E3E3E3_FILL1_wght700_GRAD0_opsz20.png")
 	if ResourceLoader.exists("res://icons/music_note_2_18dp_E3E3E3_FILL1_wght400_GRAD0_opsz20.png"):
 		tex_music_note = load("res://icons/music_note_2_18dp_E3E3E3_FILL1_wght400_GRAD0_opsz20.png")
+# Arrow Up
+	if ResourceLoader.exists("res://icons/arrow_upward_18dp_000000_FILL0_wght400_GRAD0_opsz20.png"):
+		tex_arrow_up = load("res://icons/arrow_upward_18dp_000000_FILL0_wght400_GRAD0_opsz20.png")
+	elif ResourceLoader.exists("res://arrow_upward_18dp_000000_FILL0_wght400_GRAD0_opsz20.png"):
+		tex_arrow_up = load("res://arrow_upward_18dp_000000_FILL0_wght400_GRAD0_opsz20.png")
+		
+	# Arrow Down
+	if ResourceLoader.exists("res://icons/arrow_downward_18dp_000000_FILL0_wght400_GRAD0_opsz20.png"):
+		tex_arrow_down = load("res://icons/arrow_downward_18dp_000000_FILL0_wght400_GRAD0_opsz20.png")
+	elif ResourceLoader.exists("res://arrow_downward_18dp_000000_FILL0_wght400_GRAD0_opsz20.png"):
+		tex_arrow_down = load("res://arrow_downward_18dp_000000_FILL0_wght400_GRAD0_opsz20.png")
+	
+	if ResourceLoader.exists("res://icons/crown_18dp_000000_FILL0_wght400_GRAD0_opsz20.png"):
+		tex_crown = load("res://icons/crown_18dp_000000_FILL0_wght400_GRAD0_opsz20.png")
+	elif ResourceLoader.exists("res://crown_18dp_000000_FILL0_wght400_GRAD0_opsz20.png"):
+		tex_crown = load("res://crown_18dp_000000_FILL0_wght400_GRAD0_opsz20.png")
+
+	if ResourceLoader.exists("res://Cultist.png"):
+		tex_cultist = load("res://Cultist.png")
 
 	audio_player = AudioStreamPlayer.new()
 	add_child(audio_player)
@@ -810,6 +835,7 @@ func _build_con_main_menu() -> void:
 	btn_settings.pressed.connect(func():
 		center_container(con_settings)
 		con_settings.visible = true
+		con_settings.move_to_front() # <--- ADDED
 	)
 	vbox.add_child(btn_settings)
 
@@ -818,6 +844,7 @@ func _build_con_main_menu() -> void:
 	btn_credits.pressed.connect(func():
 		center_container(con_credits)
 		con_credits.visible = true
+		con_credits.move_to_front() # <--- ADDED
 	)
 	vbox.add_child(btn_credits)
 
@@ -830,6 +857,7 @@ func _build_con_main_menu() -> void:
 	btn_quit.pressed.connect(func(): 
 		center_container(con_confirm_desktop)
 		con_confirm_desktop.visible = true
+		con_confirm_desktop.move_to_front() # <--- ADDED
 	)
 	vbox.add_child(btn_quit)
 
@@ -1045,16 +1073,60 @@ func _refresh_distro_rank() -> void:
 		var d := all_list[i]
 		var row := ColorRect.new()
 		row.custom_minimum_size = Vector2(182, 34)
-		row.color = Color8(230, 240, 255) if d == GameManager.my_distro else (Color.WHITE if i % 2 == 0 else Color8(245, 245, 245))
+
+		# Apply dynamic background colors for the Top 3 (Stronger Colors)
+		var is_me := (d == GameManager.my_distro)
+		if i == 0: # Strong Gold
+			row.color = Color8(255, 185, 15) if is_me else Color8(255, 215, 0)
+		elif i == 1: # Strong Silver
+			row.color = Color8(150, 155, 160) if is_me else Color8(192, 192, 192)
+		elif i == 2: # Strong Bronze
+			row.color = Color8(184, 115, 51) if is_me else Color8(205, 127, 50)
+		else: # Standard rows
+			row.color = Color8(205, 225, 255) if is_me else (Color.WHITE if i % 2 == 0 else Color8(242, 242, 242))
 
 		var l_num := _add_label(row, str(i + 1), Vector2(3, 7), Vector2(24, 20), 13)
 		l_num.add_theme_color_override("font_color", Color.BLACK)
 
-		var l_name := _add_label(row, d.name, Vector2(28, 2), Vector2(150, 16), 11)
-		l_name.add_theme_color_override("font_color", Color.BLACK)
+		# Restore text positioning and set width to 112 to stop right before the crown
+		var text_x := 28
+		var text_w := 112 
 
-		var l_users := _add_label(row, "Users: %d" % d.users, Vector2(28, 17), Vector2(150, 14), 9)
+		var l_name := _add_label(row, d.name, Vector2(text_x, 2), Vector2(text_w, 16), 11)
+		l_name.add_theme_color_override("font_color", Color.BLACK)
+		l_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS 
+
+		var l_users := _add_label(row, "Users: %d" % d.users, Vector2(text_x, 17), Vector2(text_w, 14), 9)
 		l_users.add_theme_color_override("font_color", Color8(60, 60, 60))
+		l_users.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+
+		# Add the Crown for #1 Spot right before the arrow
+		if i == 0 and tex_crown != null:
+			var crown := TextureRect.new()
+			crown.texture = tex_crown
+			crown.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			crown.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			crown.position = Vector2(142, 8) # Placed strictly before the arrow (160 - 18)
+			crown.size = Vector2(18, 18)
+			row.add_child(crown)
+
+		# Show trend arrows based on the daily user change
+		if d.new_user_change > 0 and tex_arrow_up != null:
+			var arrow := TextureRect.new()
+			arrow.texture = tex_arrow_up
+			arrow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			arrow.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			arrow.position = Vector2(160, 8) # Aligned to the far right
+			arrow.size = Vector2(18, 18)
+			row.add_child(arrow)
+		elif d.new_user_change < 0 and tex_arrow_down != null:
+			var arrow := TextureRect.new()
+			arrow.texture = tex_arrow_down
+			arrow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			arrow.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			arrow.position = Vector2(160, 8)
+			arrow.size = Vector2(18, 18)
+			row.add_child(arrow)
 
 		rank_vbox.add_child(row)
 
@@ -1347,19 +1419,10 @@ func _build_con_worker_assignment() -> void:
 			_refresh_worker_assignment()
 	)
 
-	# Sacrifice Worker positioned above the Sort dropdown
-	var btn_sac := _add_button(con_worker_assignment, "Sacrifice Worker", Vector2(230, 290), Vector2(220, 30))
-	btn_sac.pressed.connect(func():
-		con_worker_assignment.visible = false
-		center_container(con_sacrifice_worker)
-		_refresh_sacrifice_worker()
-		con_sacrifice_worker.visible = true
-	)
-
-	# Upward-opening Sort dropdown next to OK! (20px above the bottom border)
+	# Sorter positioned above the bottom buttons
 	var opt_sort := OptionButton.new()
-	opt_sort.position = Vector2(230, 330)
-	opt_sort.size = Vector2(220, 30)
+	opt_sort.position = Vector2(230, 290)
+	opt_sort.size = Vector2(305, 30) # Spans to align with the OK button's right edge
 	opt_sort.add_item("Sort: Default")
 	opt_sort.add_item("Sort: Alphabetical")
 	opt_sort.add_item("Sort: Bug Count")
@@ -1373,12 +1436,6 @@ func _build_con_worker_assignment() -> void:
 	var popup := opt_sort.get_popup()
 	popup.add_theme_color_override("font_color", Color.WHITE)
 	popup.add_theme_color_override("font_hover_color", Color.WHITE)
-	popup.about_to_popup.connect(func():
-		var place_upward = func():
-			var screen_pos := opt_sort.get_screen_position()
-			popup.position = Vector2i(int(screen_pos.x), int(screen_pos.y) - popup.size.y)
-		place_upward.call_deferred()
-	)
 
 	opt_sort.selected = work_sort_mode
 	opt_sort.item_selected.connect(func(idx: int):
@@ -1386,6 +1443,15 @@ func _build_con_worker_assignment() -> void:
 		_refresh_worker_assignment()
 	)
 	con_worker_assignment.add_child(opt_sort)
+
+	# Narrower Sacrifice Worker positioned next to the OK! button
+	var btn_sac := _add_button(con_worker_assignment, "Sacrifice Worker", Vector2(230, 330), Vector2(150, 30))
+	btn_sac.pressed.connect(func():
+		con_worker_assignment.visible = false
+		center_container(con_sacrifice_worker)
+		_refresh_sacrifice_worker()
+		con_sacrifice_worker.visible = true
+	)
 
 	var btn_ok := _add_button(con_worker_assignment, "OK!", Vector2(460, 330), Vector2(75, 30))
 	btn_ok.pressed.connect(func():
@@ -1478,16 +1544,29 @@ func _refresh_worker_assignment() -> void:
 
 func _build_con_sacrifice_worker() -> void:
 	con_sacrifice_worker = DraggableWindow.new()
-	con_sacrifice_worker.size = Vector2(332, 211)
+	con_sacrifice_worker.size = Vector2(580, 240)
 	can_main.add_child(con_sacrifice_worker)
 
-	var desc := _add_label(con_sacrifice_worker, "You may sacrifice volunteers for immediate, but highly mysterious, boosts.", Vector2(20, 14), Vector2(292, 45), 11)
+	_add_label(con_sacrifice_worker, "Sacrifice Worker", Vector2(15, 12), Vector2(200, 20), 13)
+
+	if tex_cultist != null:
+		var cultist := TextureRect.new()
+		cultist.texture = tex_cultist
+		cultist.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		cultist.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		cultist.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		cultist.position = Vector2(15, 45)
+		cultist.size = Vector2(48, 64)
+		con_sacrifice_worker.add_child(cultist)
+
+	var desc := _add_label(con_sacrifice_worker, "You may sacrifice volunteers for immediate, but highly mysterious, boosts.", Vector2(75, 45), Vector2(490, 45), 13)
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	_add_label(con_sacrifice_worker, "Available Volunteers :", Vector2(20, 71), Vector2(168, 20), 11)
-	sac_lbl_avail = _add_label(con_sacrifice_worker, "0 / 0", Vector2(189, 71), Vector2(67, 20), 11, HORIZONTAL_ALIGNMENT_RIGHT)
+	# Consolidated into a single centered label stretching across the 580px width
+	sac_lbl_avail = _add_label(con_sacrifice_worker, "Available Volunteers : 0 / 0", Vector2(0, 100), Vector2(580, 20), 13, HORIZONTAL_ALIGNMENT_CENTER)
 
-	var btn_boost := _add_button(con_sacrifice_worker, "Sacrifice Worker", Vector2(106, 103), Vector2(120, 22))
+	# Centered in the new 580px width: (580 - 150) / 2 = 215
+	var btn_boost := _add_button(con_sacrifice_worker, "Sacrifice Worker", Vector2(215, 135), Vector2(150, 28))
 	btn_boost.pressed.connect(func():
 		var d := GameManager.my_distro
 		if d.get_distro_worker_available_volunteer() > 0:
@@ -1504,9 +1583,11 @@ func _build_con_sacrifice_worker() -> void:
 			GameManager.stats_updated.emit()
 	)
 
-	sac_lbl_results = _add_label(con_sacrifice_worker, "", Vector2(20, 137), Vector2(292, 20), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	# Stretches across the entire window for perfect centering
+	sac_lbl_results = _add_label(con_sacrifice_worker, "", Vector2(0, 165), Vector2(580, 20), 13, HORIZONTAL_ALIGNMENT_CENTER)
 
-	var btn_ok := _add_button(con_sacrifice_worker, "No more!", Vector2(85, 166), Vector2(162, 30))
+	# Centered in the new 580px width: (580 - 80) / 2 = 250
+	var btn_ok := _add_button(con_sacrifice_worker, "No more!", Vector2(250, 190), Vector2(80, 30))
 	btn_ok.pressed.connect(func():
 		con_sacrifice_worker.visible = false
 		_refresh_worker_assignment()
@@ -1515,7 +1596,8 @@ func _build_con_sacrifice_worker() -> void:
 
 func _refresh_sacrifice_worker() -> void:
 	var d := GameManager.my_distro
-	sac_lbl_avail.text = "%d / %d" % [d.get_distro_worker_available_volunteer(), d.workers_volunteers]
+	# Include the full text here so the single label centers correctly
+	sac_lbl_avail.text = "Available Volunteers : %d / %d" % [d.get_distro_worker_available_volunteer(), d.workers_volunteers]
 
 func _build_con_new_release() -> void:
 	con_new_release = DraggableWindow.new()
@@ -1656,6 +1738,11 @@ func _build_con_settings() -> void:
 	)
 	con_settings.add_child(chk_hide_mp3)
 
+	# --- NEW: Disabled Hotkeys Placeholder ---
+	var btn_hotkeys := _add_button(con_settings, "Hotkeys", Vector2(165, 275), Vector2(75, 30))
+	btn_hotkeys.disabled = true
+	# -----------------------------------------
+
 	var btn_ok := _add_button(con_settings, "OK!", Vector2(250, 275), Vector2(75, 30))
 	btn_ok.pressed.connect(func(): con_settings.visible = false)
 
@@ -1685,26 +1772,17 @@ func _build_con_confirm_release() -> void:
 
 func _build_con_confirm_save() -> void:
 	con_confirm_save = DraggableWindow.new()
-	con_confirm_save.size = Vector2(400, 180)
-	con_confirm_save.z_index = 100 # Fix: Ensures the window renders on top
+	con_confirm_save.size = Vector2(340, 160)
+	con_confirm_save.z_index = 100 
 	can_main.add_child(con_confirm_save)
 
-	_add_label(con_confirm_save, "Overwrite Save", Vector2(15, 12), Vector2(370, 20), 13)
+	_add_label(con_confirm_save, "Overwrite Save", Vector2(15, 12), Vector2(310, 20), 13)
 
-	# Fix: Classic blue background
-	var bg := ColorRect.new()
-	bg.color = Color("2f5c9f") 
-	bg.position = Vector2(15, 35)
-	bg.size = Vector2(370, 80)
-	con_confirm_save.add_child(bg)
-
-	# Fix: White text color
-	var lbl_text := _add_label(con_confirm_save, "A save file already exists.\nDo you want to overwrite it?", Vector2(0, 55), Vector2(400, 56), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl_text := _add_label(con_confirm_save, "A save file already exists.\nDo you want to overwrite it?", Vector2(0, 35), Vector2(340, 70), 13, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl_text.add_theme_color_override("font_color", Color.WHITE)
 	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	# Centered buttons
-	var btn_yes := _add_button(con_confirm_save, "Yes", Vector2(115, 130), Vector2(80, 30))
+	var btn_yes := _add_button(con_confirm_save, "Yes", Vector2(85, 115), Vector2(80, 30))
 	btn_yes.pressed.connect(func():
 		con_confirm_save.visible = false
 		var f := FileAccess.open(current_save_path, FileAccess.WRITE)
@@ -1715,7 +1793,7 @@ func _build_con_confirm_save() -> void:
 		unpause_game()
 	)
 
-	var btn_no := _add_button(con_confirm_save, "No", Vector2(205, 130), Vector2(80, 30))
+	var btn_no := _add_button(con_confirm_save, "No", Vector2(175, 115), Vector2(80, 30))
 	btn_no.pressed.connect(func():
 		con_confirm_save.visible = false
 		unpause_game()
@@ -1787,7 +1865,7 @@ func _build_con_confirm_desktop() -> void:
 
 func _build_con_credits() -> void:
 	con_credits = DraggableWindow.new()
-	con_credits.size = Vector2(490, 330) # Increased height to accommodate the new URL
+	con_credits.size = Vector2(490, 370) # Increased height to accommodate Cultist credit
 	can_main.add_child(con_credits)
 
 	_add_label(con_credits, "Credits", Vector2(15, 12), Vector2(200, 20), 16)
@@ -1823,7 +1901,6 @@ func _build_con_credits() -> void:
 	link_motley.uri = "https://paypal.me/HalMotley/"
 	con_credits.add_child(link_motley)
 
-	# ADDED: GitHub Link (spaced directly below the PayPal link)
 	var link_github := LinkButton.new()
 	link_github.text = "https://github.com/inferno986return/"
 	link_github.position = Vector2(75, 130)
@@ -1833,7 +1910,6 @@ func _build_con_credits() -> void:
 	link_github.uri = "https://github.com/inferno986return/"
 	con_credits.add_child(link_github)
 
-	# Shifted remaining elements down by 20px to account for the new URL line
 	var lbl_icons := _add_label(con_credits, "UI Icons by Google Material Icons (Apache License 2.0):", Vector2(75, 160), Vector2(400, 20), 13)
 	lbl_icons.add_theme_color_override("font_color", Color.WHITE)
 
@@ -1846,28 +1922,42 @@ func _build_con_credits() -> void:
 	link_icons.uri = "https://www.apache.org/licenses/LICENSE-2.0"
 	con_credits.add_child(link_icons)
 
-	var lbl_ip := _add_label(con_credits, "Linux is a registered trademark of Linus Torvalds.\nTux the penguin was created by Larry Ewing.", Vector2(75, 210), Vector2(400, 40), 13)
+	# --- NEW: Cultist Credit ---
+	var lbl_cultist := _add_label(con_credits, "Cultist pixel art by Elthen on itch.io:", Vector2(75, 210), Vector2(400, 20), 13)
+	lbl_cultist.add_theme_color_override("font_color", Color.WHITE)
+
+	var link_cultist := LinkButton.new()
+	link_cultist.text = "https://elthen.itch.io/2d-pixel-art-cultist-sprites"
+	link_cultist.position = Vector2(75, 230)
+	link_cultist.add_theme_font_size_override("font_size", 13)
+	link_cultist.add_theme_color_override("font_color", Color.WHITE)
+	link_cultist.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_cultist.uri = "https://elthen.itch.io/2d-pixel-art-cultist-sprites"
+	con_credits.add_child(link_cultist)
+	# ---------------------------
+
+	# Shifted down by 50px
+	var lbl_ip := _add_label(con_credits, "Linux is a registered trademark of Linus Torvalds.\nTux the penguin was created by Larry Ewing.", Vector2(75, 260), Vector2(400, 40), 13)
 	lbl_ip.add_theme_color_override("font_color", Color.WHITE)
 
-	# EXPLICIT BUTTON SPACING:
-	# All buttons are exactly 75px wide.
-	# Music ends at 305 (230 + 75). License starts at 315. Gap = exactly 10 pixels.
-	# License ends at 390 (315 + 75). OK! starts at 400. Gap = exactly 10 pixels.
-	var btn_music := _add_button(con_credits, "Music", Vector2(230, 280), Vector2(75, 30))
+	# Shifted down by 40px
+	var btn_music := _add_button(con_credits, "Music", Vector2(230, 320), Vector2(75, 30))
 	btn_music.pressed.connect(func():
 		con_credits.visible = false
 		center_container(con_music)
 		con_music.visible = true
+		con_music.move_to_front()
 	)
 
-	var btn_license := _add_button(con_credits, "License", Vector2(315, 280), Vector2(75, 30))
+	var btn_license := _add_button(con_credits, "License", Vector2(315, 320), Vector2(75, 30))
 	btn_license.pressed.connect(func():
 		con_credits.visible = false
 		center_container(con_license)
 		con_license.visible = true
+		con_license.move_to_front()
 	)
 
-	var btn_ok := _add_button(con_credits, "OK!", Vector2(400, 280), Vector2(75, 30))
+	var btn_ok := _add_button(con_credits, "OK!", Vector2(400, 320), Vector2(75, 30))
 	btn_ok.pressed.connect(func(): con_credits.visible = false)
 
 func _build_con_music() -> void:

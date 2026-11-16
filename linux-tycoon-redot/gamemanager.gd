@@ -12,6 +12,8 @@ var is_first_run: bool = true
 var is_first_worker_paid: bool = true
 var is_first_worker_volunteer: bool = true
 var has_warned_cd_size: bool = false # NEW: Tracks if Bryan has yelled at you about CDs
+var has_congratulated_zero_bugs: bool = false # NEW: Tracks zero bugs callout
+var has_reached_top_10: bool = false # NEW: Tracks the Top 10 shoutout
 var is_paused: bool = false
 var new_linux_users_daily: int = 50
 var the_date: int = 0 # Unix timestamp in seconds
@@ -28,7 +30,9 @@ func reset_new_game_state() -> void:
 	is_first_run = true
 	is_first_worker_paid = true
 	is_first_worker_volunteer = true
-	has_warned_cd_size = false # NEW
+	has_warned_cd_size = false
+	has_congratulated_zero_bugs = false 
+	has_reached_top_10 = false # NEW
 	new_linux_users_daily = 50
 	msg_text.clear()
 	msg_date.clear()
@@ -157,6 +161,25 @@ func increment_by_a_day() -> void:
 	new_day_new_bugs()
 	new_day_new_productivity()
 	random_event()
+
+	# --- NEW: Zero Bugs Callout ---
+	if not has_congratulated_zero_bugs and my_distro.released_ver > 0 and my_distro.packages_included.size() > 0:
+		if my_distro.get_distro_bugs() == 0:
+			has_congratulated_zero_bugs = true
+			show_message("Wow! Your workers just squashed the very last bug in %s! A zero-bug Linux distro... I never thought I'd see the day! (Enjoy it before they find more tomorrow.)" % my_distro.name)
+	# ------------------------------
+
+	# --- NEW: DistroRank Top 10 Callout ---
+	if not has_reached_top_10 and my_distro.released_ver > 0:
+		var my_rank: int = 1
+		for d in other_distros:
+			if d.users > my_distro.users:
+				my_rank += 1
+		if my_rank <= 10:
+			has_reached_top_10 = true
+			show_message("Incredible! %s has just broken into the Top 10 on DistroRank! You're in the big leagues now!" % my_distro.name)
+	# --------------------------------------
+
 	stats_updated.emit()
 
 func new_day_new_bugs() -> void:
@@ -497,6 +520,36 @@ func load_xml_string(xml_content: String, is_save_file: bool) -> bool:
 			is_first_worker_volunteer = false
 		if my_distro.get_distro_size_in_mb() > 700:
 			has_warned_cd_size = true # NEW: Stops him from repeating the warning on load
+	
+	if my_distro != null:
+		if my_distro.workers_paid > 0:
+			is_first_worker_paid = false
+		if my_distro.workers_volunteers > 0:
+			is_first_worker_volunteer = false
+		if my_distro.get_distro_size_in_mb() > 700:
+			has_warned_cd_size = true 
+		if my_distro.get_distro_bugs() == 0 and my_distro.released_ver > 0:
+			has_congratulated_zero_bugs = true # Stops him from repeating the zero-bug praise on load
+
+	# --- NEW: Fix the Deja Vu Bug ---
+	if my_distro != null:
+		if my_distro.workers_paid > 0:
+			is_first_worker_paid = false
+		if my_distro.workers_volunteers > 0:
+			is_first_worker_volunteer = false
+		if my_distro.get_distro_size_in_mb() > 700:
+			has_warned_cd_size = true 
+		if my_distro.get_distro_bugs() == 0 and my_distro.released_ver > 0:
+			has_congratulated_zero_bugs = true 
+	# --------------------------------
+
+	# NEW: Check rank on load so Bryan doesn't repeat the Top 10 message
+	var loaded_rank: int = 1
+	for d in other_distros:
+		if d.users > my_distro.users:
+			loaded_rank += 1
+		if loaded_rank <= 10 and my_distro.released_ver > 0:
+			has_reached_top_10 = true
 	# --------------------------------
 
 	stats_updated.emit()
