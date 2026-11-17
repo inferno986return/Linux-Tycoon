@@ -96,6 +96,11 @@ func build_initial_distro_list() -> void:
 	# Matches StandardScenario embedded XML (which conMainMenu.Open loads)
 	var std_distros := [
 		["Ooboontoo", 100000, 12, "Midget;FlamingRodent;ReallyFreeOffice;PenguinZoomer;JustCards;Pictures-In-Folders;Mailinator;Chatchatchat;Calculator;Video Player"],
+		
+		# --- NEW: Competitively Configured LCOS ---
+		["LCOS", 85000, 2, "Midget;ShmoogleShrome;OkayOffice;CityMax;FragBlast4000;The Dork;PixelPusher;Lunduke Development Kit;IRC-o-Matic;Calculator"],
+		# ------------------------------------------
+
 		["FloppyBeanie", 50000, 16, "Midget;FlamingRodent;ReallyFreeOffice;SpAnDeX;PenguinZoomer;LunarBlackout"],
 		["xTr333me", 25000, 7, "UCDE;Text-O-Web;SpAnDeX;FragBlast4000;PixelPusher;The Dork;LargeTalk;Fir;emTeeVee;vidCastGrabber"],
 		["CuteLittleDoggy", 15000, 5, "QDE;FlamingRodent;ReallyFreeOffice;PenguinZoomer;Calculator;Video Player Thing"],
