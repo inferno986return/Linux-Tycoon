@@ -14,12 +14,14 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Formally support Scenarios and test them - the RealLife.json JSON doesn't work when selected and starting a new game, then the packages. Save has an issue where it asks to overwrite but it hasn't been created yet, so we need a check for New Game to force Save As on first save.
 
 ### Features
+
 * We can squeeze row 11 on the DistroRank with the optimal window sizing and arrangement.
 * In-game hotkeys (with underlining and tooltips): Space (to pause/play the game), S to Save, A to Assign Workers, P to Edit Packages, M for MP3 Player, audio playback keys for the music (some keyboards have them), F5 does Quicksave, Esc for Quit etc.
 * Make the distro development window shorter and DistroRank longer to show 11 and 12.
-* Add functionality to the Hotkeys button in the Settings menu which shows and allows rebinding hotkeys.
+* Add functionality to the Hotkeys button in the Settings menu which shows and allows rebinding hotkeys - Esc has been implemented, but should double Esc should quit to main menu or close the game entirely?
 * Add some left and right margin on the Overview window to space it out better..
-* Punish long release windows over 180 days or inconsistent release periods - how to do it?
+* Show the competition's Size next to Users in DistroRank - this is buggy and some distros have 0 MB and yet a growing userbase
+* More packages, especially for when the 4.7GB DVD limit is reached.
 
 ## Long-term
 * Dedicated GitHub website - would be cool if it had the same blue window design using Hugo or something.
@@ -34,3 +36,6 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * A hamburger (3 horizontal lines ≡) or kebab (vertical ellipis ⁝) menu in the top-right if there is a button overspill and we need a dedicated menu for Save As, Quit, etc.
 * Different speeds like with SimCity and RCT: 0 - Paused, 1 - Normal, 2 - Fast, 3 - Extreme
 * Refactor all the code to be as efficient as it can be.
+* When you click on the distro in DistroRank, it shows the growth (or shrinkage) of the distro's userbase with a line graph over 30 days (or more).
+* Punish long release windows over 180 days or inconsistent release periods - how to do it?
+* Icons for each Linux distro and a choice of unique icon for the player's distro. Icons show in DistroRank

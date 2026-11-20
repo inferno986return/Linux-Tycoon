@@ -49,6 +49,7 @@ var tex_save_as: Texture2D
 var btn_save_as_top: Button
 var con_confirm_save: DraggableWindow
 var current_save_path: String = "user://SaveGame.json"
+var confirm_save_lbl: Label
 
 # Sub-containers
 var con_main_menu: DraggableWindow
@@ -349,6 +350,30 @@ func _sync_mp3_ui() -> void:
 		btn_mp3_stop.disabled = not is_mp3_playing
 		
 		btn_mp3_shuf.modulate = Color.WHITE if is_shuffled else Color(0.5, 0.5, 0.5, 1.0)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.is_echo():
+		if event.keycode == KEY_ESCAPE:
+			# If a quit dialog is already open, Esc acts as Cancel
+			if con_confirm_desktop.visible:
+				con_confirm_desktop.visible = false
+			elif con_confirm_quit.visible:
+				con_confirm_quit.visible = false
+				unpause_game()
+			else:
+				_trigger_quit_dialog()
+			get_viewport().set_input_as_handled()
+
+func _trigger_quit_dialog() -> void:
+	pause_game()
+	if con_main_menu.visible:
+		center_container(con_confirm_desktop)
+		con_confirm_desktop.visible = true
+		con_confirm_desktop.move_to_front()
+	else:
+		center_container(con_confirm_quit)
+		con_confirm_quit.visible = true
+		con_confirm_quit.move_to_front()
 
 func _apply_xojo_theme() -> void:
 	var t := Theme.new()
@@ -698,17 +723,7 @@ func _build_base_layout() -> void:
 	btn_close_top.add_theme_stylebox_override("pressed", sb_close_pressed)
 	btn_close_top.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	btn_close_top.visible = true
-	btn_close_top.pressed.connect(func():
-		pause_game()
-		if con_main_menu.visible:
-			center_container(con_confirm_desktop)
-			con_confirm_desktop.visible = true
-			con_confirm_desktop.move_to_front() # <--- ADDED
-		else:
-			center_container(con_confirm_quit)
-			con_confirm_quit.visible = true
-			con_confirm_quit.move_to_front() # <--- ADDED
-	)
+	btn_close_top.pressed.connect(_trigger_quit_dialog)
 
 	top_bar.add_child(btn_close_top)
 
@@ -719,7 +734,7 @@ func _build_base_layout() -> void:
 	_set_desktop_tooltip(btn_pause, "Pause Game")
 	_set_desktop_tooltip(btn_save_as_top, "Save Game As...")
 	_set_desktop_tooltip(btn_settings_top, "Settings")
-	_set_desktop_tooltip(btn_close_top, "Quit")
+	_set_desktop_tooltip(btn_close_top, "Quit (Esc)")
 
 	can_main = Control.new()
 	can_main.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -983,9 +998,10 @@ func _build_con_distro_stats() -> void:
 	stats_btn_save.disabled = true
 	stats_btn_save.pressed.connect(func(): 
 		pause_game()
+		confirm_save_lbl.text = "Overwrite existing save file\n\"%s\"?" % current_save_path.get_file()
 		center_container(con_confirm_save)
 		con_confirm_save.visible = true
-		con_confirm_save.move_to_front() # <--- ADDED
+		con_confirm_save.move_to_front()
 	)
 
 func _refresh_distro_stats() -> void:
@@ -1100,9 +1116,12 @@ func _refresh_distro_rank() -> void:
 		l_name.add_theme_color_override("font_color", Color.BLACK)
 		l_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS 
 
-		var l_users := _add_label(row, "Users: %d" % d.users, Vector2(text_x, 17), Vector2(text_w, 14), 9)
+		var l_users := _add_label(row, "Users: %d" % d.users, Vector2(text_x, 17), Vector2(70, 14), 9)
 		l_users.add_theme_color_override("font_color", Color8(60, 60, 60))
 		l_users.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+
+		var l_size := _add_label(row, "%d MB" % d.get_distro_size_in_mb(), Vector2(text_x + 70, 17), Vector2(42, 14), 9, HORIZONTAL_ALIGNMENT_RIGHT)
+		l_size.add_theme_color_override("font_color", Color8(60, 60, 60))
 
 		# Add the Crown for #1 Spot right before the arrow
 		if i == 0 and tex_crown != null:
@@ -1782,9 +1801,9 @@ func _build_con_confirm_save() -> void:
 
 	_add_label(con_confirm_save, "Overwrite Save", Vector2(15, 12), Vector2(310, 20), 13)
 
-	var lbl_text := _add_label(con_confirm_save, "A save file already exists.\nDo you want to overwrite it?", Vector2(0, 35), Vector2(340, 70), 13, HORIZONTAL_ALIGNMENT_CENTER)
-	lbl_text.add_theme_color_override("font_color", Color.WHITE)
-	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	confirm_save_lbl = _add_label(con_confirm_save, "", Vector2(15, 35), Vector2(310, 70), 13, HORIZONTAL_ALIGNMENT_CENTER)
+	confirm_save_lbl.add_theme_color_override("font_color", Color.WHITE)
+	confirm_save_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	var btn_yes := _add_button(con_confirm_save, "Yes", Vector2(85, 115), Vector2(80, 30))
 	btn_yes.pressed.connect(func():
@@ -1794,7 +1813,7 @@ func _build_con_confirm_save() -> void:
 			var out := GameManager.generate_save_xml() if current_save_path.ends_with(".lts") else GameManager.generate_save_json()
 			f.store_string(out)
 			f.close()
-			GameManager.show_message("Game successfully overwritten!")
+			GameManager.show_message("Game successfully overwritten: %s" % current_save_path.get_file())
 		unpause_game()
 	)
 
@@ -2524,7 +2543,7 @@ func _build_dialogs() -> void:
 			var out := GameManager.generate_save_xml() if path.ends_with(".lts") else GameManager.generate_save_json()
 			f.store_string(out)
 			f.close()
-			GameManager.show_message("Game successfully saved!")
+			GameManager.show_message("Game successfully saved: %s" % path.get_file())
 		unpause_game() 
 	)
 	add_child(file_dlg_save)

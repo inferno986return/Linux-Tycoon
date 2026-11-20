@@ -8,15 +8,10 @@ var my_distro: DistroData
 var other_distros: Array[DistroData] = []
 var packages_available: Array[PackageData] = []
 
+var triggered_milestones: Dictionary = {} # Acts as a set: { "rank_1": true, ... }
 var is_first_run: bool = true
 var is_first_worker_paid: bool = true
 var is_first_worker_volunteer: bool = true
-var has_warned_cd_size: bool = false # NEW: Tracks if Bryan has yelled at you about CDs
-var has_congratulated_zero_bugs: bool = false # NEW: Tracks zero bugs callout
-var has_reached_top_10: bool = false # NEW: Tracks the Top 10 shoutout
-var has_reached_rank_1: bool = false
-var has_reached_100k_users: bool = false
-var has_reached_v10: bool = false
 var is_paused: bool = false
 var new_linux_users_daily: int = 50
 var max_media_mb: int = 700
@@ -30,6 +25,19 @@ var has_entered_dvd_era: bool = false
 var msg_text: Array[String] = []
 var msg_date: Array[int] = []
 
+func has_milestone(id: String) -> bool:
+	return triggered_milestones.get(id, false)
+
+func mark_milestone(id: String) -> void:
+	triggered_milestones[id] = true
+
+func trigger_milestone(id: String, message: String) -> bool:
+	if has_milestone(id):
+		return false
+	mark_milestone(id)
+	show_message(message)
+	return true
+
 func _ready() -> void:
 	the_date = int(Time.get_unix_time_from_system())
 	reset_new_game_state()
@@ -41,12 +49,6 @@ func reset_new_game_state() -> void:
 	is_first_run = true
 	is_first_worker_paid = true
 	is_first_worker_volunteer = true
-	has_warned_cd_size = false
-	has_congratulated_zero_bugs = false
-	has_reached_top_10 = false
-	has_reached_rank_1 = false
-	has_reached_100k_users = false
-	has_reached_v10 = false
 	new_linux_users_daily = 50
 	max_media_mb = 700
 	msg_text.clear()
@@ -61,6 +63,8 @@ func reset_new_game_state() -> void:
 	else:
 		build_initial_package_list()
 		build_initial_distro_list()
+	
+	triggered_milestones.clear()
 
 func build_initial_package_list() -> void:
 	packages_available.clear()
@@ -185,58 +189,41 @@ func increment_by_a_day() -> void:
 	if not has_entered_dvd_era and (the_date - start_date) >= 3650 * 86400:
 		has_entered_dvd_era = true
 		max_media_mb = 4700
-		has_warned_cd_size = false # Reset so Bryan can warn if you ever exceed 4.7 GB
+		triggered_milestones.erase("media_size_warn")
 		for pkg in packages_available:
 			var growth := randf_range(1.10, 1.20)
 			pkg.size_in_mb = maxi(1, roundi(float(pkg.size_in_mb) * growth))
 		show_message("10 years have passed! CD-ROMs are out and 4.7 GB DVDs are the new standard. Software bloat has kicked in—packages are 10-20% larger, but ISOs up to 4700 MB are now acceptable!")
-	# ---------------------------------------------------
-	# --- NEW: #1 on DistroRank Callout ---
-	if not has_reached_rank_1 and my_distro.released_ver > 0:
-		var is_first := true
-		for d in other_distros:
-			if d.users >= my_distro.users:
-				is_first = false
-				break
-		if is_first:
-			has_reached_rank_1 = true
-			show_message("STOP THE PRESSES! %s is officially #1 on DistroRank! You've conquered the Linux world! (Try not to let it go to your head.)" % my_distro.name)
-	
+
+	if my_distro.released_ver > 0:
+		var my_rank := _get_my_rank()
+		if my_rank <= 10:
+			trigger_milestone("top_10", "Incredible! %s has just broken into the Top 10 on DistroRank! You're in the big leagues now!" % my_distro.name)
+		if my_rank == 1:
+			trigger_milestone("rank_1", "STOP THE PRESSES! %s is officially #1 on DistroRank! You've conquered the Linux world! (Try not to let it go to your head.)" % my_distro.name)
+		if my_distro.users >= 100000:
+			trigger_milestone("users_100k", "100,000 users! %s isn't just a hobby project anymore—you're a legitimate Linux powerhouse!" % my_distro.name)
+		if my_distro.released_ver >= 10:
+			trigger_milestone("ver_10", "Version 10.0 of %s! Most distros get abandoned after version 1.2. Your stubbornness is truly inspiring." % my_distro.name)
+		if my_distro.packages_included.size() > 0 and my_distro.get_distro_bugs() == 0:
+			trigger_milestone("zero_bugs", "Wow! Your workers just squashed the very last bug in %s! A zero-bug Linux distro... I never thought I'd see the day! (Enjoy it before they find more tomorrow.)" % my_distro.name)
+
 	new_day_new_users()
 	new_day_new_workers()
 	new_day_new_bugs()
 	new_day_new_productivity()
 	random_event()
 
-	# --- NEW: Zero Bugs Callout ---
-	if not has_congratulated_zero_bugs and my_distro.released_ver > 0 and my_distro.packages_included.size() > 0:
-		if my_distro.get_distro_bugs() == 0:
-			has_congratulated_zero_bugs = true
-			show_message("Wow! Your workers just squashed the very last bug in %s! A zero-bug Linux distro... I never thought I'd see the day! (Enjoy it before they find more tomorrow.)" % my_distro.name)
-	# ------------------------------
-
-	# --- NEW: DistroRank Top 10 Callout ---
-	if not has_reached_top_10 and my_distro.released_ver > 0:
-		var my_rank: int = 1
-		for d in other_distros:
-			if d.users > my_distro.users:
-				my_rank += 1
-		if my_rank <= 10:
-			has_reached_top_10 = true
-			show_message("Incredible! %s has just broken into the Top 10 on DistroRank! You're in the big leagues now!" % my_distro.name)
-	# --------------------------------------
-
-		# --- NEW: 100,000 Users Callout ---
-	if not has_reached_100k_users and my_distro.users >= 100000:
-		has_reached_100k_users = true
-		show_message("100,000 users! %s isn't just a hobby project anymore—you're a legitimate Linux powerhouse!" % my_distro.name)
-
-	# --- NEW: Version 10.0 Callout ---
-	if not has_reached_v10 and my_distro.released_ver >= 10:
-		has_reached_v10 = true
-		show_message("Version 10.0 of %s! Most distros get abandoned after version 1.2. Your stubbornness is truly inspiring." % my_distro.name)
-
 	stats_updated.emit()
+
+func _get_my_rank() -> int:
+	if my_distro == null:
+		return 999
+	var rank: int = 1
+	for d in other_distros:
+		if d.users > my_distro.users:
+			rank += 1
+	return rank
 
 func new_day_new_bugs() -> void:
 	for pkg in packages_available:
@@ -330,10 +317,7 @@ func new_day_new_users() -> void:
 	# Bigger than media limit penalty (700MB CD by default)
 	if my_distro.get_distro_size_in_mb() > max_media_mb:
 		my_distro.new_user_change -= int(my_distro.users / 100.0)
-		
-		if not has_warned_cd_size:
-			has_warned_cd_size = true
-			show_message("The ISO for %s is over %d MB! It will no longer fit on standard media. Some users with older hardware might look elsewhere." % [my_distro.name, max_media_mb])
+		trigger_milestone("media_size_warn", "The ISO for %s is over %d MB! It will no longer fit on standard media. Some users with older hardware might look elsewhere." % [my_distro.name, max_media_mb])
 
 	# Bug Count
 	my_distro.new_user_change -= int(for_bug_count * my_distro.get_distro_bug_percentage())
@@ -369,7 +353,7 @@ func random_event() -> void:
 		return
 
 	# Roll 2: 2d20 bell curve (range 2..40, peaks at 21)
-	var the_event := randi_range(1, 20) + randi_range(1, 20)
+	var the_event := randi_range(1, 50)
 
 	var the_dist := randi_range(-1, other_distros.size() - 1)
 	if randi_range(1, 5) == 2:
@@ -540,7 +524,7 @@ func random_event() -> void:
 			if target.released_ver > 0:
 				target.users += 400
 				target.hype += 10
-				show_message("Community Chest! A major university's Computer Science department just standardized on %s for all lab machines! (+400 users)" % target.name)
+				show_message("A major university's Computer Science department just standardized on %s for all lab machines! (+400 users)" % target.name)
 		39: # Chance (Bad): Rogue Maintainer Push
 			pkg.bugs += 5
 			if target.released_ver > 0:
@@ -656,7 +640,8 @@ func generate_save_json() -> String:
 		},
 		"packages": pkgs,
 		"distros": distros,
-		"events": events
+		"events": events,
+		"milestones": triggered_milestones.keys()
 	}
 	return JSON.stringify(payload, "\t")
 
@@ -668,6 +653,10 @@ func load_json_string(json_content: String, is_save_file: bool, fallback_name: S
 
 	packages_available.clear()
 	other_distros.clear()
+	triggered_milestones.clear()
+	for m in parsed.get("milestones", []):
+		mark_milestone(str(m)) # Make sure this is pure tabs
+
 	if is_save_file:
 		msg_text.clear()
 		msg_date.clear()
@@ -754,6 +743,7 @@ func load_xml_string(xml_content: String, is_save_file: bool, fallback_name: Str
 	packages_available.clear()
 	other_distros.clear()
 	if is_save_file:
+		triggered_milestones.clear()
 		msg_text.clear()
 		msg_date.clear()
 		is_first_run = false
@@ -823,22 +813,25 @@ func load_xml_string(xml_content: String, is_save_file: bool, fallback_name: Str
 func _sync_loaded_state_flags() -> void:
 	if my_distro == null:
 		return
+
 	if my_distro.workers_paid > 0:
 		is_first_worker_paid = false
+		mark_milestone("first_paid")
 	if my_distro.workers_volunteers > 0:
 		is_first_worker_volunteer = false
+		mark_milestone("first_volunteer")
 	if my_distro.get_distro_size_in_mb() > max_media_mb:
-		has_warned_cd_size = true
-	if my_distro.get_distro_bugs() == 0 and my_distro.released_ver > 0:
-		has_congratulated_zero_bugs = true
+		mark_milestone("media_size_warn")
 
-	var loaded_rank: int = 1
-	for d in other_distros:
-		if d.users > my_distro.users:
-			loaded_rank += 1
-	if loaded_rank <= 10 and my_distro.released_ver > 0:
-		has_reached_top_10 = true
-	if my_distro.users >= 100000:
-		has_reached_100k_users = true
-	if my_distro.released_ver >= 10:
-		has_reached_v10 = true
+	if my_distro.released_ver > 0:
+		var rank := _get_my_rank()
+		if rank <= 10:
+			mark_milestone("top_10")
+		if rank == 1:
+			mark_milestone("rank_1")
+		if my_distro.users >= 100000:
+			mark_milestone("users_100k")
+		if my_distro.released_ver >= 10:
+			mark_milestone("ver_10")
+		if my_distro.packages_included.size() > 0 and my_distro.get_distro_bugs() == 0:
+			mark_milestone("zero_bugs")
