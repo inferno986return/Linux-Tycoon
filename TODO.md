@@ -13,10 +13,11 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Make the distro development window shorter and DistroRank longer to show 11 and 12.
 * The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
 * Add functionality to the Hotkeys button in the Settings menu which shows and allows rebinding hotkeys.
+* Formally support Scenarios and test them - the RealLife.json JSON doesn't work when selected and starting a new game, then the packages. Save has an issue where it asks to overwrite but it hasn't been created yet, so we need a check for New Game to force Save As on first save.
+* Add some left and right margin on the Overview window to space it out better. 
 
 ## Long-term
 * Dedicated GitHub website - would be cool if it had the same blue window design using Hugo or something.
-* Formally support Scenarios and test them.
 * Actually compile the game for Windows and GNU/Linux, then test the "Fullscreen" checkbox in the "Settings" actually works.
 * Add a localisation for Esperanto to pave the way for translations.
 * Implement multiplayer exactly as Bryan Lunduke intended and enable the "Run Server" and "Online Game" buttons in the Main Menu.

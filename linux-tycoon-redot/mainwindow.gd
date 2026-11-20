@@ -1009,21 +1009,25 @@ func _build_con_overview() -> void:
 	con_overview.size = Vector2(650, 50) # Fits precisely between stats and right edge
 	can_main.add_child(con_overview)
 
-	var make_lbl = func(pos: Vector2, sz: Vector2) -> Label:
+	var make_lbl = func(pos: Vector2, sz: Vector2, align: HorizontalAlignment) -> Label:
 		var l := Label.new()
 		l.position = pos
 		l.size = sz
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.horizontal_alignment = align
 		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		l.add_theme_font_size_override("font_size", 12) 
 		con_overview.add_child(l)
 		return l
 
-	overview_lbl_name = make_lbl.call(Vector2(20, 10), Vector2(310, 30))
-	overview_lbl_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	
-	overview_lbl_users = make_lbl.call(Vector2(340, 10), Vector2(140, 30))
-	overview_lbl_age = make_lbl.call(Vector2(490, 10), Vector2(140, 30))
+	# Left-aligned with a 20px left margin (20 to 235)
+	overview_lbl_name = make_lbl.call(Vector2(20, 10), Vector2(215, 30), HORIZONTAL_ALIGNMENT_LEFT)
+	overview_lbl_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+
+	# Centered at exact midpoint of 650px (235 + 180/2 = 325)
+	overview_lbl_users = make_lbl.call(Vector2(235, 10), Vector2(180, 30), HORIZONTAL_ALIGNMENT_CENTER)
+
+	# Right-aligned with a matching 20px right margin (415 + 215 = 630)
+	overview_lbl_age = make_lbl.call(Vector2(415, 10), Vector2(215, 30), HORIZONTAL_ALIGNMENT_RIGHT)
 
 func _refresh_overview() -> void:
 	var d := GameManager.my_distro

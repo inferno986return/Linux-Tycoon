@@ -14,12 +14,18 @@ var is_first_worker_volunteer: bool = true
 var has_warned_cd_size: bool = false # NEW: Tracks if Bryan has yelled at you about CDs
 var has_congratulated_zero_bugs: bool = false # NEW: Tracks zero bugs callout
 var has_reached_top_10: bool = false # NEW: Tracks the Top 10 shoutout
+var has_reached_rank_1: bool = false
+var has_reached_100k_users: bool = false
+var has_reached_v10: bool = false
 var is_paused: bool = false
 var new_linux_users_daily: int = 50
 var max_media_mb: int = 700
 var active_scenario_name: String = "Standard"
 var active_scenario_raw: String = ""
 var the_date: int = 0 # Unix timestamp in seconds
+
+var start_date: int = 0
+var has_entered_dvd_era: bool = false
 
 var msg_text: Array[String] = []
 var msg_date: Array[int] = []
@@ -30,12 +36,17 @@ func _ready() -> void:
 
 func reset_new_game_state() -> void:
 	the_date = int(Time.get_unix_time_from_system())
+	start_date = the_date
+	has_entered_dvd_era = false
 	is_first_run = true
 	is_first_worker_paid = true
 	is_first_worker_volunteer = true
 	has_warned_cd_size = false
 	has_congratulated_zero_bugs = false
 	has_reached_top_10 = false
+	has_reached_rank_1 = false
+	has_reached_100k_users = false
+	has_reached_v10 = false
 	new_linux_users_daily = 50
 	max_media_mb = 700
 	msg_text.clear()
@@ -167,7 +178,30 @@ func get_total_workers_volunteers_for_package(at_index: int) -> int:
 func increment_by_a_day() -> void:
 	if is_paused:
 		return
+
 	the_date += 86400
+
+	# --- NEW: 10-Year DVD Era Transition (3650 days) ---
+	if not has_entered_dvd_era and (the_date - start_date) >= 3650 * 86400:
+		has_entered_dvd_era = true
+		max_media_mb = 4700
+		has_warned_cd_size = false # Reset so Bryan can warn if you ever exceed 4.7 GB
+		for pkg in packages_available:
+			var growth := randf_range(1.10, 1.20)
+			pkg.size_in_mb = maxi(1, roundi(float(pkg.size_in_mb) * growth))
+		show_message("10 years have passed! CD-ROMs are out and 4.7 GB DVDs are the new standard. Software bloat has kicked in—packages are 10-20% larger, but ISOs up to 4700 MB are now acceptable!")
+	# ---------------------------------------------------
+	# --- NEW: #1 on DistroRank Callout ---
+	if not has_reached_rank_1 and my_distro.released_ver > 0:
+		var is_first := true
+		for d in other_distros:
+			if d.users >= my_distro.users:
+				is_first = false
+				break
+		if is_first:
+			has_reached_rank_1 = true
+			show_message("STOP THE PRESSES! %s is officially #1 on DistroRank! You've conquered the Linux world! (Try not to let it go to your head.)" % my_distro.name)
+	
 	new_day_new_users()
 	new_day_new_workers()
 	new_day_new_bugs()
@@ -191,6 +225,16 @@ func increment_by_a_day() -> void:
 			has_reached_top_10 = true
 			show_message("Incredible! %s has just broken into the Top 10 on DistroRank! You're in the big leagues now!" % my_distro.name)
 	# --------------------------------------
+
+		# --- NEW: 100,000 Users Callout ---
+	if not has_reached_100k_users and my_distro.users >= 100000:
+		has_reached_100k_users = true
+		show_message("100,000 users! %s isn't just a hobby project anymore—you're a legitimate Linux powerhouse!" % my_distro.name)
+
+	# --- NEW: Version 10.0 Callout ---
+	if not has_reached_v10 and my_distro.released_ver >= 10:
+		has_reached_v10 = true
+		show_message("Version 10.0 of %s! Most distros get abandoned after version 1.2. Your stubbornness is truly inspiring." % my_distro.name)
 
 	stats_updated.emit()
 
@@ -366,9 +410,10 @@ func random_event() -> void:
 				target.hype += 20
 				show_message("%s's super small, lightweight Distro has earned a reputation as being great for older hardware." % target.name)
 		10:
-			if target.get_distro_size_in_mb() > 800:
+			if target.get_distro_size_in_mb() > max_media_mb + 100:
 				target.hype -= 20
-				show_message("%s's users are annoyed at the fact that it will not fit on a single CD." % target.name)
+				var media_name := "DVD" if has_entered_dvd_era else "CD"
+				show_message("%s's users are annoyed at the fact that it will not fit on a single %s." % [target.name, media_name])
 		11:
 			if target.get_package_count_by_type(T.DESKTOP_ENVIRONMENT) == 0:
 				target.hype -= 20
@@ -421,6 +466,44 @@ func random_event() -> void:
 			if target.released_ver > 0:
 				target.hype -= 15
 				show_message("Bryan's goats have wandered into your yard and chewed through your ethernet cables.  Your website goes down for a day.")
+		24:
+			new_linux_users_daily += 15
+			show_message("Someone on the internet declared this 'The Year of the Linux Desktop'—and weirdly, people actually believed them! Daily new Linux users increased!")
+		25:
+			if target.released_ver > 0:
+				target.hype -= 15
+				show_message("A 400-page forum flamewar broke out over %s's choice of init system. Nobody won, and everyone is exhausted." % target.name)
+		26:
+			if target.released_ver > 0:
+				target.hype += 20
+				show_message("Bryan did a 2-hour livestream ranting about how much he loves %s's retro aesthetics. Hype is surging!" % target.name)
+		27:
+			if target.released_ver > 0:
+				target.hype -= 15
+				show_message("%s switched to a new universal container package format. Apps now take 14 seconds to open a calculator." % target.name)
+		28:
+			if my_distro.released_ver > 0:
+				my_distro.workers_paid += 1
+				show_message("A mysterious wealthy Linux fan just donated enough money to fund 1 new paid worker for %s! Put them to work!" % my_distro.name)
+		29:
+			if target.released_ver > 0:
+				target.hype -= 10
+				show_message("%s's download mirrors melted under traffic. Half the internet is stuck at 99%% on the ISO." % target.name)
+		30:
+			if target.released_ver > 0 and target.get_distro_bugs() <= 3:
+				target.hype += 20
+				show_message("Users are praising %s for being 'rock solid' and 'actually working after an update.' What a concept!" % target.name)
+		31:
+			pkg.bugs += 4
+			show_message("A critical zero-day vulnerability was discovered in %s! It even has its own logo and theme song. (+4 bugs)" % pkg.name)
+		32:
+			if target.released_ver > 0:
+				target.users += 250
+				show_message("A local school district just switched all their computer labs to %s! (+250 users)" % target.name)
+		33:
+			if my_distro.released_ver > 0:
+				my_distro.hype += 15
+				show_message("Bryan's goats wandered into a rival distro's server room instead of yours this time. Your uptime looks fantastic by comparison!")
 
 func show_message(the_msg: String) -> void:
 	msg_text.append(the_msg)
@@ -437,16 +520,18 @@ func format_date(unix_sec: int) -> String:
 
 # --- SAVE / LOAD & SCENARIO PARSING (JSON + LEGACY XML) ---
 
-func load_file_string(content: String, is_save_file: bool) -> bool:
-	var trimmed := content.strip_edges()
+func load_file_string(content: String, is_save_file: bool, fallback_name: String = "Custom Scenario") -> bool:
+	var trimmed := content.trim_prefix("\uFEFF").strip_edges()
 	if trimmed.is_empty():
+		push_warning("Linux Tycoon: Loaded file is empty.")
 		return false
 	if not is_save_file:
 		active_scenario_raw = trimmed
 	if trimmed.begins_with("{"):
-		return load_json_string(trimmed, is_save_file)
+		return load_json_string(trimmed, is_save_file, fallback_name)
 	elif trimmed.begins_with("<"):
-		return load_xml_string(trimmed, is_save_file)
+		return load_xml_string(trimmed, is_save_file, fallback_name)
+	push_warning("Linux Tycoon: Unrecognized file format (starts with: '%s')" % trimmed.left(10))
 	return false
 
 func generate_save_json() -> String:
@@ -470,7 +555,9 @@ func generate_save_json() -> String:
 		"local_distro": my_distro.name,
 		"rules": {
 			"daily_users": new_linux_users_daily,
-			"max_media_mb": max_media_mb
+			"max_media_mb": max_media_mb,
+			"start_date": start_date,
+			"has_entered_dvd_era": has_entered_dvd_era
 		},
 		"packages": pkgs,
 		"distros": distros,
@@ -478,9 +565,10 @@ func generate_save_json() -> String:
 	}
 	return JSON.stringify(payload, "\t")
 
-func load_json_string(json_content: String, is_save_file: bool) -> bool:
+func load_json_string(json_content: String, is_save_file: bool, fallback_name: String = "Custom Scenario") -> bool:
 	var parsed = JSON.parse_string(json_content)
 	if not (parsed is Dictionary):
+		push_warning("Linux Tycoon: Failed to parse JSON.")
 		return false
 
 	packages_available.clear()
@@ -490,19 +578,20 @@ func load_json_string(json_content: String, is_save_file: bool) -> bool:
 		msg_date.clear()
 		is_first_run = false
 
-	# Optional scenario/save rules
 	var rules = parsed.get("rules", {})
 	if rules is Dictionary:
 		if rules.has("daily_users"):
 			new_linux_users_daily = int(rules["daily_users"])
 		if rules.has("max_media_mb"):
 			max_media_mb = int(rules["max_media_mb"])
-		if not is_save_file and rules.has("start_date"):
+		if rules.has("has_entered_dvd_era"):
+			has_entered_dvd_era = bool(rules["has_entered_dvd_era"])
+		if rules.has("start_date"):
 			var sd = rules["start_date"]
-			if sd is String:
-				the_date = int(Time.get_unix_time_from_datetime_string(sd))
-			else:
-				the_date = int(sd)
+			var parsed_start := int(Time.get_unix_time_from_datetime_string(sd)) if sd is String else int(sd)
+			start_date = parsed_start
+			if not is_save_file:
+				the_date = parsed_start
 
 	if is_save_file:
 		if parsed.has("date"):
@@ -510,7 +599,8 @@ func load_json_string(json_content: String, is_save_file: bool) -> bool:
 		if parsed.has("scenario"):
 			active_scenario_name = str(parsed["scenario"])
 	else:
-		active_scenario_name = str(parsed.get("name", "Custom Scenario"))
+		var s_name := str(parsed.get("name", "")).strip_edges()
+		active_scenario_name = s_name if not s_name.is_empty() else fallback_name
 		scenario_loaded.emit(active_scenario_name)
 
 	for p_dict in parsed.get("packages", []):
@@ -561,7 +651,7 @@ func generate_save_xml() -> String:
 	lines.append("</root>")
 	return "\n".join(lines)
 
-func load_xml_string(xml_content: String, is_save_file: bool) -> bool:
+func load_xml_string(xml_content: String, is_save_file: bool, fallback_name: String = "Custom Scenario") -> bool:
 	var parser := XMLParser.new()
 	if parser.open_buffer(xml_content.to_utf8_buffer()) != OK:
 		return false
@@ -582,8 +672,12 @@ func load_xml_string(xml_content: String, is_save_file: bool) -> bool:
 				"root":
 					if is_save_file and parser.has_attribute("Date"):
 						the_date = int(parser.get_named_attribute_value("Date").to_float())
-					elif not is_save_file and parser.has_attribute("Name"):
-						active_scenario_name = parser.get_named_attribute_value("Name")
+						start_date = the_date
+					elif not is_save_file:
+						var s_name := parser.get_named_attribute_value_safe("Name")
+						if s_name.is_empty():
+							s_name = parser.get_named_attribute_value_safe("name")
+						active_scenario_name = s_name if not s_name.is_empty() else fallback_name
 						scenario_loaded.emit(active_scenario_name)
 				"package":
 					var p := PackageData.new()
@@ -649,3 +743,7 @@ func _sync_loaded_state_flags() -> void:
 			loaded_rank += 1
 	if loaded_rank <= 10 and my_distro.released_ver > 0:
 		has_reached_top_10 = true
+	if my_distro.users >= 100000:
+		has_reached_100k_users = true
+	if my_distro.released_ver >= 10:
+		has_reached_v10 = true

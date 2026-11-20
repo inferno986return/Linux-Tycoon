@@ -1,0 +1,20 @@
+{
+	"name": "Real Life",
+	"rules": {
+		"start_date": "2026-11-01",
+		"daily_users": 60,
+		"max_media_mb": 700
+	},
+	"packages": [
+		{ "name": "GNOME", "bugs": 3, "description": "Modern, polished desktop environment with a strong focus on simplicity.", "is_open_source": true, "nerd_cred": 4, "popularity": 20, "size_in_mb": 55, "type_of_software": 3, "version": 47 },
+		{ "name": "KDE Plasma", "bugs": 4, "description": "Feature-rich, endlessly customizable desktop environment.", "is_open_source": true, "nerd_cred": 8, "popularity": 18, "size_in_mb": 65, "type_of_software": 3, "version": 6 },
+		{ "name": "Xfce", "bugs": 1, "description": "Fast, lightweight, traditional desktop environment.", "is_open_source": true, "nerd_cred": 10, "popularity": 14, "size_in_mb": 20, "type_of_software": 3, "version": 4 },
+		{ "name": "i3wm", "bugs": 0, "description": "Minimalist tiling window manager. No icons, just keybindings and terminals.", "is_open_source": true, "nerd_cred": 20, "popularity": 4, "size_in_mb": 2, "type_of_software": 3, "version": 4 },
+
+		{ "name": "Firefox", "bugs": 3, "description": "The classic open-source web browser with a massive extension ecosystem.", "is_open_source": true, "nerd_cred": 8, "popularity": 19, "size_in_mb": 45, "type_of_software": 1, "version": 132 },
+		{ "name": "Brave", "bugs": 2, "description": "Fast, privacy-focused Chromium browser with built-in ad blocking.", "is_open_source": true, "nerd_cred": 7, "popularity": 14, "size_in_mb": 50, "type_of_software": 1, "version": 1 },
+		{ "name": "Google Chrome", "bugs": 2, "description": "Ubiquitous, fast, proprietary web browser that loves your RAM.", "is_open_source": false, "nerd_cred": 1, "popularity": 20, "size_in_mb": 65, "type_of_software": 1, "version": 130 },
+		{ "name": "Lynx", "bugs": 0, "description": "Text-only web browser that runs entirely inside your terminal.", "is_open_source": true, "nerd_cred": 20, "popularity": 1, "size_in_mb": 1, "type_of_software": 1, "version": 2 },
+
+		{ "name": "LibreOffice", "bugs": 4, "description": "Full-featured, community-driven open-source office suite.", "is_open_source": true, "nerd_cred": 6, "popularity": 18, "size_in_mb": 85, "type_of_software": 2, "version": 24 },
+		{ "name": "LaTeX", "bugs": 1, "description": "Powerful document preparation system for academics
