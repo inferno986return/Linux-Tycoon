@@ -902,7 +902,7 @@ func _on_intro_next_pressed() -> void:
 		intro_step = 1
 		intro_txt_name.visible = false
 		intro_btn_next.text = "Edit Packages"
-		intro_lbl.text = "Now that you've got a name, it's time to figure out which packages you'll want to include in your Linux Distro.\n\nA \"package\" is an app (or a collection of apps) that will be available in your Distro. This can include everything from your basic desktop environment to your web browser (and beyond).\n\nSo pick carefully. Click \"Edit Packages\" to get started. (Okay, you don't have to be *that* careful, you can change your packages later.)"
+		intro_lbl.text = "Great name! Now let's put together %s 1.0.\n\nA \"package\" is an app or component included in your Distro. For a solid 1.0 release, you'll want the basics—a Desktop Environment, a Web Browser, and maybe an Office Suite or a Game so people don't call it boring.\n\nTry to keep the total size under 700 MB so it fits on a CD, and don't worry about bugs for now—we'll deal with those later. Click \"Edit Packages\" to pick your lineup!" % GameManager.my_distro.name
 	elif intro_step == 1:
 		con_intro.visible = false
 		center_container(con_package_selection)
@@ -1314,7 +1314,7 @@ func _on_package_selection_ok() -> void:
 		stats_btn_release.disabled = true
 		stats_btn_workers.disabled = true
 		intro_btn_next.text = "Get Started"
-		intro_lbl.text = "On the left you'll find a summary of the version of your Linux Distro that is currently \"in development\".\n\nOnce you are satisfied with this version you can click \"Release Version\" to make this version public (and people will then be able to use it).\n\nAs soon as you release your first version, time will start moving."
+		intro_lbl.text = "Looking good! On the left is the summary for %s 1.0.\n\nDon't let the bug count scare you—you can't fix bugs until you have volunteers and paid workers, and you won't get those until people are actually using your Distro.\n\nWhenever you're ready, hit \"Release Version\" to ship 1.0 to the world and start the clock. We'll worry about squashing bugs later!" % GameManager.my_distro.name
 		con_intro.visible = true
 	elif GameManager.my_distro.released_ver > 0:
 		unpause_game()

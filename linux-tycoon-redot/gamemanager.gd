@@ -364,7 +364,13 @@ func random_event() -> void:
 	if my_distro.released_ver <= 0:
 		return
 
-	var the_event := randi_range(0, 300)
+	# Roll 1: Encounter check (1d20 -> 10% daily chance on 19 or 20)
+	if randi_range(1, 20) < 19:
+		return
+
+	# Roll 2: 2d20 bell curve (range 2..40, peaks at 21)
+	var the_event := randi_range(1, 20) + randi_range(1, 20)
+
 	var the_dist := randi_range(-1, other_distros.size() - 1)
 	if randi_range(1, 5) == 2:
 		the_dist = -1
@@ -504,6 +510,95 @@ func random_event() -> void:
 			if my_distro.released_ver > 0:
 				my_distro.hype += 15
 				show_message("Bryan's goats wandered into a rival distro's server room instead of yours this time. Your uptime looks fantastic by comparison!")
+		# --- MONOPOLY-STYLE CHANCE & COMMUNITY CHEST EVENTS ---
+		34: # Chance (Bad): Social Media Defamation (-1% users)
+			if target.released_ver > 0 and target.users > 0:
+				var lost := maxi(1, roundi(float(target.users) * 0.01))
+				target.users = maxi(0, target.users - lost)
+				target.hype -= 15
+				show_message("PR Disaster! A prominent %s maintainer posted something defamatory on social media. The backlash cost them %d users (1%%)!" % [target.name, lost])
+		35: # Community Chest (Good): Viral Video (+1% users, +20 hype)
+			if target.released_ver > 0:
+				var gained := maxi(50, roundi(float(target.users) * 0.01))
+				target.users += gained
+				target.hype += 20
+				show_message("A YouTuber's 'Why I Switched to %s' video just went viral! (+%d users, +20 hype)" % [target.name, gained])
+		36: # Community Chest (Good): Weekend Bug-Squash-a-Thon
+			if pkg.bugs > 0:
+				var fixed := mini(pkg.bugs, 3)
+				pkg.bugs -= fixed
+				show_message("Volunteers hosted a weekend Bug-Squash-a-Thon for %s and squashed %d bugs!" % [pkg.name, fixed])
+		37: # Chance (Bad): Patent Troll Lawsuit
+			if my_distro.released_ver > 0:
+				if my_distro.workers_paid > 0:
+					my_distro.workers_paid -= 1
+					show_message("A patent troll sued %s over 'clicking a button with a mouse.' Legal fees forced you to lay off 1 paid worker." % my_distro.name)
+				else:
+					my_distro.hype -= 15
+					show_message("A patent troll threatened to sue %s. The community rallied, but the drama cost you 15 hype." % my_distro.name)
+		38: # Community Chest (Good): University Adoption
+			if target.released_ver > 0:
+				target.users += 400
+				target.hype += 10
+				show_message("Community Chest! A major university's Computer Science department just standardized on %s for all lab machines! (+400 users)" % target.name)
+		39: # Chance (Bad): Rogue Maintainer Push
+			pkg.bugs += 5
+			if target.released_ver > 0:
+				target.hype -= 10
+			show_message("A rogue maintainer pushed an untested Friday-afternoon commit to %s. (+5 bugs)" % pkg.name)
+		40: # Community Chest (Good): Hackathon Volunteer Surge
+			if my_distro.released_ver > 0:
+				my_distro.workers_volunteers += 3
+				show_message("A local Linux User Group hosted an install-fest for %s. 3 new volunteers signed up to help!" % my_distro.name)
+		41: # The Great Windews Outage (CrowdStrike nod)
+			new_linux_users_daily += 25
+			if my_distro.released_ver > 0:
+				my_distro.hype += 10
+			show_message("A bad update to a prominent closed-source cybersecurity product has taken out every online copy of Windews with it installed. Airports and banks are blue-screening worldwide. Linux is completely unaffected! (+25 daily Linux users)")
+		42: # Stealthy Backdoor Caught (XZ Utils nod)
+			pkg.nerd_cred += 2
+			if pkg.bugs > 0:
+				pkg.bugs -= 1
+			show_message("An eagle-eyed developer noticed a 500ms login delay and caught a stealthy backdoor in %s before it hit stable! The open-source community breathes a massive sigh of relief. (+2 Nerd Cred)" % pkg.name)
+		43: # Boutique Hardware Deal
+			if target.released_ver > 0:
+				target.users += 350
+				target.hype += 15
+				show_message("A boutique laptop manufacturer just announced they are shipping %s pre-installed on all new hardware! (+350 users, +15 hype)" % target.name)
+		44: # Dependency Drama
+			pkg.bugs += 3
+			show_message("A grumpy developer unpublished a 10-line helper library in a huff, briefly breaking builds for %s. (+3 bugs)" % pkg.name)
+		45: # Magazine Cover Disc
+			if target.released_ver > 0:
+				target.users += 150
+				target.hype += 10
+				show_message("A popular print computer magazine included %s on this month's cover disc! Old-school readers are installing it in droves. (+150 users)" % target.name)
+		46: # Minimalist Logo Backlash
+			if target.released_ver > 0:
+				target.hype -= 15
+				show_message("%s replaced its beloved classic logo with a flat, minimalist triangle. Longtime fans are furious. (-15 hype)" % target.name)
+		47: # Readable Documentation
+			if target.released_ver > 0:
+				target.users += 200
+				target.hype += 15
+				show_message("Someone actually wrote clear, beginner-friendly documentation for %s instead of just telling newcomers to 'RTFM.' People are thrilled! (+200 users, +15 hype)" % target.name)
+		48: # Expired SSL Cert
+			if target.released_ver > 0:
+				target.hype -= 10
+				target.users = maxi(0, target.users - 100)
+				show_message("%s forgot to renew its website's SSL certificate. Visitors are greeted by a terrifying red browser warning. (-100 users, -10 hype)" % target.name)
+		49: # Kernel Speedup
+			if my_distro.released_ver > 0:
+				my_distro.hype += 15
+				show_message("A wizardly kernel hacker submitted a patch that shaved 15%% off boot times. %s feels snappier than ever! (+15 hype)" % my_distro.name)
+		50: # Volunteer Burnout
+			if my_distro.released_ver > 0:
+				if my_distro.get_distro_worker_available_volunteer() > 0:
+					my_distro.workers_volunteers -= 1
+					show_message("One of your volunteers burned out after reading too many bug reports and moved to the mountains to raise llamas. (-1 volunteer)")
+				else:
+					my_distro.hype -= 10
+					show_message("Your community forums got a bit spicy over a minor UI tweak. Everyone needs a nap. (-10 hype)")
 
 func show_message(the_msg: String) -> void:
 	msg_text.append(the_msg)
