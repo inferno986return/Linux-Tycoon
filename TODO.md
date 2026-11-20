@@ -22,6 +22,8 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Add some left and right margin on the Overview window to space it out better..
 * Show the competition's Size next to Users in DistroRank - this is buggy and some distros have 0 MB and yet a growing userbase
 * More packages, especially for when the 4.7GB DVD limit is reached.
+* Add the Rank to the Overview window on the right side after Age:.
+* How about in DistroRank - Users:, Size: with mini-arrows next to them. And right-align the crown fully at the top?
 
 ## Long-term
 * Dedicated GitHub website - would be cool if it had the same blue window design using Hugo or something.
