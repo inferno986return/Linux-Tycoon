@@ -4,17 +4,23 @@
 
 These are things I want to achieve before this game hits v1.0 and I am confident to annouce the game formally to the general public:
 
+### Bugs
+
 * Continue playtesting to find unexpected bugs.
 * Many of the windows have buttons which touch the bottom border without making any space. The space should be conistent too!
 * ~~The "Release Version" and "Quit" dialogues have centred buttons when all "Ok!" and "Cancel" should be right-aligned.~~ <-- No! This looks worse.
 * The game still has weird text rendering issues.
+* The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
+* Formally support Scenarios and test them - the RealLife.json JSON doesn't work when selected and starting a new game, then the packages. Save has an issue where it asks to overwrite but it hasn't been created yet, so we need a check for New Game to force Save As on first save.
+
+### Features
 * We can squeeze row 11 on the DistroRank with the optimal window sizing and arrangement.
 * In-game hotkeys (with underlining and tooltips): Space (to pause/play the game), S to Save, A to Assign Workers, P to Edit Packages, M for MP3 Player, audio playback keys for the music (some keyboards have them), F5 does Quicksave, etc.
 * Make the distro development window shorter and DistroRank longer to show 11 and 12.
-* The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
 * Add functionality to the Hotkeys button in the Settings menu which shows and allows rebinding hotkeys.
-* Formally support Scenarios and test them - the RealLife.json JSON doesn't work when selected and starting a new game, then the packages. Save has an issue where it asks to overwrite but it hasn't been created yet, so we need a check for New Game to force Save As on first save.
-* Add some left and right margin on the Overview window to space it out better. 
+* Add some left and right margin on the Overview window to space it out better.
+* More random events and a more elegant approach to deploying them in the gameplay. I am thinking of an approach using virtual D20 dice. I want the game to feel more like Monopoly with the Chance and Community Chest cards.
+* Punish long release windows over 180 days or inconsistent release periods - how to do it?
 
 ## Long-term
 * Dedicated GitHub website - would be cool if it had the same blue window design using Hugo or something.
