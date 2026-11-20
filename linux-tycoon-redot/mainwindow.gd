@@ -48,7 +48,7 @@ var is_shuffled: bool = true
 var tex_save_as: Texture2D
 var btn_save_as_top: Button
 var con_confirm_save: DraggableWindow
-var current_save_path: String = "user://SaveGame.lts"
+var current_save_path: String = "user://SaveGame.json"
 
 # Sub-containers
 var con_main_menu: DraggableWindow
@@ -1787,7 +1787,8 @@ func _build_con_confirm_save() -> void:
 		con_confirm_save.visible = false
 		var f := FileAccess.open(current_save_path, FileAccess.WRITE)
 		if f:
-			f.store_string(GameManager.generate_save_xml())
+			var out := GameManager.generate_save_xml() if current_save_path.ends_with(".lts") else GameManager.generate_save_json()
+			f.store_string(out)
 			f.close()
 			GameManager.show_message("Game successfully overwritten!")
 		unpause_game()
@@ -2508,14 +2509,16 @@ func _build_dialogs() -> void:
 	file_dlg_save = FileDialog.new()
 	file_dlg_save.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 	file_dlg_save.access = FileDialog.ACCESS_USERDATA
-	file_dlg_save.current_file = "SaveGame.lts"
-	file_dlg_save.add_filter("*.lts ; Linux Tycoon Save Game")
+	file_dlg_save.current_file = "SaveGame.json"
+	file_dlg_save.add_filter("*.json ; Linux Tycoon Save Game (JSON)")
+	file_dlg_save.add_filter("*.lts ; Linux Tycoon Classic Save (XML)")
 	file_dlg_save.canceled.connect(unpause_game)
 	file_dlg_save.file_selected.connect(func(path: String):
 		current_save_path = path
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		if f:
-			f.store_string(GameManager.generate_save_xml())
+			var out := GameManager.generate_save_xml() if path.ends_with(".lts") else GameManager.generate_save_json()
+			f.store_string(out)
 			f.close()
 			GameManager.show_message("Game successfully saved!")
 		unpause_game() 
@@ -2525,15 +2528,15 @@ func _build_dialogs() -> void:
 	file_dlg_load = FileDialog.new()
 	file_dlg_load.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dlg_load.access = FileDialog.ACCESS_USERDATA
-	file_dlg_load.add_filter("*.lts ; Linux Tycoon Save Game")
+	file_dlg_load.add_filter("*.json, *.lts ; Linux Tycoon Save Games")
 	file_dlg_load.canceled.connect(unpause_game)
 	file_dlg_load.file_selected.connect(func(path: String):
 		current_save_path = path
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f:
-			var xml := f.get_as_text()
+			var raw := f.get_as_text()
 			f.close()
-			if GameManager.load_xml_string(xml, true):
+			if GameManager.load_file_string(raw, true):
 				_hide_all_containers()
 				unpause_game()
 				show_main_hud()
@@ -2546,14 +2549,14 @@ func _build_dialogs() -> void:
 	file_dlg_scenario = FileDialog.new()
 	file_dlg_scenario.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dlg_scenario.access = FileDialog.ACCESS_FILESYSTEM
-	file_dlg_scenario.add_filter("*.ltx ; Linux Tycoon Scenario")
+	file_dlg_scenario.add_filter("*.json, *.ltx ; Linux Tycoon Scenarios")
 	file_dlg_scenario.canceled.connect(unpause_game)
 	file_dlg_scenario.file_selected.connect(func(path: String):
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f:
-			var xml := f.get_as_text()
+			var raw := f.get_as_text()
 			f.close()
-			GameManager.load_xml_string(xml, false)
+			GameManager.load_file_string(raw, false)
 		unpause_game()
 	)
 	add_child(file_dlg_scenario)

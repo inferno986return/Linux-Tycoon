@@ -55,6 +55,32 @@ func get_category_name() -> String:
 		SoftwareType.MULTIMEDIA: return "Multimedia"
 		_: return "Unknown"
 
+func to_dict() -> Dictionary:
+	return {
+		"name": name,
+		"bugs": bugs,
+		"description": description,
+		"is_open_source": is_open_source,
+		"nerd_cred": nerd_cred,
+		"popularity": popularity,
+		"size_in_mb": size_in_mb,
+		"type_of_software": type_of_software,
+		"version": version
+	}
+
+static func from_dict(d: Dictionary) -> PackageData:
+	return PackageData.new(
+		str(d.get("name", "")),
+		int(d.get("bugs", 0)),
+		str(d.get("description", "")),
+		bool(d.get("is_open_source", true)),
+		int(d.get("nerd_cred", 0)),
+		int(d.get("popularity", 0)),
+		int(d.get("size_in_mb", 0)),
+		int(d.get("type_of_software", SoftwareType.UTILITY)),
+		int(d.get("version", 1))
+	)
+
 func get_package_xml() -> String:
 	var isos := "True" if is_open_source else "False"
 	return '<package Name="%s" Bugs="%d" Description="%s" NerdCred="%d" Popularity="%d" SizeInMB="%d" TypeOfSoftware="%d" Version="%d" isOpenSource="%s"/>' % [

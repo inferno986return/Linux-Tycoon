@@ -199,6 +199,69 @@ func load_in_workers_volunteers_from_list(the_list: String) -> void:
 		if val > 0:
 			GameManager.is_first_worker_volunteer = false
 
+func to_dict() -> Dictionary:
+	var pkg_names: Array[String] = []
+	for pkg_idx in packages_included:
+		pkg_names.append(GameManager.packages_available[pkg_idx].name)
+	return {
+		"name": name,
+		"hype": hype,
+		"users": users,
+		"version": version,
+		"released_ver": released_ver,
+		"released_date": released_date,
+		"released_bugs": released_bugs,
+		"packages": pkg_names,
+		"workers_paid": workers_paid,
+		"workers_volunteers": workers_volunteers,
+		"workers_paid_assigned": workers_paid_assigned.duplicate(),
+		"workers_volunteers_assigned": workers_volunteers_assigned.duplicate()
+	}
+
+static func from_dict(data: Dictionary, is_save_file: bool) -> DistroData:
+	var d := DistroData.new()
+	d.name = str(data.get("name", ""))
+	d.hype = int(data.get("hype", 0))
+	d.users = int(data.get("users", 0))
+	d.version = int(data.get("version", 1))
+
+	var pkgs = data.get("packages", [])
+	if pkgs is Array:
+		for pkg_name in pkgs:
+			var idx := GameManager.get_package_index_from_name(str(pkg_name))
+			if idx > -1:
+				d.add_package_to_distro(idx)
+	elif pkgs is String:
+		d.load_in_packages_from_list(pkgs)
+
+	if is_save_file:
+		d.workers_paid = int(data.get("workers_paid", 0))
+		d.workers_volunteers = int(data.get("workers_volunteers", 0))
+		d.released_ver = int(data.get("released_ver", 0))
+		d.released_date = int(data.get("released_date", 0))
+		d.released_bugs = int(data.get("released_bugs", 0))
+
+		var paid_arr = data.get("workers_paid_assigned", [])
+		if paid_arr is Array:
+			for i in range(mini(paid_arr.size(), d.workers_paid_assigned.size())):
+				var val := int(paid_arr[i])
+				d.workers_paid_assigned[i] = val
+				if val > 0:
+					GameManager.is_first_worker_paid = false
+
+		var vol_arr = data.get("workers_volunteers_assigned", [])
+		if vol_arr is Array:
+			for i in range(mini(vol_arr.size(), d.workers_volunteers_assigned.size())):
+				var val := int(vol_arr[i])
+				d.workers_volunteers_assigned[i] = val
+				if val > 0:
+					GameManager.is_first_worker_volunteer = false
+	else:
+		d.released_date = GameManager.the_date
+		d.released_ver = d.version - 1
+
+	return d
+
 func get_distro_xml() -> String:
 	return '<distro Name="%s" Hype="%d" Users="%d" Version="%d" ReleasedVer="%d" ReleasedDate="%d" ReleasedBugs="%d" Packages="%s" WorkersPaid="%d" WorkersVolunteer="%d" WorkersPaidAssigned="%s" WorkersVolunteerAssigned="%s"/>' % [
 		name.xml_escape(true), hype, users, version, released_ver, released_date, released_bugs,

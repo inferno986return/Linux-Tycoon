@@ -16,6 +16,9 @@ var has_congratulated_zero_bugs: bool = false # NEW: Tracks zero bugs callout
 var has_reached_top_10: bool = false # NEW: Tracks the Top 10 shoutout
 var is_paused: bool = false
 var new_linux_users_daily: int = 50
+var max_media_mb: int = 700
+var active_scenario_name: String = "Standard"
+var active_scenario_raw: String = ""
 var the_date: int = 0 # Unix timestamp in seconds
 
 var msg_text: Array[String] = []
@@ -31,9 +34,10 @@ func reset_new_game_state() -> void:
 	is_first_worker_paid = true
 	is_first_worker_volunteer = true
 	has_warned_cd_size = false
-	has_congratulated_zero_bugs = false 
-	has_reached_top_10 = false # NEW
+	has_congratulated_zero_bugs = false
+	has_reached_top_10 = false
 	new_linux_users_daily = 50
+	max_media_mb = 700
 	msg_text.clear()
 	msg_date.clear()
 
@@ -41,8 +45,11 @@ func reset_new_game_state() -> void:
 	my_distro.version = 1
 	my_distro.released_ver = 0
 
-	build_initial_package_list()
-	build_initial_distro_list()
+	if not active_scenario_raw.is_empty():
+		load_file_string(active_scenario_raw, false)
+	else:
+		build_initial_package_list()
+		build_initial_distro_list()
 
 func build_initial_package_list() -> void:
 	packages_available.clear()
@@ -276,15 +283,13 @@ func new_day_new_users() -> void:
 	for d in other_distros:
 		d.new_user_change -= int((for_size * d.get_distro_size_in_mb_percentage()) * 3.0)
 
-	# Bigger than a 700MB CD penalty
-	if my_distro.get_distro_size_in_mb() > 700:
+	# Bigger than media limit penalty (700MB CD by default)
+	if my_distro.get_distro_size_in_mb() > max_media_mb:
 		my_distro.new_user_change -= int(my_distro.users / 100.0)
 		
-		# --- NEW: Bryan warns you why you are losing users ---
 		if not has_warned_cd_size:
 			has_warned_cd_size = true
-			show_message("The ISO for %s is over 700 MB! It will no longer fit on a standard CD. Some users with older hardware might look elsewhere." % my_distro.name)
-		# -----------------------------------------------------
+			show_message("The ISO for %s is over %d MB! It will no longer fit on standard media. Some users with older hardware might look elsewhere." % [my_distro.name, max_media_mb])
 
 	# Bug Count
 	my_distro.new_user_change -= int(for_bug_count * my_distro.get_distro_bug_percentage())
@@ -430,7 +435,111 @@ func format_date(unix_sec: int) -> String:
 	var months := ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 	return "%s %d, %d" % [months[dt.month - 1], dt.day, dt.year]
 
-# --- SAVE / LOAD & SCENARIO XML PARSING ---
+# --- SAVE / LOAD & SCENARIO PARSING (JSON + LEGACY XML) ---
+
+func load_file_string(content: String, is_save_file: bool) -> bool:
+	var trimmed := content.strip_edges()
+	if trimmed.is_empty():
+		return false
+	if not is_save_file:
+		active_scenario_raw = trimmed
+	if trimmed.begins_with("{"):
+		return load_json_string(trimmed, is_save_file)
+	elif trimmed.begins_with("<"):
+		return load_xml_string(trimmed, is_save_file)
+	return false
+
+func generate_save_json() -> String:
+	var pkgs: Array[Dictionary] = []
+	for p in packages_available:
+		pkgs.append(p.to_dict())
+
+	var distros: Array[Dictionary] = [my_distro.to_dict()]
+	for d in other_distros:
+		distros.append(d.to_dict())
+
+	var events: Array[Dictionary] = []
+	for i in range(msg_text.size()):
+		events.append({"message": msg_text[i], "date": msg_date[i]})
+
+	var payload := {
+		"format_version": 1,
+		"name": "Save Game",
+		"scenario": active_scenario_name,
+		"date": the_date,
+		"local_distro": my_distro.name,
+		"rules": {
+			"daily_users": new_linux_users_daily,
+			"max_media_mb": max_media_mb
+		},
+		"packages": pkgs,
+		"distros": distros,
+		"events": events
+	}
+	return JSON.stringify(payload, "\t")
+
+func load_json_string(json_content: String, is_save_file: bool) -> bool:
+	var parsed = JSON.parse_string(json_content)
+	if not (parsed is Dictionary):
+		return false
+
+	packages_available.clear()
+	other_distros.clear()
+	if is_save_file:
+		msg_text.clear()
+		msg_date.clear()
+		is_first_run = false
+
+	# Optional scenario/save rules
+	var rules = parsed.get("rules", {})
+	if rules is Dictionary:
+		if rules.has("daily_users"):
+			new_linux_users_daily = int(rules["daily_users"])
+		if rules.has("max_media_mb"):
+			max_media_mb = int(rules["max_media_mb"])
+		if not is_save_file and rules.has("start_date"):
+			var sd = rules["start_date"]
+			if sd is String:
+				the_date = int(Time.get_unix_time_from_datetime_string(sd))
+			else:
+				the_date = int(sd)
+
+	if is_save_file:
+		if parsed.has("date"):
+			the_date = int(parsed["date"])
+		if parsed.has("scenario"):
+			active_scenario_name = str(parsed["scenario"])
+	else:
+		active_scenario_name = str(parsed.get("name", "Custom Scenario"))
+		scenario_loaded.emit(active_scenario_name)
+
+	for p_dict in parsed.get("packages", []):
+		if p_dict is Dictionary:
+			packages_available.append(PackageData.from_dict(p_dict))
+
+	var distro_counter := 0
+	for d_dict in parsed.get("distros", []):
+		if d_dict is Dictionary:
+			var d := DistroData.from_dict(d_dict, is_save_file)
+			if is_save_file:
+				if distro_counter == 0:
+					my_distro = d
+				else:
+					other_distros.append(d)
+				distro_counter += 1
+			else:
+				if not d.name.is_empty():
+					other_distros.append(d)
+
+	if is_save_file:
+		for ev in parsed.get("events", []):
+			if ev is Dictionary:
+				msg_text.append(str(ev.get("message", "")))
+				msg_date.append(int(ev.get("date", the_date)))
+
+	_sync_loaded_state_flags()
+	stats_updated.emit()
+	return true
 
 func generate_save_xml() -> String:
 	var lines: PackedStringArray = []
@@ -474,7 +583,8 @@ func load_xml_string(xml_content: String, is_save_file: bool) -> bool:
 					if is_save_file and parser.has_attribute("Date"):
 						the_date = int(parser.get_named_attribute_value("Date").to_float())
 					elif not is_save_file and parser.has_attribute("Name"):
-						scenario_loaded.emit(parser.get_named_attribute_value("Name"))
+						active_scenario_name = parser.get_named_attribute_value("Name")
+						scenario_loaded.emit(active_scenario_name)
 				"package":
 					var p := PackageData.new()
 					p.name = parser.get_named_attribute_value_safe("Name")
@@ -517,45 +627,25 @@ func load_xml_string(xml_content: String, is_save_file: bool) -> bool:
 						msg_text.append(parser.get_named_attribute_value_safe("message"))
 						msg_date.append(int(parser.get_named_attribute_value_safe("date").to_float()))
 
-	# --- NEW: Fix the Deja Vu Bug ---
-	if my_distro != null:
-		if my_distro.workers_paid > 0:
-			is_first_worker_paid = false
-		if my_distro.workers_volunteers > 0:
-			is_first_worker_volunteer = false
-		if my_distro.get_distro_size_in_mb() > 700:
-			has_warned_cd_size = true # NEW: Stops him from repeating the warning on load
-	
-	if my_distro != null:
-		if my_distro.workers_paid > 0:
-			is_first_worker_paid = false
-		if my_distro.workers_volunteers > 0:
-			is_first_worker_volunteer = false
-		if my_distro.get_distro_size_in_mb() > 700:
-			has_warned_cd_size = true 
-		if my_distro.get_distro_bugs() == 0 and my_distro.released_ver > 0:
-			has_congratulated_zero_bugs = true # Stops him from repeating the zero-bug praise on load
+	_sync_loaded_state_flags()
+	stats_updated.emit()
+	return true
 
-	# --- NEW: Fix the Deja Vu Bug ---
-	if my_distro != null:
-		if my_distro.workers_paid > 0:
-			is_first_worker_paid = false
-		if my_distro.workers_volunteers > 0:
-			is_first_worker_volunteer = false
-		if my_distro.get_distro_size_in_mb() > 700:
-			has_warned_cd_size = true 
-		if my_distro.get_distro_bugs() == 0 and my_distro.released_ver > 0:
-			has_congratulated_zero_bugs = true 
-	# --------------------------------
+func _sync_loaded_state_flags() -> void:
+	if my_distro == null:
+		return
+	if my_distro.workers_paid > 0:
+		is_first_worker_paid = false
+	if my_distro.workers_volunteers > 0:
+		is_first_worker_volunteer = false
+	if my_distro.get_distro_size_in_mb() > max_media_mb:
+		has_warned_cd_size = true
+	if my_distro.get_distro_bugs() == 0 and my_distro.released_ver > 0:
+		has_congratulated_zero_bugs = true
 
-	# NEW: Check rank on load so Bryan doesn't repeat the Top 10 message
 	var loaded_rank: int = 1
 	for d in other_distros:
 		if d.users > my_distro.users:
 			loaded_rank += 1
-		if loaded_rank <= 10 and my_distro.released_ver > 0:
-			has_reached_top_10 = true
-	# --------------------------------
-
-	stats_updated.emit()
-	return true
+	if loaded_rank <= 10 and my_distro.released_ver > 0:
+		has_reached_top_10 = true
