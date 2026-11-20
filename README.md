@@ -46,6 +46,7 @@ While preserving the core mechanics, classic pixel aesthetic, and dry satirical 
 * **Aligned Control Steppers:** `+` and `-` worker assignment buttons are neatly aligned with total volunteer and paid worker availability counters.
 
 ### 🐐 Bryan's Guidance & Feedback
+* **Expanded 50-Event Deck & Tabletop Roll Engine:** More than doubled the original 23 random events to **50**—adding modern Linux-world satire (including a global Windews cybersecurity outage, stealthy backdoor catches, init-system flamewars, social media PR disasters, and patent trolls). Replaced the original `0–300` flat roll with a decoupled two-step tabletop system: a **1d20 daily encounter check** (10% steady trigger rate) followed by a **50-card draw**, so expanding the event pool never unbalances game pacing.
 * **CD Size Warning:** Bryan now warns you the moment your distribution exceeds **700 MB**, letting you know that exceeding standard CD-ROM capacity will begin hurting your daily user conversion on older hardware.
 * **Varied Community Notifications:** New volunteers, hires, and save confirmations now cycle through randomized notification dialogs rather than repetitive static text.
 
