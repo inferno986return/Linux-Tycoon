@@ -512,9 +512,9 @@ func random_event() -> void:
 				var fixed := mini(pkg.bugs, 3)
 				pkg.bugs -= fixed
 				show_message("Volunteers hosted a weekend Bug-Squash-a-Thon for %s and squashed %d bugs!" % [pkg.name, fixed])
-		37: # Chance (Bad): Patent Troll Lawsuit
+		37: # Chance: Patent Troll Lawsuit
 			if my_distro.released_ver > 0:
-				if my_distro.workers_paid > 0:
+				if my_distro.get_distro_worker_available_paid() > 0:
 					my_distro.workers_paid -= 1
 					show_message("A patent troll sued %s over 'clicking a button with a mouse.' Legal fees forced you to lay off 1 paid worker." % my_distro.name)
 				else:
@@ -583,6 +583,50 @@ func random_event() -> void:
 				else:
 					my_distro.hype -= 10
 					show_message("Your community forums got a bit spicy over a minor UI tweak. Everyone needs a nap. (-10 hype)")
+		51: # Bad Magazine Review (DOS variant)
+			if target.released_ver > 0 and target.get_distro_age_in_days() > 30:
+				target.hype -= 15
+				show_message("%s version %d.0 was reviewed in a popular Linux Magazine... and they hated it! Time to pretend that issue never existed." % [target.name, target.released_ver])
+		52: # Wallpaper Controversy
+			if target.released_ver > 0:
+				target.hype -= 10
+				show_message("The default wallpaper in %s sparked a 3-week Reddit argument over whether it's 'too corporate.' (-10 hype)" % target.name)
+		53: # Retro Hardware Revival
+			if target.released_ver > 0 and target.get_distro_size_in_mb() <= 350:
+				target.users += 200
+				target.hype += 10
+				show_message("A retro-computing enthusiast got %s running smoothly on a 15-year-old ThinkPad! Nostalgic nerds are flocking to it. (+200 users, +10 hype)" % target.name)
+		54: # Conference Swag Hit
+			if my_distro.released_ver > 0:
+				my_distro.hype += 15
+				my_distro.users += 150
+				show_message("Your %s laptop stickers were the hottest item at this year's LinuxFest! (+150 users, +15 hype)" % my_distro.name)
+		55: # Accidental Dependency Bloat
+			pkg.size_in_mb += 15
+			show_message("A developer accidentally bundled an entire web browser engine inside %s just to render a settings menu. (+15 MB)" % pkg.name)
+		56: # Upstream Rewrite in Rust/Go
+			pkg.bugs = maxi(0, pkg.bugs - 2)
+			pkg.nerd_cred += 2
+			show_message("Someone rewrote %s from scratch in a memory-safe language over a long weekend! (-2 bugs, +2 Nerd Cred)" % pkg.name)
+		57: # Government Migration
+			if target.released_ver > 0:
+				target.users += 500
+				target.hype += 15
+				show_message("A small European city just announced it's migrating all municipal desktops to %s! (+500 users, +15 hype)" % target.name)
+		58: # Broken Audio Update
+			if target.released_ver > 0:
+				target.hype -= 15
+				show_message("An audio server update broke sound for half of %s's users. Everyone is furiously editing config files. (-15 hype)" % target.name)
+		59: # Corporate Sponsorship
+			if my_distro.released_ver > 0:
+				my_distro.workers_paid += 1
+				my_distro.hype += 10
+				show_message("A friendly tech company just became a Platinum Sponsor of %s and funded 1 new paid worker! (+1 paid worker, +10 hype)" % my_distro.name)
+		60: # Meme Distro Spike
+			if target.released_ver > 0:
+				target.users += 300
+				target.hype += 10
+				show_message("A hilarious meme about %s hit the front page of the internet. People are installing it 'ironically'—and actually liking it! (+300 users, +10 hype)" % target.name)
 
 func show_message(the_msg: String) -> void:
 	msg_text.append(the_msg)

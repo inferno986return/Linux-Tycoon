@@ -2732,6 +2732,9 @@ func _on_release_version_confirmed() -> void:
 	con_new_release.visible = true
 
 func _on_new_release_ok_clicked() -> void:
+	if GameManager.my_distro.released_ver == 0 or GameManager.my_distro.get_distro_age_in_days() >= 30:
+		GameManager.my_distro.hype += 5
+
 	GameManager.my_distro.release_new_version()
 	unpause_game()
 	con_new_release.visible = false
