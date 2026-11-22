@@ -48,5 +48,5 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Show gamesave playtime and even an achievement for a number of gametime hours on it
 * Different package management standards across distros - even Lunduke has discussed this in-detail with his Why Linux Sucks speeches
 * Do we have feature parity with Linux Tycoon for DOS?
-* *Linux is Badass* CHOA Easter egg - I am thinking of an icon you click or maybe the Konami code in the main menu?, I will credit the book and link it
+* *Linux is Badass* CHOA Easter egg (which I will EPUB 3.2+ at some point) - I am thinking of an icon you click such as Tux (or maybe the Konami code) in the main menu?, I will credit the book (and it's CC BY-SA NC) and link it via: https://www.amazon.com/dp/1365052095, https://www.amazon.ca/dp/1365052095, https://www.amazon.co.uk/dp/1365052095, and https://www.amazon.com.au/dp/1365052095
 * itch.io and GitHub Pages website for the game in the windowed style
