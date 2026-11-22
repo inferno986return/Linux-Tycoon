@@ -13,6 +13,7 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
 * Formally support Scenarios and test them - the RealLife.json JSON doesn't work when selected and starting a new game, then the packages. Save has an issue where it asks to overwrite but it hasn't been created yet, so we need a check for New Game to force Save As on first save.
 * Show Size: label in DistroRank next to Users: and reposition.
+* Game feels unbalanced - make Sacrifice Worker more neccessary with more random events towards rival distros (especially positive ones), etc.
 
 ### Features
 
@@ -41,9 +42,11 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Different speeds like with SimCity and RCT: 0 - Paused, 1 - Normal, 2 - Fast, 3 - Extreme
 * Refactor all the code to be as efficient as it can be.
 * When you click on the distro in DistroRank, it shows the growth (or shrinkage) of the distro's userbase with a line graph over 30 days (or more).
-* Punish long release windows over 180 days or inconsistent release periods - how to do it?
-* Icons for each Linux distro and a choice of unique icon for the player's distro. Icons show in DistroRank
+* Punish long release windows over 180 days or inconsistent release periods - how should be implemented whilst keeping the balancing?
+* Icons for each Linux distro and a choice of unique icon for the player's distro. Icons show in DistroRank - pinched the LCOS 32px from Bryan Lunduke's branding repo on GitHub.
 * How to increase game longevity?
 * Show gamesave playtime and even an achievement for a number of gametime hours on it
 * Different package management standards across distros - even Lunduke has discussed this in-detail with his Why Linux Sucks speeches
-* *Linux is Badass* CHOA Easter egg - I am thinking of an icon you click or maybe the Konami code in the main menu?
+* Do we have feature parity with Linux Tycoon for DOS?
+* *Linux is Badass* CHOA Easter egg - I am thinking of an icon you click or maybe the Konami code in the main menu?, I will credit the book and link it
+* itch.io and GitHub Pages website for the game in the windowed style
