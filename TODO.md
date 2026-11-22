@@ -12,6 +12,7 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * The game still has weird text rendering issues.
 * The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
 * Formally support Scenarios and test them - the RealLife.json JSON doesn't work when selected and starting a new game, then the packages. Save has an issue where it asks to overwrite but it hasn't been created yet, so we need a check for New Game to force Save As on first save.
+* Show Size: label in DistroRank next to Users: and reposition.
 
 ### Features
 
@@ -24,6 +25,8 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * More packages, especially for when the 4.7GB DVD limit is reached.
 * Add the Rank to the Overview window on the right side after Age:.
 * How about in DistroRank - Users:, Size: with mini-arrows next to them. And right-align the crown fully at the top?
+* Show the distro dev window on the left while the Edit Packages and Assign Workers is open.
+* More packages and even more random events inspired by Monopoly's Chance and Community Chest - 60 or 75? I also like a package randomly becoming closed or open-sourced or even abandoned
 
 ## Long-term
 * Dedicated GitHub website - would be cool if it had the same blue window design using Hugo or something.
@@ -32,7 +35,6 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Implement multiplayer exactly as Bryan Lunduke intended and enable the "Run Server" and "Online Game" buttons in the Main Menu.
 * Other single player modes - I would like getting a certain rank or higher within 1 year or 2 years with balancing adjustments made (or even player-set parameters like FNAF's "Custom Night")
 * Achievements (though I like the Newgrounds term of "medals" too) for playing for 10, 20, 500 and 100 years, reaching the top 10, then number 1 and keeping number 1 for at least 1 year, getting 100,000 and then 150,000 users, exceeding 700MB (Got a flash drive?), etc.
-* Add more than 50 random events?
 * Hard mode
 * Provide some kind of end game, as the classic game has no end
 * A hamburger (3 horizontal lines ≡) or kebab (vertical ellipis ⁝) menu in the top-right if there is a button overspill and we need a dedicated menu for Save As, Quit, etc.
@@ -41,3 +43,7 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * When you click on the distro in DistroRank, it shows the growth (or shrinkage) of the distro's userbase with a line graph over 30 days (or more).
 * Punish long release windows over 180 days or inconsistent release periods - how to do it?
 * Icons for each Linux distro and a choice of unique icon for the player's distro. Icons show in DistroRank
+* How to increase game longevity?
+* Show gamesave playtime and even an achievement for a number of gametime hours on it
+* Different package management standards across distros - even Lunduke has discussed this in-detail with his Why Linux Sucks speeches
+* *Linux is Badass* CHOA Easter egg - I am thinking of an icon you click or maybe the Konami code in the main menu?
