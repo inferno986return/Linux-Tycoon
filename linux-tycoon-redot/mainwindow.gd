@@ -1132,39 +1132,41 @@ func _refresh_distro_rank() -> void:
 		l_name.add_theme_color_override("font_color", Color.BLACK)
 		l_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS 
 
-		var l_users := _add_label(row, "Users: %d" % d.users, Vector2(text_x, 17), Vector2(70, 14), 9)
+		var l_users := _add_label(row, "Users: %d" % d.users, Vector2(text_x, 18), Vector2(98, 14), 9)
 		l_users.add_theme_color_override("font_color", Color8(60, 60, 60))
 		l_users.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
-		var l_size := _add_label(row, "%d MB" % d.get_distro_size_in_mb(), Vector2(text_x + 70, 17), Vector2(42, 14), 9, HORIZONTAL_ALIGNMENT_RIGHT)
+		var l_size := _add_label(row, "%d MB" % d.get_distro_size_in_mb(), Vector2(128, 18), Vector2(50, 14), 9, HORIZONTAL_ALIGNMENT_RIGHT)
+		l_size.offset_left = 128
+		l_size.offset_right = 178
 		l_size.add_theme_color_override("font_color", Color8(60, 60, 60))
 
-		# Add the Crown for #1 Spot right before the arrow
+		# Crown for #1 spot on the top row, right before the arrow
 		if i == 0 and tex_crown != null:
 			var crown := TextureRect.new()
 			crown.texture = tex_crown
 			crown.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			crown.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			crown.position = Vector2(142, 8) # Placed strictly before the arrow (160 - 18)
-			crown.size = Vector2(18, 18)
+			crown.position = Vector2(144, 2)
+			crown.size = Vector2(16, 16)
 			row.add_child(crown)
 
-		# Show trend arrows based on the daily user change
+		# Trend arrows on the top row, flush right at x = 178
 		if d.new_user_change > 0 and tex_arrow_up != null:
 			var arrow := TextureRect.new()
 			arrow.texture = tex_arrow_up
 			arrow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			arrow.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			arrow.position = Vector2(160, 8) # Aligned to the far right
-			arrow.size = Vector2(18, 18)
+			arrow.position = Vector2(162, 2)
+			arrow.size = Vector2(16, 16)
 			row.add_child(arrow)
 		elif d.new_user_change < 0 and tex_arrow_down != null:
 			var arrow := TextureRect.new()
 			arrow.texture = tex_arrow_down
 			arrow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			arrow.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			arrow.position = Vector2(160, 8)
-			arrow.size = Vector2(18, 18)
+			arrow.position = Vector2(162, 2)
+			arrow.size = Vector2(16, 16)
 			row.add_child(arrow)
 
 		rank_vbox.add_child(row)

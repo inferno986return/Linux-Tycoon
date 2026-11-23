@@ -27,7 +27,8 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Add the Rank to the Overview window on the right side after Age:.
 * How about in DistroRank - Users:, Size: with mini-arrows next to them. And right-align the crown fully at the top?
 * Show the distro dev window on the left while the Edit Packages and Assign Workers is open.
-* More packages and even more random events inspired by Monopoly's Chance and Community Chest - 60 or 75? I also like a package randomly becoming closed or open-sourced or even abandoned
+* More packages and even more random events inspired by Monopoly's Chance and Community Chest - 70 or 75? I also like a package randomly becoming closed or open-sourced or even abandoned
+* Volunteer and new hire trickle slows down are a certain amount. Sacrificing volunteers slightly reduces the probability of new volunteers to a point (negative logarithm)
 
 ## Long-term
 * Dedicated GitHub website - would be cool if it had the same blue window design using Hugo or something.
