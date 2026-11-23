@@ -980,7 +980,10 @@ func _build_con_distro_stats() -> void:
 	stats_btn_packages.pressed.connect(func():
 		pause_game()
 		_hide_all_containers()
-		center_container(con_package_selection)
+		_set_distro_stats_compact(true)
+		con_distro_stats.visible = true
+		_refresh_distro_stats()
+		_position_beside_dev_window(con_package_selection)
 		_refresh_package_selection()
 		con_package_selection.visible = true
 	)
@@ -989,8 +992,11 @@ func _build_con_distro_stats() -> void:
 	stats_btn_workers.pressed.connect(func():
 		pause_game()
 		_hide_all_containers()
+		_set_distro_stats_compact(true)
+		con_distro_stats.visible = true
+		_refresh_distro_stats()
 		work_selected_idx = 0
-		center_container(con_worker_assignment)
+		_position_beside_dev_window(con_worker_assignment)
 		_refresh_worker_assignment()
 		con_worker_assignment.visible = true
 	)
@@ -1195,8 +1201,27 @@ func _refresh_notifications() -> void:
 	var lines: PackedStringArray = []
 	for i in range(GameManager.msg_text.size() - 1, -1, -1):
 		var d_str := GameManager.format_date(GameManager.msg_date[i])
-		lines.append("[%s] - %s" % [d_str, GameManager.msg_text[i]])
+		lines.append("[%s] – %s" % [d_str, GameManager.msg_text[i]])
 	notif_lbl.text = "\n\n".join(lines)
+
+func _set_distro_stats_compact(compact: bool) -> void:
+	stats_btn_packages.visible = not compact
+	stats_btn_workers.visible = not compact
+	stats_btn_release.visible = not compact
+	stats_btn_save.visible = not compact
+	con_distro_stats.size = Vector2(185, 245 if compact else 464)
+	con_distro_stats.position = Vector2(5, 5)
+	con_distro_stats.queue_redraw()
+
+func _position_beside_dev_window(ctrl: Control) -> void:
+	var w := size.x if size.x > 0 else 850.0
+	var h := (size.y - 26.0) if size.y > 26.0 else 474.0
+	var left_edge := con_distro_stats.position.x + con_distro_stats.size.x + 10.0
+	var avail_w := maxf(ctrl.size.x, w - left_edge)
+	ctrl.position = Vector2(
+		roundf(left_edge + (avail_w - ctrl.size.x) / 2.0),
+		roundf((h - ctrl.size.y) / 2.0)
+	)
 
 func _build_con_package_selection() -> void:
 	con_package_selection = DraggableWindow.new()
@@ -1317,6 +1342,7 @@ func _refresh_package_selection() -> void:
 		chk.toggled.connect(func(pressed: bool):
 			if pressed:
 				d.add_package_to_distro(capture_idx)
+				_refresh_distro_stats()
 			else:
 				d.remove_package_from_distro(capture_idx)
 		)
@@ -1341,6 +1367,7 @@ func _refresh_package_selection() -> void:
 
 func _on_package_selection_ok() -> void:
 	con_package_selection.visible = false
+	_set_distro_stats_compact(false)
 	con_distro_stats.visible = true
 	_refresh_distro_stats()
 
@@ -1582,6 +1609,8 @@ func _refresh_worker_assignment() -> void:
 	work_lbl_pkg_name.text = sel_pkg.name
 	work_lbl_assign_paid.text = str(d.workers_paid_assigned[work_selected_idx])
 	work_lbl_assign_vol.text = str(d.workers_volunteers_assigned[work_selected_idx])
+
+	_refresh_distro_stats()
 
 func _build_con_sacrifice_worker() -> void:
 	con_sacrifice_worker = DraggableWindow.new()
@@ -2733,6 +2762,7 @@ func _on_message_added(_msg: String, _date: int) -> void:
 	_refresh_notifications()
 
 func show_main_hud() -> void:
+	_set_distro_stats_compact(false)
 	con_distro_stats.visible = true
 	con_distro_rank.visible = true
 	con_overview.visible = true

@@ -12,8 +12,8 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * The game still has weird text rendering issues.
 * The "Overwite Save" window from the "Save" button should match the "Quit" dialogue.
 * Formally support Scenarios and test them - the RealLife.json JSON doesn't work when selected and starting a new game, then the packages. Save has an issue where it asks to overwrite but it hasn't been created yet, so we need a check for New Game to force Save As on first save.
-* Show Size: label in DistroRank next to Users: and reposition.
 * Game feels unbalanced - make Sacrifice Worker more neccessary with more random events towards rival distros (especially positive ones), etc.
+* Bigger 180+ day release penalty and bleeding users
 
 ### Features
 
