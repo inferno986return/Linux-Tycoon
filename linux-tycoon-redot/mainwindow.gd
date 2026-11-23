@@ -93,6 +93,7 @@ var stats_btn_save: Button
 var overview_lbl_name: Label
 var overview_lbl_users: Label
 var overview_lbl_age: Label
+var overview_lbl_rank: Label
 
 var show_mp3_player: bool = true
 var mp3_bg: ColorRect
@@ -1035,15 +1036,18 @@ func _build_con_overview() -> void:
 		con_overview.add_child(l)
 		return l
 
-	# Left-aligned with a 20px left margin (20 to 235)
-	overview_lbl_name = make_lbl.call(Vector2(20, 10), Vector2(215, 30), HORIZONTAL_ALIGNMENT_LEFT)
+	# Left-aligned with a 20px left margin (20 to 230)
+	overview_lbl_name = make_lbl.call(Vector2(20, 10), Vector2(210, 30), HORIZONTAL_ALIGNMENT_LEFT)
 	overview_lbl_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
-	# Centered at exact midpoint of 650px (235 + 180/2 = 325)
-	overview_lbl_users = make_lbl.call(Vector2(235, 10), Vector2(180, 30), HORIZONTAL_ALIGNMENT_CENTER)
+	# Users (230 to 370)
+	overview_lbl_users = make_lbl.call(Vector2(230, 10), Vector2(140, 30), HORIZONTAL_ALIGNMENT_CENTER)
 
-	# Right-aligned with a matching 20px right margin (415 + 215 = 630)
-	overview_lbl_age = make_lbl.call(Vector2(415, 10), Vector2(215, 30), HORIZONTAL_ALIGNMENT_RIGHT)
+	# Age (370 to 520)
+	overview_lbl_age = make_lbl.call(Vector2(370, 10), Vector2(150, 30), HORIZONTAL_ALIGNMENT_CENTER)
+
+	# Right-aligned with a matching 20px right margin (520 to 630)
+	overview_lbl_rank = make_lbl.call(Vector2(520, 10), Vector2(110, 30), HORIZONTAL_ALIGNMENT_RIGHT)
 
 func _refresh_overview() -> void:
 	var d := GameManager.my_distro
@@ -1052,6 +1056,7 @@ func _refresh_overview() -> void:
 	overview_lbl_name.text = "Name: %s %d.0" % [d.name, d.released_ver]
 	overview_lbl_users.text = "Users: %d" % d.users
 	overview_lbl_age.text = "Age: %d days" % d.get_distro_age_in_days()
+	overview_lbl_rank.text = "Rank: #%d" % GameManager._get_my_rank()
 
 func _build_con_distro_rank() -> void:
 	con_distro_rank = DraggableWindow.new()
@@ -1986,7 +1991,7 @@ func _build_con_credits() -> void:
 
 func _build_con_music() -> void:
 	con_music = DraggableWindow.new()
-	con_music.size = Vector2(400, 372) # Increased by 22px for Track 10
+	con_music.size = Vector2(400, 410) # Increased by 38px for Content ID notice
 	can_main.add_child(con_music)
 
 	_add_label(con_music, "Music Credits", Vector2(15, 12), Vector2(200, 20), 16)
@@ -2021,7 +2026,11 @@ func _build_con_music() -> void:
 		var lbl_t := _add_label(con_music, "• " + tracks[i], Vector2(20, y_pos), Vector2(360, 20), 11)
 		lbl_t.add_theme_color_override("font_color", Color.WHITE)
 
-	var btn_ok := _add_button(con_music, "OK!", Vector2(310, 327), Vector2(75, 30))
+	var lbl_cid := _add_label(con_music, "Note: Most of these tracks are registered to YouTube Content ID.", Vector2(20, 322), Vector2(360, 32), 11)
+	lbl_cid.add_theme_color_override("font_color", Color.WHITE)
+	lbl_cid.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	var btn_ok := _add_button(con_music, "OK!", Vector2(310, 365), Vector2(75, 30))
 	btn_ok.pressed.connect(func():
 		con_music.visible = false
 		con_credits.visible = true

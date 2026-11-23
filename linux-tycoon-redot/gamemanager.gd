@@ -72,10 +72,10 @@ func build_initial_package_list() -> void:
 	
 	# Desktop Environments
 	packages_available.append(PackageData.new("Midget", 2, "Lightweight, simple desktop environment.", true, 3, 20, 20, T.DESKTOP_ENVIRONMENT, 1))
-	packages_available.append(PackageData.new("QDE", 3, "The Q Desktop Environment.  Big.  Slow.  Lots and lots of desktop widgets.", true, 3, 10, 50, T.DESKTOP_ENVIRONMENT, 1))
-	packages_available.append(PackageData.new("UCDE", 0, "The Ultra Confusing Desktop Environment.  There are no icons.  Only terminals.", true, 20, 1, 1, T.DESKTOP_ENVIRONMENT, 1))
+	packages_available.append(PackageData.new("QDE", 3, "The Q Desktop Environment. Big. Slow. Lots and lots of desktop widgets.", true, 3, 10, 50, T.DESKTOP_ENVIRONMENT, 1))
+	packages_available.append(PackageData.new("UCDE", 0, "The Ultra Confusing Desktop Environment. There are no icons. Only terminals.", true, 20, 1, 1, T.DESKTOP_ENVIRONMENT, 1))
 	# Web Browsers
-	packages_available.append(PackageData.new("FlamingRodent", 4, "A big, powerful web browser.  Lots of features and lots of extensions.", true, 3, 15, 10, T.WEB_BROWSER, 1))
+	packages_available.append(PackageData.new("FlamingRodent", 4, "A big, powerful web browser. Lots of features and lots of extensions.", true, 3, 15, 10, T.WEB_BROWSER, 1))
 	packages_available.append(PackageData.new("ShmoogleShrome", 2, "Lightweight and superfast web browser.", true, 3, 10, 10, T.WEB_BROWSER, 1))
 	packages_available.append(PackageData.new("Text-O-Web", 0, "A Text-only web browser that runs in the Terminal.", true, 20, 0, 1, T.WEB_BROWSER, 1))
 	# Office Suites
@@ -85,7 +85,7 @@ func build_initial_package_list() -> void:
 	# Games
 	packages_available.append(PackageData.new("PenguinZoomer", 1, "Race around and pretend that penguins are like cars.", true, 3, 8, 20, T.GAME, 1))
 	packages_available.append(PackageData.new("FragBlast4000", 2, "Fancy 3D graphics and fast paced shooting of other people.", false, 1, 15, 120, T.GAME, 1))
-	packages_available.append(PackageData.new("BurstABubble", 0, "There are bubbles.  You hate bubbles.  Pop those bubbles.", true, 0, 20, 25, T.GAME, 1))
+	packages_available.append(PackageData.new("BurstABubble", 0, "There are bubbles. You hate bubbles. Pop those bubbles.", true, 0, 20, 25, T.GAME, 1))
 	packages_available.append(PackageData.new("JustCards", 0, "It's a card game.", true, 0, 5, 20, T.GAME, 1))
 	packages_available.append(PackageData.new("TapYerToes", 1, "Tap your toes to the beat of very boring music.", true, 0, 1, 15, T.GAME, 1))
 	packages_available.append(PackageData.new("CityMax", 2, "Design and run a very fancy city.", false, 0, 15, 120, T.GAME, 1))
@@ -94,22 +94,22 @@ func build_initial_package_list() -> void:
 	packages_available.append(PackageData.new("PixelPusher", 0, "A very simple image editor.", true, 1, 2, 2, T.GRAPHICS_EDITING, 1))
 	packages_available.append(PackageData.new("The Dork", 2, "Robust, powerful graphics editor.", true, 5, 12, 65, T.GRAPHICS_EDITING, 1))
 	packages_available.append(PackageData.new("Pictures-In-Folders", 0, "A simple photo gallery for organizing images.", true, 0, 8, 8, T.GRAPHICS_EDITING, 1))
-	packages_available.append(PackageData.new("PainterMcPaint", 1, "Good for painting.  Bad for anything else.", true, 0, 3, 150, T.GRAPHICS_EDITING, 1))
+	packages_available.append(PackageData.new("PainterMcPaint", 1, "Good for painting. Bad for anything else.", true, 0, 3, 150, T.GRAPHICS_EDITING, 1))
 	# Programming
 	packages_available.append(PackageData.new("LunarBlackout", 4, "A good, flexible integrated development environment.", true, 10, 4, 120, T.PROGRAMMING, 1))
 	packages_available.append(PackageData.new("JustPascal", 0, "Pascal programming tools.", true, 11, 1, 40, T.PROGRAMMING, 1))
-	packages_available.append(PackageData.new("Lunduke Development Kit", 0, "The most awesome programming language.  Ever.", true, 15, 15, 10, T.PROGRAMMING, 1))
+	packages_available.append(PackageData.new("Lunduke Development Kit", 0, "The most awesome programming language. Ever.", true, 15, 15, 10, T.PROGRAMMING, 1))
 	packages_available.append(PackageData.new("LargeTalk", 0, "Considered to be the Grand-daddy of programming tools.", true, 20, 2, 10, T.PROGRAMMING, 1))
-	packages_available.append(PackageData.new("EchsCode", 7, "This is a terrible development environment.  Nobody likes this or wants to use it.", false, 0, 0, 900, T.PROGRAMMING, 1))
+	packages_available.append(PackageData.new("EchsCode", 7, "This is a terrible development environment. Nobody likes this or wants to use it.", false, 0, 0, 900, T.PROGRAMMING, 1))
 	# Communication
 	packages_available.append(PackageData.new("Mailinator", 1, "Super advanced email client.", true, 0, 12, 80, T.COMMUNICATION, 1))
-	packages_available.append(PackageData.new("Chatchatchat", 1, "You know.  For chatting.", true, 0, 5, 50, T.COMMUNICATION, 1))
-	packages_available.append(PackageData.new("Fir", 0, "Terminal-only email client.  ", true, 5, 1, 1, T.COMMUNICATION, 1))
+	packages_available.append(PackageData.new("Chatchatchat", 1, "You know. For chatting.", true, 0, 5, 50, T.COMMUNICATION, 1))
+	packages_available.append(PackageData.new("Fir", 0, "Terminal-only email client. ", true, 5, 1, 1, T.COMMUNICATION, 1))
 	packages_available.append(PackageData.new("IRC-o-Matic", 3, "The only IRC client that matters.", true, 4, 2, 6, T.COMMUNICATION, 1))
 	# Utility
 	packages_available.append(PackageData.new("Calculator", 0, "You do want a calculator, don't you?", true, 0, 1, 1, T.UTILITY, 1))
 	# Multimedia
-	packages_available.append(PackageData.new("Video Player Thing", 1, "Plays videos.  Sometimes.  Then it crashes.", true, 0, 1, 10, T.MULTIMEDIA, 1))
+	packages_available.append(PackageData.new("Video Player Thing", 1, "Plays videos. Sometimes. Then it crashes.", true, 0, 1, 10, T.MULTIMEDIA, 1))
 	packages_available.append(PackageData.new("vidCastGrabber", 1, "Downloads and plays video podcasts.", true, 0, 3, 55, T.MULTIMEDIA, 1))
 	packages_available.append(PackageData.new("emTeeVee", 2, "Automatically generates music videos.", false, 0, 2, 120, T.MULTIMEDIA, 1))
 
@@ -368,25 +368,25 @@ func random_event() -> void:
 		1:
 			if target.released_ver > 0:
 				target.hype += 20
-				show_message("%s version %d.0 was reviewed on the Linux Action Show...  and it got a big thumbs up!  This should give it a big boost!" % [target.name, target.released_ver])
+				show_message("%s version %d.0 was reviewed on the Linux Action Show... and it got a big thumbs up!  This should give it a big boost!" % [target.name, target.released_ver])
 		2:
 			if target.released_ver > 0:
 				target.hype -= 20 # Fixed Xojo bug where it used MyDistro.Hype - 20
-				show_message("%s version %d.0 was reviewed on the Linux Action Show...  and... they compared it to stinky cheese.  Not ideal..." % [target.name, target.released_ver])
+				show_message("%s version %d.0 was reviewed on the Linux Action Show... and... they compared it to stinky cheese. Not ideal..." % [target.name, target.released_ver])
 		3:
 			if target.released_ver > 0 and target.get_distro_age_in_days() > 30:
 				target.hype += 15
-				show_message("%s version %d.0 was reviewed in a popular Linux Magazine...  and they liked it!  Way to go!  Time to get that article framed!" % [target.name, target.released_ver])
+				show_message("%s version %d.0 was reviewed in a popular Linux Magazine... and they liked it!  Way to go!  Time to get that article framed!" % [target.name, target.released_ver])
 		4:
 			new_linux_users_daily += 20
-			show_message("A new version of Windews is released.  Nobody likes it.  More new users are switching to Linux!  All Linux Distros rejoice!")
+			show_message("A new version of Windews is released. Nobody likes it. More new users are switching to Linux!  All Linux Distros rejoice!")
 		5:
 			new_linux_users_daily -= 20
-			show_message("A new version of Windews is released.  And... and... this one is pretty good.  People aren't switching to Linux quite so much...")
+			show_message("A new version of Windews is released. And... and... this one is pretty good. People aren't switching to Linux quite so much...")
 		6:
 			if target.has_non_open_source_packages():
 				target.hype -= 20
-				show_message("%s's usage of non-Open Source software has caused some guy to declare it 'Negative in the freedom dimension'.  You have no idea what that means." % target.name)
+				show_message("%s's usage of non-Open Source software has caused some guy to declare it 'Negative in the freedom dimension'. You have no idea what that means." % target.name)
 		7:
 			if target.get_distro_nerd_cred() > 40:
 				target.hype += 20
@@ -407,7 +407,7 @@ func random_event() -> void:
 		11:
 			if target.get_package_count_by_type(T.DESKTOP_ENVIRONMENT) == 0:
 				target.hype -= 20
-				show_message("Woops.  %s has no Desktop Environment.  Some people find those useful." % target.name)
+				show_message("Woops. %s has no Desktop Environment. Some people find those useful." % target.name)
 		12:
 			if target.get_package_count_by_type(T.GAME) == 0:
 				target.hype -= 20
@@ -435,27 +435,27 @@ func random_event() -> void:
 		18:
 			if target.get_package_count_by_type(T.WEB_BROWSER) == 0:
 				target.hype -= 20
-				show_message("%s has no web browser.  Seriously.  It's like living in the dark ages." % target.name)
+				show_message("%s has no web browser. Seriously. It's like living in the dark ages." % target.name)
 		19:
 			pkg.version += 1
 			pkg.popularity += 1
-			show_message("%s has been updated to version %d.0.  Popularity increased!" % [pkg.name, pkg.version])
+			show_message("%s has been updated to version %d.0. Popularity increased!" % [pkg.name, pkg.version])
 		20:
 			pkg.version += 1
 			pkg.nerd_cred += 1
-			show_message("%s has been updated to version %d.0.  Nerd cred increased!" % [pkg.name, pkg.version])
+			show_message("%s has been updated to version %d.0. Nerd cred increased!" % [pkg.name, pkg.version])
 		21:
 			pkg.version += 1
 			pkg.bugs += 6
-			show_message("%s has been updated to version %d.0.  Unfortunately it is super buggy." % [pkg.name, pkg.version])
+			show_message("%s has been updated to version %d.0. Unfortunately it is super buggy." % [pkg.name, pkg.version])
 		22:
 			pkg.version += 1
 			pkg.bugs = 0
-			show_message("%s has been updated to version %d.0.  The developers managed to fix all known bugs!" % [pkg.name, pkg.version])
+			show_message("%s has been updated to version %d.0. The developers managed to fix all known bugs!" % [pkg.name, pkg.version])
 		23:
 			if target.released_ver > 0:
 				target.hype -= 15
-				show_message("Bryan's goats have wandered into your yard and chewed through your ethernet cables.  Your website goes down for a day.")
+				show_message("Bryan's goats have wandered into your yard and chewed through your Ethernet cables. Your website goes down for a day.")
 		24:
 			new_linux_users_daily += 15
 			show_message("Someone on the internet declared this 'The Year of the Linux Desktop'—and weirdly, people actually believed them! Daily new Linux users increased!")
