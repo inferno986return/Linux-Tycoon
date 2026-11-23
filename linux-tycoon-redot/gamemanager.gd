@@ -348,12 +348,12 @@ func random_event() -> void:
 	if my_distro.released_ver <= 0:
 		return
 
-	# Roll 1: Encounter check (1d20 -> 10% daily chance on 19 or 20)
-	if randi_range(1, 20) < 19:
+	# Roll 1: Encounter check (~7.6% daily chance, matching vanilla v1.1.2)
+	if randi_range(1, 13) != 1:
 		return
 
-	# Roll 2: 2d20 bell curve (range 2..40, peaks at 21)
-	var the_event := randi_range(1, 50)
+	# Roll 2: Draw 1 of all 60 events
+	var the_event := randi_range(1, 60)
 
 	var the_dist := randi_range(-1, other_distros.size() - 1)
 	if randi_range(1, 5) == 2:

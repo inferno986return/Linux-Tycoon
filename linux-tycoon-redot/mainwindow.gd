@@ -144,6 +144,12 @@ var tex_cultist: Texture2D
 var bryan_new_release: TextureRect
 var btn_ok_new_release: Button
 
+var tux_click_count: int = 0
+var con_adventure: DraggableWindow
+var adventure_terminal: RichTextLabel
+var con_adventure_license: DraggableWindow
+var con_confirm_leave_adventure: DraggableWindow
+
 func _ready() -> void:
 	if ResourceLoader.exists("res://Tux32x32.png"):
 		tex_tux = load("res://Tux32x32.png")
@@ -244,6 +250,9 @@ func _ready() -> void:
 	_build_con_mp3_player()
 	_build_con_license()
 	_build_dialogs()
+	_build_con_adventure()
+	_build_con_adventure_license()
+	_build_con_confirm_leave_adventure()
 
 	GameManager.stats_updated.connect(_on_stats_updated)
 	GameManager.message_added.connect(_on_message_added)
@@ -766,6 +775,8 @@ func _build_con_main_menu() -> void:
 	icon.size = Vector2(32, 32)
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	con_main_menu.add_child(icon)
+	icon.mouse_filter = Control.MOUSE_FILTER_STOP
+	icon.gui_input.connect(_on_tux_gui_input)
 
 	_add_label(con_main_menu, "Linux Tycoon Classic (Redot)", Vector2(75, 30), Vector2(340, 32), 22)
 	_add_label(con_main_menu, "v?, derived from Linux Tycoon v1.1.2", Vector2(75, 75), Vector2(340, 22), 13)
@@ -2749,3 +2760,275 @@ func _on_new_release_ok_clicked() -> void:
 	con_new_release.visible = false
 	show_main_hud()
 	GameManager.show_message("%s version %d.0 released!" % [GameManager.my_distro.name, GameManager.my_distro.released_ver])
+
+func _on_tux_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		tux_click_count += 1
+		if tux_click_count >= 3:
+			tux_click_count = 0
+			pause_game()
+			_show_adventure_part("part1")
+			center_container(con_adventure)
+			con_adventure.visible = true
+			con_adventure.move_to_front()
+
+func _build_con_adventure() -> void:
+	con_adventure = DraggableWindow.new()
+	con_adventure.size = Vector2(580, 460)
+	con_adventure.z_index = 90
+	can_main.add_child(con_adventure)
+
+	_add_label(con_adventure, "Linux is Badass – The Adventure", Vector2(15, 12), Vector2(550, 24), 16)
+
+	var lbl_sub := _add_label(con_adventure, "Play the text adventure from Bryan Lunduke's book Linux is Badass", Vector2(15, 38), Vector2(550, 20), 11)
+	lbl_sub.add_theme_color_override("font_color", Color.WHITE)
+
+	var term_bg := ColorRect.new()
+	term_bg.color = Color.BLACK
+	term_bg.position = Vector2(15, 65)
+	term_bg.size = Vector2(550, 340)
+	con_adventure.add_child(term_bg)
+
+	adventure_terminal = RichTextLabel.new()
+	adventure_terminal.position = Vector2(23, 73)
+	adventure_terminal.size = Vector2(534, 324)
+	adventure_terminal.bbcode_enabled = true
+	adventure_terminal.scroll_following = false
+	adventure_terminal.add_theme_color_override("default_color", Color8(0, 255, 0))
+	adventure_terminal.add_theme_font_size_override("normal_font_size", 12)
+	adventure_terminal.add_theme_font_size_override("bold_font_size", 13)
+	adventure_terminal.meta_clicked.connect(func(meta):
+		_show_adventure_part(str(meta))
+	)
+	con_adventure.add_child(adventure_terminal)
+
+	var btn_lic := _add_button(con_adventure, "License", Vector2(405, 415), Vector2(75, 30))
+	btn_lic.pressed.connect(func():
+		center_container(con_adventure_license)
+		con_adventure_license.visible = true
+		con_adventure_license.move_to_front()
+	)
+
+	var btn_ok := _add_button(con_adventure, "OK!", Vector2(490, 415), Vector2(75, 30))
+	btn_ok.pressed.connect(func():
+		center_container(con_confirm_leave_adventure)
+		con_confirm_leave_adventure.visible = true
+		con_confirm_leave_adventure.move_to_front()
+	)
+
+func _build_con_adventure_license() -> void:
+	con_adventure_license = DraggableWindow.new()
+	con_adventure_license.size = Vector2(550, 460)
+	con_adventure_license.z_index = 100
+	can_main.add_child(con_adventure_license)
+
+	_add_label(con_adventure_license, "License", Vector2(15, 12), Vector2(200, 20), 16)
+
+	var lbl_intro := _add_label(con_adventure_license, "Linux is Badass – The Adventure is licensed under CC BY-NC-SA 4.0:", Vector2(15, 40), Vector2(520, 20), 13)
+	lbl_intro.add_theme_color_override("font_color", Color.WHITE)
+
+	var link_lic := LinkButton.new()
+	link_lic.text = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+	link_lic.position = Vector2(15, 62)
+	link_lic.add_theme_font_size_override("font_size", 13)
+	link_lic.add_theme_color_override("font_color", Color.WHITE)
+	link_lic.add_theme_color_override("font_hover_color", Color8(200, 200, 255))
+	link_lic.uri = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+	con_adventure_license.add_child(link_lic)
+
+	var bg := ColorRect.new()
+	bg.color = Color8(89, 131, 192)
+	bg.position = Vector2(15, 90)
+	bg.size = Vector2(520, 315)
+	con_adventure_license.add_child(bg)
+
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(20, 95)
+	scroll.size = Vector2(510, 305)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	con_adventure_license.add_child(scroll)
+
+	var lbl_lic := Label.new()
+	lbl_lic.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_lic.custom_minimum_size = Vector2(490, 0)
+	lbl_lic.add_theme_color_override("font_color", Color.WHITE)
+	lbl_lic.add_theme_font_size_override("font_size", 11)
+	if FileAccess.file_exists("res://license.txt"):
+		lbl_lic.text = FileAccess.get_file_as_string("res://license.txt")
+	else:
+		lbl_lic.text = "Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)\nSee https://creativecommons.org/licenses/by-nc-sa/4.0/"
+	scroll.add_child(lbl_lic)
+
+	var btn_ok := _add_button(con_adventure_license, "OK!", Vector2(460, 415), Vector2(75, 30))
+	btn_ok.pressed.connect(func():
+		con_adventure_license.visible = false
+	)
+
+func _build_con_confirm_leave_adventure() -> void:
+	con_confirm_leave_adventure = DraggableWindow.new()
+	con_confirm_leave_adventure.size = Vector2(360, 160)
+	con_confirm_leave_adventure.z_index = 110
+	can_main.add_child(con_confirm_leave_adventure)
+
+	_add_label(con_confirm_leave_adventure, "Leave Adventure", Vector2(15, 12), Vector2(330, 20), 13)
+
+	var lbl_text := _add_label(con_confirm_leave_adventure, "Are you sure you want to leave\nLinux is Badass – The Adventure?", Vector2(15, 35), Vector2(330, 70), 13, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl_text.add_theme_color_override("font_color", Color.WHITE)
+	lbl_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	var btn_yes := _add_button(con_confirm_leave_adventure, "Yes", Vector2(95, 115), Vector2(80, 30))
+	btn_yes.pressed.connect(func():
+		con_confirm_leave_adventure.visible = false
+		con_adventure_license.visible = false
+		con_adventure.visible = false
+		if not con_main_menu.visible and not con_intro.visible:
+			unpause_game()
+	)
+
+	var btn_no := _add_button(con_confirm_leave_adventure, "No", Vector2(185, 115), Vector2(80, 30))
+	btn_no.pressed.connect(func():
+		con_confirm_leave_adventure.visible = false
+	)
+
+func _show_adventure_part(part_id: String) -> void:
+	var data: Dictionary = ADVENTURE_PARTS.get(part_id, ADVENTURE_PARTS["part1"])
+	var bb := "[b]=== %s ===[/b]\n\n%s\n\n" % [data["title"], data["body"]]
+	for i in range(data["choices"].size()):
+		var c: Array = data["choices"][i]
+		bb += "[url=%s]> %d. %s[/url]\n" % [c[1], i + 1, c[0]]
+	adventure_terminal.text = bb
+	adventure_terminal.scroll_to_line(0)
+
+const ADVENTURE_PARTS := {
+	"part1": {
+		"title": "Part 1",
+		"body": "What follows is an old school, choose your own adventure style... adventure. As you read, you will be presented with choices of what to do next.\n\nIt's a pretty simple mechanic. If you don't get it, just pretend like you do. Or people will make fun of you on the Internet.\n\nAnd by \"people\", I mean me. And your mom.\n\n[Wooo! Worked in a \"mom\" joke!]\n\nI should also note that there is, most definitely, a \"right path\" to follow in this adventure. And I think you'll be smart enough to quickly figure out what that right path is. In fact, if you follow the right path the entire adventure is pretty quick, easy and pleasant. If you deviate from that path though, shit can get bad in a hurry.\n\nAnd, with that, we begin...\n\nOPERATING SYSTEM NOT FOUND\n\nThat's all. Just a black screen and those words, in pale white, on your gorgeous new 32\" LCD screen. At least you know your newly built computer is working. The RAM check passed and, apparently, you managed to shove the CPU into the right spot. That wasn't a foregone conclusion, so you're pretty psyched about that little victory.\n\nYou fold your arms across your chest and lean back, confidently, in your chair – smiling and slowly nod your head. You probably look badass right now. Like a young Charlton Heston after showing those damned dirty apes a what-for. The smile vanishes as the meaning of those bold, all-caps words slowly dawns on you: You had forgotten to get an Operating System to put on your new, glorious tower of a computer. Luckily, there's only a few real choices, right?",
+		"choices": [
+			["Choose Windows – turn to part 4", "part4"],
+			["Choose MacOS – turn to part 5", "part5"],
+			["Choose Linux – turn to part 6", "part6"],
+			["Choose DOS – turn to part 2", "part2"]
+		]
+	},
+	"part2": {
+		"title": "Part 2",
+		"body": "As luck would have it, you happen to have a few DOS floppies laying in a box right by your desk.\n\nWhy these floppies are in the box, and why the box is, itself, right next to your desk, would make for an interesting story. One involving old boxes filled with old computer crap. Pretty riveting stuff.\n\nAlso lucky: the fact that you had the foresight to install a floppy drive in your brand new PC.\n\nSure, floppies are outdated. But what if you \"needed to get some important files off a floppy sometime\" you thought to yourself. The guy down at your local Nerd Stuff, who helped you ring up the parts, made fun of you. Something about him never having seen one in person before. Who's laughing now, kid?\n\nYou slide the floppy into the disk drive and reboot.\n\nA:\\> SETUP.EXE\n\nThe letters are on the screen before you even knew what was happening. It's almost like... your fingers remember. They knew what you needed to type. \"It's good to be home\", you think to yourself – confident in your decision to just use DOS.\n\n\"What do I need a newer Operating System for anyway? DOS has everything I'd ever need, right?\" you say, rather loudly, to the empty room that was busy not giving a shit.\n\nThe Setup program finishes up, you reboot and your computer comes to rest at a C:\\>... when it dawns on you. You don't actually have any DOS software to run. Also you have no idea how to get online with DOS. The last time you did that was with an old 28.8 modem – and you don't have one of those.",
+		"choices": [
+			["Give up and install Windows – turn to part 4", "part4"],
+			["Give up and install MacOS – turn to part 5", "part5"],
+			["Regain your sanity and install Linux – turn to part 6", "part6"],
+			["Stick to the plan and make DOS work – turn to part 3", "part3"]
+		]
+	},
+	"part3": {
+		"title": "Part 3",
+		"body": "They didn't have any of those, newfangled graphical operating systems in the old days! DOS will do just fine!\n\nOh-ho! What's this? Out of the corner of your eye you spy a Commander Keen install floppy in the box. Looks like this is your lucky day! You slip the floppy in the disk drive, run the installer, and spend the rest of the afternoon enjoying the best that early 1990's gaming could offer. Around 6pm you realize that you would, in fact, like to have a modern web browser.",
+		"choices": [
+			["Give up and install Windows – turn to part 4", "part4"],
+			["Give up and install MacOS – turn to part 5", "part5"],
+			["Regain your sanity and install Linux – turn to part 6", "part6"]
+		]
+	},
+	"part4": {
+		"title": "Part 4",
+		"body": "Just then, you are struck by a brilliant thought. \"Everyone uses Windows. I'll just install that.\"\n\nUnfortunately the most recent copy of Windows you have in your \"box of old computer crap\" is 3.1. And, as nostalgic as it might be to relive the early 1990's... you just can't bring yourself to install it. So, to the store it is!\n\nAfter perusing the aisles of your local computer store – and dodging no less than 37 blueshirted marauders, assaulting you with a declaration of \"Welcome to Nerd Stuff\" – you decide on just picking up a copy of Windows 8. The reason why you decide to buy Windows 8 may remain shrouded in mystery until the end of time... though it may have something to do with the fact that you wanted to use Windows... and that was the only version available.",
+		"choices": [
+			["Head home and install Windows – turn to part 7", "part7"],
+			["Get some froyo – turn to part 8", "part8"]
+		]
+	},
+	"part5": {
+		"title": "Part 5",
+		"body": "You head straight to the Apple Store to pick up a copy of Mac OS, confident in your, obviously amazing, decision.\n\n\"I'd like a copy of your finest MacOS,\" you declare, to the first Apple Store employee you find, with a ridiculous swagger that you instantly regret.\n\n\"MacOS is free,\" says the Apple dude. \"You already have it with your Mac. And updates are free now.\"\n\n\"But, can I buy a copy to do a fresh install?\"\n\nTurns out you can. So you do.",
+		"choices": [
+			["Time to head home and install this bad mamajama – turn to part 11", "part11"]
+		]
+	},
+	"part6": {
+		"title": "Part 6",
+		"body": "After thinking it over, you decide to put Linux on your new behemoth. Really, you wondered why you even needed to think it over. Kind of an obvious choice really. You want a fast, cool looking system. Boom. Linux. Decision made.\n\nOnly one problem. You don't actually have any way to install Linux. And, with no working PC to download Linux, the options are pretty limited. Ah, but where there's a will there's a way. You hop in the car and head down to the college.\n\nThe college, you say? Yes. The college. You see, there's two things that you can find at every college on the planet – college girls and Linux CDs.\n\nYou head to the computer science department, walk into one of the labs, and begin to say \"Hey, anyone have any Linux distribution discs I can use?\" but only get as far as \"Hey, anyone ha\" when someone shoves a DVD into your hand with a penguin drawn onto the top with a purple highlighter.\n\nJust then a college girl strolls by. Not just any college girl... a NERDY college girl. Nay. College WOMAN. You begin to, mindlessly, move towards what, you are pretty sure, is the most amazing lady you've ever seen. She would love to go to Comic Con with you, all you need to do is ask.\n\nOf this you are sure.\n\nThe man who gave you the Linux DVD speaks, \"No, dude. Not yet. You're not ready.\"\n\nYou have no idea what he means by that. But he sounds like a mixture between Yoda and Ted \"Theodore\" Logan, so you go with it.",
+		"choices": [
+			["Celebrate with some froyo – turn to part 14", "part14"],
+			["Head home and install Linux – turn to part 15", "part15"],
+			["Throw the DVD in his face and install Windows – turn to part 4", "part4"],
+			["Give up your dreams and buy a turtleneck – turn to part 5", "part5"],
+			["Break the DVD, go home and install DOS – turn to part 2", "part2"]
+		]
+	},
+	"part7": {
+		"title": "Part 7",
+		"body": "You get home, let Scruffy out to go potty, and set about installing Windows 8 on your beast of a PC.\n\n[It should be noted, at this point, that you, the reader, has no idea what \"Scruffy\" is. Nothing in the sentence above tells you what \"Scruffy\" is. You assume it is a dog, because its name is \"Scruffy\". You know what that is? That's racist. You are racist. What if it's a cat? Or a person with real person feelings. You also assume that \"Scruffy\" is a boy. Which also makes you sexist. You are a sexist, racist. Side note: \"Sexist, racist\" is not at all the same as \"Sexy, racy\". How weird is that?]\n\nAfter you let your dog back inside you plop yourself back at your desk and enjoy the final moments of the Windows 8 installer. It is glorious. The Windows 8 installer installs the shit out of Windows 8. Redmond should be proud. In fact, the installer is so excellent, a small tear develops in the corner of your eye – and you are suddenly compelled to write a nice letter to Microsoft.\n\n\"Dear Microsoft Guys,\nThank you for the Windows 8 installer and how it installs the shit out of Windows 8.\nSincerely, NAME REDACTED\"\n\nAs you finish spritzing your letter with just a dash of cologne (that's how Microsoft knows you care) the installer finishes its epic task (that being to install Windows 8 which, as has been previously discussed, it does the shit out of). First things first: time to install a better web browser!\n\nSo you click on the old Internet Explorer icon – taking a brief moment to marvel at how quickly it launched on your super duper new machine – and... there's no Internet connection. Why is there no Internet connection?\n\nTroubleshooting wizard? Huh? No. You can handle that on your own.\n\nLuckily, you're smarter than your average bear. You unplug the Ethernet cable from the back of your GENERIC BRAND VIDEO GAME CONSOLE and hook that up to your new PC tower. You know that connection works, you use it to play GAME ABOUT SHOOTING on the Internet with 12 year olds all the time.\n\nStill no dice. And that little troubleshooting wizard is really starting to piss you off.\n\nAfter much investigating (and swearing) you realize that Windows does not have the driver for your Ethernet card. So you'll need to go online to download it. Unfortunately you can't get online.\n\nBecause you don't already have the driver that lets you get online. Which sort of makes you want to punch a hobo.",
+		"choices": [
+			["Go to library and use their Internet – turn to part 9", "part9"],
+			["Bag it. Try MacOS – turn to part 5", "part5"],
+			["I bet Linux can access the Internet – turn to part 6", "part6"],
+			["Who needs the Internet? Time for DOS! – turn to part 2", "part2"]
+		]
+	},
+	"part8": {
+		"title": "Part 8",
+		"body": "You get some frozen yogurt. It is incredible. Because it is frozen yogurt. And that's how the universe works.",
+		"choices": [
+			["Home. Windows. Install. – turn to part 7", "part7"]
+		]
+	},
+	"part9": {
+		"title": "Part 9",
+		"body": "Luckily you've got a USB flash drive ready. So you hop in the car and drive down to the library. It's only 3 blocks, but you're in a hurry here. No time for walking! You need Internet, man!\n\nI'm not going to bore you with the tale of how you utilized one of the public library computers to search for, and download, the driver for the Ethernet card you have in your PC. Suffice to say: it happened as you would expect. Except for the whole \"lifetime ban from ever setting foot in the library\" thing. That feels a bit excessive. I mean, that guy was mostly bald already.\n\n2 hours later, you return home, stick the flash drive in your tower and run the driver setup.exe.\n\nAt this point there is good news and bad news.\n\nThe Good News: You downloaded the wrong driver. Which means you still have no Internet.\n\nThe Bad News: You can't think of anyone nearby that you can beg to use their computer to download the right driver.",
+		"choices": [
+			["Head to the store and buy a new Ethernet card. – turn to part 10", "part10"],
+			["There's always MacOS... – turn to part 5", "part5"],
+			["Seriously. Internet. – turn to part 6", "part6"],
+			["Who needs the Internet? Time for DOS! – turn to part 2", "part2"]
+		]
+	},
+	"part10": {
+		"title": "Part 10",
+		"body": "Feeling defeated – and all alone in this cruel, cruel world – you head back to the local Nerd Stuff to buy a new network card. This may seem like a drastic move to some, but you are a man with needs. Specifically, you need Internet access so that you can download and install updates to your new PC all night long.\n\n\"Welcome to Nerd Stuff! Anything I can help you find?\" says the blue-shirted, happy man.\n\n\"I need a NIC.\"\n\n\"I'm sorry, what's that?\"\n\nYou smile. But deep inside you want this man to die. \"Ethernet card. I need an Ethernet card.\"\n\n\"Oh, no problem! Though you probably mean you want a wireless router...\"\n\nYou cut him off. \"No. Ethernet card.\"\n\n\"Totally understand. Let me show you what we've got. Ah! Here's a great 802.11...\"\n\nAgain. Cut him off. Because he's an idiot. \"No. Ethernet card.\"\n\n\"Hmm. I see. Hold one while I get someone from the computer department.\"\n\nAs the man heads off to find help, you finally allow yourself to breathe and begin hunting for your new network card. Unfortunately there seems to be only one option. And it is the exact same card you already have. You are, needless to say, both bummed and frustrated.\n\nJust then, inspiration strikes! You look around – like a super sneaky spy dude – to make sure nobody is looking. Then, acting as casually as possible, you pop open the box of the NIC. Which is harder to open than you'd think, what with all that tape on the end. The box now looks like it was chewed on by a Tauntaun.\n\nWhat's more... no CD inside. No driver. You just molested that poor box for nothing.\n\nYou casually place it back on the rack, angled so that the \"chewed on\" side is less visible, and try to decide what to do next.",
+		"choices": [
+			["Buy a copy of MacOS to install on your PC at home – turn to part 5", "part5"],
+			["Just install Linux, already – turn to part 6", "part6"],
+			["Hey, I heard DOS is pretty cool – turn to part 2", "part2"]
+		]
+	},
+	"part11": {
+		"title": "Part 11",
+		"body": "You get home, plop yourself down at your desk, turn on the PC and stick the MacOS install DVD in the drive.\n\nAnd... it's... wait... something's not quite right...\n\nAbout 20 reboots later you come to a pretty major decision: This isn't working. Apparently MacOS doesn't like something about your PC. Huh. You'd love to do some quick research to figure out what the problem is... but, you know... no working PC.",
+		"choices": [
+			["Back to the Apple Store for help! – turn to part 12", "part12"],
+			["Give up and try Windows – turn to part 4", "part4"],
+			["Why are you not using Linux? – turn to part 6", "part6"],
+			["Desperate enough for DOS? – turn to part 2", "part2"]
+		]
+	},
+	"part12": {
+		"title": "Part 12",
+		"body": "You stroll into the Apple Store and head up to the first employee you see.\n\n\"Hey, I can't seem to get MacOS installed and I was hoping someone could,\" you get cut off before you can finish.\n\n\"Do you have an appointment?\" asks the snarky little man.\n\n\"Well. No. I really just had a quick question about which components are compatible with,\" again you get cut off.\n\n\"You'll need an appointment for the Genius Bar.\"\n\n...\n\nYou have no idea how to reply to what is, without a doubt, one of the single dumbest things you have ever heard. After, what seems like, several minutes of a stupidity-induced coma, you finally manage to reply. \"Soooo...\"\n\nThe man points to a big screen behind the \"Genius Bar\" – which, and this seems worth noting, looks just like a normal counter. \"Is your name on that screen?\"\n\nIt isn't. But, you have an idea.\n\n\"Hey, look over there!\"\n\nYou hustle over to one of the \"Geniuses\" and the \"Bar\" and quickly explain your issue before the little turd figures out your clever ruse.\n\n\"You can't install Mac OS on a PC! Bwahahahaha! Hey everyone! This guy is trying to use MacOS on a boring old PC! Bwahahaha!\" the genius laughs, the whole store joining in the gaiety.",
+		"choices": [
+			["Break down and buy a new Mac – turn to part 13", "part13"],
+			["Just freaking install Windows – turn to part 4", "part4"],
+			["L.I.N.U.X. – turn to part 6", "part6"]
+		]
+	},
+	"part13": {
+		"title": "Part 13",
+		"body": "Your will broken and, since you are already at the Apple Store, you decide to buy a Mac. Not an expensive Mac, mind you. Just something, anything, that you can actually use to, you know, do computery things with.\n\nAfter selecting the cheapest Mac money can buy (which is still about twice as much as you built your PC for), and engaging in the full contact, mixed martial arts cage match that is required in order to decline Apple Care, you slowly head home. A defeated husk of a man.\n\nYour next few days actually go pretty well. You get your shiny, new Mac setup easily enough and things seem to mostly be working without too much hassle.\n\nAs the weeks and months roll on you become convinced that your Mac is superior hardware to all other hardware – and that Mac OS is doubly superior to all other Operating Systems. This conviction quickly turns into an annoying habit where, every time a friend mentions a computer problem, you snarkily suggest getting a Mac.\n\nYou die alone. With your Mac. Because nobody likes you.\n\nGame fucking over.",
+		"choices": [
+			["Play Again – return to part 1", "part1"]
+		]
+	},
+	"part14": {
+		"title": "Part 14",
+		"body": "Holy CRAP that is good froyo! You resolve to enjoy froyo more often. With sprinkles. Hell yes. Sprinkles like a mother fucker!",
+		"choices": [
+			["Get home and install Linux – turn to part 15", "part15"]
+		]
+	},
+	"part15": {
+		"title": "Part 15",
+		"body": "Computer on. Disc in. Boots right up. Even gives the option to test drive the system before installing it. How cool is that?\n\nSo you do the \"test drive\" just to be sure all of your hardware works – and it does – then you proceed to install to your hard drive. While the installer copies files around you decide to take advantage of the moment to take Scruffy for a walk.\n\nWhile walking in the late afternoon sun, you reflect on what a great decision you made that day.\n\nPlus you saw a hot, nerdy college girl. Yessir, life is good.\n\nBy the time you return home your system is finished installing. A quick reboot later and you've got a fully working system.\n\nKnock, knock, knock. What's that noise, you wonder? You resolve to check into it some day.\n\nKnock, knock, knock. What the hell is... Oh. Right.\n\nYou open the front door to find... the college girl. She smiles at you. You blurt out something along the lines of \"Hi I'm door\". She holds up two tickets to Comic Con.\n\nA man in a suit walks by on the sidewalk outside your home. He almost passes by, but then stops suddenly. \"Hey! Did you just install Linux?\"\n\n\"Uh-huh.\"\n\n\"Well, I'm looking for a new vice president to run my video game company. Interested?\"\n\n\"Uh-huh.\"\n\n\"Great! You start tomorrow! But don't come to work before 10am. That's when the breakfast pizza is delivered.\"\n\n\"Okay.\"\n\nThe girl of your dreams turns to you. \"Let's go to comic book and video game conventions together and have a very low-pressure relationship filled with lots and lots of uninhibited sex. Do you mind if I dress up like Princess Leia sometimes while we watch Star Wars in Machete Order?\"\n\n\"Nope.\"\n\nTHE END",
+		"choices": [
+			["Play Again – return to part 1", "part1"]
+		]
+	}
+}
