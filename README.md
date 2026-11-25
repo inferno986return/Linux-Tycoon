@@ -8,7 +8,7 @@ A complete modern port of **Linux Tycoon Classic v1.1.2** (originally released i
 
 Originally authored in proprietary Xojo (REALbasic), this open-source revival brings the premier Linux distribution simulation into the modern era—running natively across **GNU/Linux, Windows, and macOS**, with mobile and Web export targets on the horizon.
 
-Developed with collaborative programming and architectural assistance from Google Gemini and Argon LLMs.
+Developed with collaborative programming and architectural assistance from Google Gemini.
 
 ![Main Menu](menu.png)
 
@@ -44,11 +44,16 @@ While preserving the core mechanics, classic pixel aesthetic, and dry satirical 
 * **Package Selection Sorting:** Multi-criteria sorting dropdown supporting Default, Alphabetical, Bug Count, Nerd Cred, Open Source status, Popularity, and Size (MB).
 * **Worker Assignment Up-Opening Sort:** Sort assigned workers by Default, Alphabetical, Bug Count, Paid Workers Assigned, or Volunteers Assigned.
 * **Aligned Control Steppers:** `+` and `-` worker assignment buttons are neatly aligned with total volunteer and paid worker availability counters.
+* **Distro Stats Window:** A shorter Distro Stats Window without the buttons shows when editing packages and assigning workers as a convenient point of reference.
 
 ### 🐐 Bryan's Guidance & Feedback
-* **Expanded 50-Event Deck & Tabletop Roll Engine:** More than doubled the original 23 random events to **50**—adding modern Linux-world satire (including a global Windews cybersecurity outage, stealthy backdoor catches, init-system flamewars, social media PR disasters, and patent trolls). Replaced the original `0–300` flat roll with a decoupled two-step tabletop system: a **1d20 daily encounter check** (10% steady trigger rate) followed by a **50-card draw**, so expanding the event pool never unbalances game pacing.
+* **Expanded 60-Event Deck & Tabletop Roll Engine:** More than doubled the original 23 random events to **60**—adding modern Linux-world satire (including a global Windews cybersecurity outage, stealthy backdoor catches, init-system flamewars, social media PR disasters, and patent trolls). Replaced the original `0–300` flat roll with a decoupled two-step tabletop system: a **1d20 daily encounter check** (10% steady trigger rate) followed by a **50-card draw**, so expanding the event pool never unbalances game pacing.
 * **CD Size Warning:** Bryan now warns you the moment your distribution exceeds **700 MB**, letting you know that exceeding standard CD-ROM capacity will begin hurting your daily user conversion on older hardware.
 * **Varied Community Notifications:** New volunteers, hires, and save confirmations now cycle through randomized notification dialogs rather than repetitive static text.
+* **DVD Size:** After 10 in-game years you get 4.7GB of space without scrutiny and some package bloat to compensate which makes space for more packages in the future.
+
+### 🐣 Easter Eggs
+* ***Linux is Badass - The Adventure*:** A functionally complete Choose Your Own Adventure (CHOA) game within Bryan Lunduke's book *Linux is Badass* inspired by his love for text adventure games like *Zork*. You just need to find it first!
 
 ---
 
