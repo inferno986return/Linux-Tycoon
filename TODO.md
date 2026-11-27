@@ -57,3 +57,4 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * In-game Lunduke quote or tip when the game starts in the main menu.
 * Pixel CD icon in a window after 10 in-game years annoucing that DVDs have surpassed CDs and the size of an ISO can now be up to 4700 MB (4.7GB) without a penalty:
     * Collaborapix Studio https://www.vecteezy.com/vector-art/25695052-pixel-art-illustration-cd-disk-pixelated-disk-cd-dvd-icon-pixelated-for-the-pixel-art-game-and-icon-for-website-and-video-game-old-school-retro
+* Fixed-sum mode: there are a limited number of Linux users, therefore the competition between distros is fierce!
