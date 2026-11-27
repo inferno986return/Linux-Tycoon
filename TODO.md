@@ -24,11 +24,12 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Add some left and right margin on the Overview window to space it out better..
 * Show the competition's Size next to Users in DistroRank - this is buggy and some distros have 0 MB and yet a growing userbase
 * More packages, especially for when the 4.7GB DVD limit is reached.
-* Add the Rank to the Overview window on the right side after Age:.
 * How about in DistroRank - Users:, Size: with mini-arrows next to them. And right-align the crown fully at the top?
 * Show the distro dev window on the left while the Edit Packages and Assign Workers is open.
 * More packages and even more random events inspired by Monopoly's Chance and Community Chest - 70 or 75? I also like a package randomly becoming closed or open-sourced or even abandoned
 * Volunteer and new hire trickle slows down are a certain amount. Sacrificing volunteers slightly reduces the probability of new volunteers to a point (negative logarithm)
+* Show time on the track in the MP3 Player next to the song name.
+* Edit Package sorter categories for Selected and Unselected - I want the sorters to be robust as I want more packages in-game.
 
 ## Long-term
 * Dedicated GitHub website - would be cool if it had the same blue window design using Hugo or something.
@@ -49,7 +50,10 @@ These are things I want to achieve before this game hits v1.0 and I am confident
 * Show gamesave playtime and even an achievement for a number of gametime hours on it
 * Different package management standards across distros - even Lunduke has discussed this in-detail with his Why Linux Sucks speeches
 * Do we have feature parity with Linux Tycoon for DOS?
-* *Linux is Badass* CHOA Easter egg (which I will EPUB 3.2+ at some point) - I am thinking of an icon you click such as Tux (or maybe the Konami code) in the main menu?, I will credit the book (and it's CC BY-SA NC) and link it via: https://www.amazon.com/dp/1365052095, https://www.amazon.ca/dp/1365052095, https://www.amazon.co.uk/dp/1365052095, and https://www.amazon.com.au/dp/1365052095
+* *Linux is Badass* CHOA Easter egg (which I will EPUB 3.2+ at some point) - I am thinking of an icon you click such as Tux (or maybe the Konami code) in the main menu?, I will credit the book (and it's CC BY-SA NC with a scrollable license) and link it via: https://www.amazon.com/dp/1365052095, https://www.amazon.ca/dp/1365052095, https://www.amazon.co.uk/dp/1365052095, and https://www.amazon.com.au/dp/1365052095
 * itch.io and GitHub Pages website for the game in the windowed style
 * Better rival distro AI which modifies their package line up, especially once the CD restriction has been lifted
 * We learnt a lot from CorsixTH, but what can we learn from Kairosoft's *Story* games like *Game Dev Story*?
+* In-game Lunduke quote or tip when the game starts in the main menu.
+* Pixel CD icon in a window after 10 in-game years annoucing that DVDs have surpassed CDs and the size of an ISO can now be up to 4700 MB (4.7GB) without a penalty:
+    * Collaborapix Studio https://www.vecteezy.com/vector-art/25695052-pixel-art-illustration-cd-disk-pixelated-disk-cd-dvd-icon-pixelated-for-the-pixel-art-game-and-icon-for-website-and-video-game-old-school-retro
